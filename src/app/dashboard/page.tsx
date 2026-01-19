@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 
 export default function DashboardPage() {
     const router = useRouter()
@@ -31,10 +32,15 @@ export default function DashboardPage() {
                         <p className="mt-2 text-sm text-gray-500">Manage your account settings</p>
                     </a>
 
-                    <div className="rounded-lg bg-white p-6 shadow opacity-50 cursor-not-allowed">
+                    <Link href="/upload" className="block rounded-lg bg-white p-6 shadow hover:shadow-md transition-shadow">
                         <h3 className="text-lg font-medium text-gray-900">Upload Receipt</h3>
-                        <p className="mt-2 text-sm text-gray-500">Available in Sprint 1 (Epic 2)</p>
-                    </div>
+                        <p className="mt-2 text-sm text-gray-500">Add a new expense</p>
+                    </Link>
+
+                    <Link href="/receipts" className="block rounded-lg bg-white p-6 shadow hover:shadow-md transition-shadow">
+                        <h3 className="text-lg font-medium text-gray-900">View Receipts</h3>
+                        <p className="mt-2 text-sm text-gray-500">Check your history</p>
+                    </Link>
                 </div>
             </div>
         </div>
