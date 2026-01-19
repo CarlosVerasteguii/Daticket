@@ -1,22 +1,43 @@
-markdownExploder: true
-qa:
-  qaLocation: docs/qa
+# BMAD Core Configuration for Daticket Project
+
+# Project Information
+project:
+  name: "Daticket"
+  version: "1.0.0"
+  description: "Ticketing system for events and activities"
+
+# Story Management
+devStoryLocation: "docs/stories"
+qaLocation: "docs/qa"
+
+# PRD Configuration
 prd:
-  prdFile: docs/prd.md
-  prdVersion: v4
+  prdFile: "docs/prd.md"  # Legacy monolithic PRD if exists
   prdSharded: true
-  prdShardedLocation: docs/prd
-  epicFilePattern: epic-{n}*.md
+  prdShardedLocation: "docs/prd"
+
+# Architecture Configuration
 architecture:
-  architectureFile: docs/architecture.md
-  architectureVersion: v4
+  architectureFile: "docs/architecture.md"  # Legacy monolithic if exists
   architectureSharded: true
-  architectureShardedLocation: docs/architecture
-customTechnicalDocuments: null
+  architectureShardedLocation: "docs/architecture"
+
+# Workflow Configuration
+workflow:
+  defaultWorkflow: "greenfield-fullstack"
+
+# Development Preferences
 devLoadAlwaysFiles:
-  - docs/architecture/coding-standards.md
-  - docs/architecture/tech-stack.md
-  - docs/architecture/source-tree.md
-devDebugLog: .ai/debug-log.md
-devStoryLocation: docs/stories
-slashPrefix: BMad
+  - "docs/architecture/tech-stack.md"
+  - "docs/architecture/coding-standards.md"
+  - "docs/architecture/unified-project-structure.md"
+  - "docs/architecture/testing-strategy.md"
+
+# QA Configuration
+qa:
+  qaLocation: "docs/qa"
+  gates: "docs/qa/gates"
+  assessments: "docs/qa/assessments"
+
+# Markdown Exploder (for document sharding)
+markdownExploder: false

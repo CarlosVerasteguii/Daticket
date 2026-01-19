@@ -1,0 +1,60 @@
+# generated: 2026-01-18
+# project: Daticket
+# project_key: daticket
+# tracking_system: file-system
+# story_location: docs/stories
+
+# STATUS DEFINITIONS:
+# ==================
+# Epic Status:
+#   - backlog: Epic not yet started
+#   - in-progress: Epic actively being worked on
+#   - done: All stories in epic completed
+#
+# Story Status:
+#   - backlog: Story only exists in epic file
+#   - ready-for-dev: Story file created in stories folder
+#   - in-progress: Developer actively working on implementation
+#   - review: Ready for code review (via Dev's code-review workflow)
+#   - done: Story completed
+#
+# Retrospective Status:
+#   - optional: Can be completed but not required
+#   - done: Retrospective has been completed
+
+generated: 2026-01-18
+project: Daticket
+project_key: daticket
+tracking_system: file-system
+story_location: docs/stories
+
+development_status:
+  # Epic 1: User Authentication
+  epic-1: in-progress
+  1-1-user-registration: ready-for-dev
+  1-2-user-login: ready-for-dev
+  1-4-user-profile: ready-for-dev
+  epic-1-retrospective: optional
+
+  # Epic 2: Receipt Upload & Storage
+  epic-2: in-progress
+  2-1-receipt-photo-upload: ready-for-dev
+  2-2-receipt-metadata: ready-for-dev
+  2-3-receipt-image-storage: ready-for-dev
+  2-4-receipt-list-view: ready-for-dev
+  2-5-receipt-detail-management: ready-for-dev
+  epic-2-retrospective: optional
+
+  # Epic 3: Expense Categorization
+  epic-3: in-progress
+  3-1-default-custom-categories: ready-for-dev
+  3-4-receipt-categorization: ready-for-dev
+  3-5-category-based-filtering: ready-for-dev
+  epic-3-retrospective: optional
+
+  # Epic 4: Analytics Dashboard
+  epic-4: in-progress
+  4-1-dashboard-overview: ready-for-dev
+  4-2-category-breakdown: ready-for-dev
+  4-3-spending-trends: ready-for-dev
+  epic-4-retrospective: optional
