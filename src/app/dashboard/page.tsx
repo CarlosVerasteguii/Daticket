@@ -175,7 +175,14 @@ export default function DashboardPage() {
                                                 {receipt.total_amount ? `$${Number(receipt.total_amount).toFixed(2)}` : <span className="text-neutral-400">-</span>}
                                             </td>
                                             <td className="p-3">
-                                                {receipt.category_name || <span className="text-neutral-400">Uncategorized</span>}
+                                                {receipt.category_name ? (
+                                                    <span className="inline-flex items-center gap-1 text-swiss-green font-sans font-medium">
+                                                        <span className="h-2 w-2 bg-swiss-green"></span>
+                                                        {receipt.category_name}
+                                                    </span>
+                                                ) : (
+                                                    <span className="text-neutral-400">Uncategorized</span>
+                                                )}
                                             </td>
                                         </tr>
                                     ))

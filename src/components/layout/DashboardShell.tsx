@@ -121,7 +121,7 @@ export default function DashboardShell({ children }: { children: React.ReactNode
                     </div>
 
                     <div className="flex items-center gap-4">
-                        <div className="hidden md:flex border border-black px-3 py-1 text-xs font-mono">
+                        <div className="hidden md:flex border border-swiss-green bg-green-50 px-3 py-1 text-xs font-mono text-swiss-green">
                             System Status: ONLINE
                         </div>
                         <button className="relative p-2 hover:bg-neutral-100">
