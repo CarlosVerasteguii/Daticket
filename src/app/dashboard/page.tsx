@@ -5,7 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import DashboardShell from '@/components/layout/DashboardShell'
-import { ArrowUpRight, Plus, FileText, TrendingUp, Clock } from 'lucide-react'
+import { ArrowUpRight, TrendingUp, AlertTriangle, CheckCircle, FileText, Upload, X, Image as ImageIcon } from 'lucide-react'
 import { clsx } from 'clsx'
 import { twMerge } from 'tailwind-merge'
 
@@ -13,146 +13,256 @@ function cn(...inputs: (string | undefined | null | false)[]) {
     return twMerge(clsx(inputs))
 }
 
+interface Receipt {
+    id: string
+    store_name: string | null
+    purchase_date: string | null
+    total_amount: number | null
+    image_url: string
+    notes: string | null
+    created_at: string
+    category_name: string | null
+}
+
 export default function DashboardPage() {
     const router = useRouter()
     const supabase = createClient()
     const [user, setUser] = useState<any>(null)
+    const [receipts, setReceipts] = useState<Receipt[]>([])
+    const [selectedReceipt, setSelectedReceipt] = useState<Receipt | null>(null)
+    const [loading, setLoading] = useState(true)
 
     useEffect(() => {
-        const checkUser = async () => {
+        const checkUserAndFetchReceipts = async () => {
             const { data: { session } } = await supabase.auth.getSession()
             if (!session) {
                 router.push('/login')
-            } else {
-                setUser(session.user)
+                return
             }
+            setUser(session.user)
+
+            // Fetch receipts
+            const { data, error } = await supabase
+                .from('receipts')
+                .select(`
+                    id,
+                    store_name,
+                    purchase_date,
+                    total_amount,
+                    image_url,
+                    notes,
+                    created_at,
+                    categories(name)
+                `)
+                .order('created_at', { ascending: false })
+                .limit(10)
+
+            if (data) {
+                const formattedData = data.map((r: any) => ({
+                    ...r,
+                    category_name: r.categories?.name || null
+                }))
+                setReceipts(formattedData)
+            }
+            setLoading(false)
         }
-        checkUser()
+        checkUserAndFetchReceipts()
     }, [router, supabase])
 
-    // Bento Grid Item Component
-    const BentoItem = ({ className, title, value, subtitle, icon: Icon, gradient }: any) => (
-        <div className={cn(
-            "group relative overflow-hidden rounded-3xl bg-slate-900 border border-white/5 p-6 transition-all duration-300 hover:shadow-2xl hover:shadow-violet-500/10 hover:-translate-y-1 hover:border-white/10",
-            className
-        )}>
-            <div className={cn("absolute inset-0 opacity-0 group-hover:opacity-10 transition-opacity duration-500", gradient)} />
-            <div className="relative z-10">
-                <div className="flex items-center justify-between mb-4">
-                    <div className="p-3 rounded-2xl bg-white/5 text-white/80 group-hover:bg-white/10 group-hover:text-white transition-colors">
-                        <Icon className="h-6 w-6" />
-                    </div>
-                    <ArrowUpRight className="h-5 w-5 text-slate-500 group-hover:text-white transition-colors opacity-0 group-hover:opacity-100 transform translate-y-2 group-hover:translate-y-0 transition-all duration-300" />
-                </div>
-                <div className="space-y-1">
-                    <p className="text-sm font-medium text-slate-400">{title}</p>
-                    <h3 className="text-3xl font-bold text-white tracking-tight">{value}</h3>
-                    <p className="text-xs text-slate-500 font-medium">{subtitle}</p>
-                </div>
+    // Calculate totals
+    const totalAmount = receipts.reduce((sum, r) => sum + (Number(r.total_amount) || 0), 0)
+    const receiptCount = receipts.length
+
+    // Get public URL for image
+    const getImageUrl = (path: string) => {
+        const { data } = supabase.storage.from('receipts').getPublicUrl(path)
+        return data.publicUrl
+    }
+
+    // Format date
+    const formatDate = (dateStr: string | null) => {
+        if (!dateStr) return 'N/A'
+        const date = new Date(dateStr)
+        return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+    }
+
+    // Swiss Style Metric Card
+    const MetricCard = ({ label, value, subtext, alert }: any) => (
+        <div className="bg-white border text-black p-6 flex flex-col justify-between h-48 border-black hover:bg-neutral-50 transition-colors cursor-default group">
+            <div className="flex justify-between items-start">
+                <span className="text-xs font-bold uppercase tracking-widest text-neutral-500">{label}</span>
+                {alert && <div className="h-3 w-3 bg-orange-500 rounded-full animate-pulse" />}
+            </div>
+            <div>
+                <h3 className="text-5xl font-bold tracking-tighter mb-2 group-hover:translate-x-1 transition-transform">{value}</h3>
+                <p className="text-sm font-mono text-neutral-600 border-l-2 border-blue-500 pl-2">{subtext}</p>
             </div>
         </div>
     )
 
     return (
         <DashboardShell>
-            {/* Hero Warning (Temporary MVP status) */}
-            <div className="mb-8 p-4 rounded-xl bg-violet-500/10 border border-violet-500/20 flex items-center gap-3 text-violet-300 text-sm">
-                <div className="h-2 w-2 rounded-full bg-violet-500 animate-pulse" />
-                Expense tracking analytics engine coming soon.
-            </div>
-
-            <div className="mb-10">
-                <h1 className="text-4xl font-bold text-white tracking-tight mb-2">
-                    Welcome back, <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-400 to-indigo-400">{user?.email?.split('@')[0] || 'User'}</span>
-                </h1>
-                <p className="text-slate-400">Here is your financial overview for today.</p>
-            </div>
-
-            {/* Bento Grid Stats */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
-                <BentoItem
-                    title="Total Expenses"
-                    value="$0.00"
-                    subtitle="+0% from last month"
-                    icon={TrendingUp}
-                    gradient="bg-gradient-to-br from-emerald-500 to-teal-500"
-                    className="md:col-span-2"
+            {/* Top Metrics Grid - Rigid Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 border-b border-black">
+                <MetricCard
+                    label="Total Expenses"
+                    value={`$${totalAmount.toFixed(2)}`}
+                    subtext={`${receiptCount} Receipts Processed`}
                 />
-                <BentoItem
-                    title="Pending Review"
+                <MetricCard
+                    label="Pending Review"
                     value="0"
-                    subtitle="Requires attention"
-                    icon={Clock}
-                    gradient="bg-gradient-to-br from-amber-500 to-orange-500"
+                    subtext="All caught up"
                 />
-                <BentoItem
-                    title="Processed"
-                    value="0"
-                    subtitle="Receipts this month"
-                    icon={FileText}
-                    gradient="bg-gradient-to-br from-blue-500 to-cyan-500"
+                <MetricCard
+                    label="Avg. Receipt"
+                    value={receiptCount > 0 ? `$${(totalAmount / receiptCount).toFixed(2)}` : '$0.00'}
+                    subtext="Per transaction"
+                />
+                <MetricCard
+                    label="Categories"
+                    value={new Set(receipts.map(r => r.category_name).filter(Boolean)).size.toString()}
+                    subtext="Active categories"
                 />
             </div>
 
-            {/* Quick Actions & Recent Activity */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                {/* Visual Action Cards */}
-                <div className="lg:col-span-1 space-y-6">
-                    <h3 className="text-lg font-semibold text-white">Quick Actions</h3>
+            {/* Main Workspace - Split View */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 min-h-[600px]">
 
-                    <Link href="/upload" className="group block relative overflow-hidden rounded-3xl bg-gradient-to-br from-violet-600 to-indigo-700 p-1">
-                        <div className="absolute inset-0 bg-white/0 group-hover:bg-white/10 transition-colors" />
-                        <div className="relative bg-slate-950/50 backdrop-blur-sm rounded-[20px] p-6 h-full flex flex-col justify-between group-hover:bg-slate-950/40 transition-colors">
-                            <div className="mb-6">
-                                <div className="h-12 w-12 rounded-full bg-white/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
-                                    <Plus className="h-6 w-6 text-white" />
-                                </div>
-                                <h3 className="text-xl font-bold text-white mb-2">Upload Receipt</h3>
-                                <p className="text-indigo-200/80 text-sm leading-relaxed">
-                                    Drag and drop or scan a new receipt to automatically process expenses.
-                                </p>
-                            </div>
-                            <div className="flex items-center text-sm font-medium text-white/90">
-                                Start Upload <ArrowUpRight className="ml-2 h-4 w-4" />
-                            </div>
-                        </div>
-                    </Link>
+                {/* Left: Recent Receipts Table */}
+                <div className="lg:col-span-2 bg-white p-8">
+                    <div className="flex items-center justify-between mb-6">
+                        <h3 className="text-xl font-bold tracking-tight">Recent Receipts</h3>
+                        <Link href="/receipts" className="text-sm font-bold underline decoration-2 underline-offset-4 hover:text-blue-600">
+                            View All
+                        </Link>
+                    </div>
 
-                    <Link href="/receipts" className="group block p-6 rounded-3xl bg-slate-900 border border-white/5 hover:border-white/10 transition-colors">
-                        <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-4">
-                                <div className="h-10 w-10 rounded-full bg-slate-800 flex items-center justify-center">
-                                    <FileText className="h-5 w-5 text-slate-400 group-hover:text-white transition-colors" />
-                                </div>
-                                <div>
-                                    <h4 className="font-semibold text-white">All Receipts</h4>
-                                    <p className="text-xs text-slate-500">View history</p>
-                                </div>
-                            </div>
-                            <ArrowUpRight className="h-5 w-5 text-slate-600 group-hover:text-white transition-colors" />
-                        </div>
-                    </Link>
+                    <div className="overflow-hidden border border-black">
+                        <table className="w-full text-left text-sm">
+                            <thead className="bg-neutral-100 border-b border-black">
+                                <tr>
+                                    <th className="p-3 font-bold uppercase text-xs tracking-wider border-r border-black/10">Date</th>
+                                    <th className="p-3 font-bold uppercase text-xs tracking-wider border-r border-black/10">Store</th>
+                                    <th className="p-3 font-bold uppercase text-xs tracking-wider border-r border-black/10">Amount</th>
+                                    <th className="p-3 font-bold uppercase text-xs tracking-wider">Category</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-black/10 font-mono">
+                                {loading ? (
+                                    <tr>
+                                        <td colSpan={4} className="p-6 text-center text-neutral-500">Loading...</td>
+                                    </tr>
+                                ) : receipts.length === 0 ? (
+                                    <tr>
+                                        <td colSpan={4} className="p-6 text-center text-neutral-500">No receipts yet. Upload one!</td>
+                                    </tr>
+                                ) : (
+                                    receipts.map((receipt) => (
+                                        <tr
+                                            key={receipt.id}
+                                            className={cn(
+                                                "hover:bg-neutral-50 cursor-pointer transition-colors",
+                                                selectedReceipt?.id === receipt.id && "bg-blue-50 border-l-4 border-l-blue-500"
+                                            )}
+                                            onClick={() => setSelectedReceipt(receipt)}
+                                        >
+                                            <td className="p-3 border-r border-black/10">{formatDate(receipt.purchase_date)}</td>
+                                            <td className="p-3 border-r border-black/10 font-sans font-medium">
+                                                {receipt.store_name || <span className="text-neutral-400 italic">Unknown</span>}
+                                            </td>
+                                            <td className="p-3 border-r border-black/10">
+                                                {receipt.total_amount ? `$${Number(receipt.total_amount).toFixed(2)}` : <span className="text-neutral-400">-</span>}
+                                            </td>
+                                            <td className="p-3">
+                                                {receipt.category_name || <span className="text-neutral-400">Uncategorized</span>}
+                                            </td>
+                                        </tr>
+                                    ))
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
 
-                {/* Recent Activity List */}
-                <div className="lg:col-span-2">
-                    <div className="flex items-center justify-between mb-6">
-                        <h3 className="text-lg font-semibold text-white">Recent Activity</h3>
-                        <Link href="/receipts" className="text-sm text-violet-400 hover:text-violet-300 transition-colors">View All</Link>
-                    </div>
-
-                    <div className="bg-slate-900/50 border border-white/5 rounded-3xl overflow-hidden backdrop-blur-sm">
-                        {/* Empty State visual */}
-                        <div className="p-12 flex flex-col items-center justify-center text-center">
-                            <div className="h-16 w-16 mb-4 rounded-full bg-slate-800/50 flex items-center justify-center">
-                                <Clock className="h-8 w-8 text-slate-600" />
+                {/* Right: Receipt Preview / Actions */}
+                <div className="lg:col-span-1 bg-neutral-50 border-l border-black p-8 flex flex-col gap-6">
+                    {selectedReceipt ? (
+                        /* Receipt Detail Panel */
+                        <div className="border border-black bg-white flex flex-col h-full">
+                            <div className="flex items-center justify-between p-4 border-b border-black bg-neutral-100">
+                                <h4 className="font-bold text-sm uppercase tracking-wider">Receipt Preview</h4>
+                                <button
+                                    onClick={() => setSelectedReceipt(null)}
+                                    className="p-1 hover:bg-neutral-200"
+                                >
+                                    <X className="h-4 w-4" />
+                                </button>
                             </div>
-                            <h4 className="text-lg font-medium text-white mb-1">No recent activity</h4>
-                            <p className="text-slate-500 text-sm max-w-xs mx-auto">
-                                Once you upload receipts, they will appear here with their AI processing status.
-                            </p>
+
+                            {/* Image Preview */}
+                            <div className="flex-1 bg-neutral-200 flex items-center justify-center min-h-[300px] relative overflow-hidden">
+                                <img
+                                    src={getImageUrl(selectedReceipt.image_url)}
+                                    alt="Receipt"
+                                    className="max-w-full max-h-[400px] object-contain"
+                                />
+                            </div>
+
+                            {/* Receipt Details */}
+                            <div className="p-4 border-t border-black space-y-3 text-sm">
+                                <div className="flex justify-between">
+                                    <span className="font-bold uppercase text-xs text-neutral-500">Store</span>
+                                    <span className="font-medium">{selectedReceipt.store_name || 'Unknown'}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                    <span className="font-bold uppercase text-xs text-neutral-500">Date</span>
+                                    <span className="font-mono">{formatDate(selectedReceipt.purchase_date)}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                    <span className="font-bold uppercase text-xs text-neutral-500">Amount</span>
+                                    <span className="font-bold text-lg">{selectedReceipt.total_amount ? `$${Number(selectedReceipt.total_amount).toFixed(2)}` : '-'}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                    <span className="font-bold uppercase text-xs text-neutral-500">Category</span>
+                                    <span>{selectedReceipt.category_name || 'Uncategorized'}</span>
+                                </div>
+                            </div>
+
+                            {/* Actions */}
+                            <div className="p-4 border-t border-black flex gap-2">
+                                <button className="flex-1 py-2 bg-blue-600 text-white font-bold text-sm hover:bg-blue-700 border border-black">
+                                    Edit
+                                </button>
+                                <button className="flex-1 py-2 bg-white text-black font-bold text-sm hover:bg-neutral-100 border border-black">
+                                    Delete
+                                </button>
+                            </div>
                         </div>
-                    </div>
+                    ) : (
+                        /* Default: Upload CTA */
+                        <>
+                            <div className="border border-black bg-white p-6 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+                                <h4 className="font-bold text-lg mb-4 flex items-center gap-2">
+                                    <Upload className="h-5 w-5" />
+                                    New Receipt
+                                </h4>
+                                <p className="text-sm text-neutral-600 mb-6">
+                                    Click a receipt from the list to preview, or upload a new one.
+                                </p>
+                                <Link href="/upload" className="block w-full py-3 bg-blue-600 text-white font-bold hover:bg-blue-700 transition-colors border border-black text-center">
+                                    Upload Receipt
+                                </Link>
+                            </div>
+
+                            <div className="border border-black bg-white p-6 flex-1 flex flex-col items-center justify-center text-center">
+                                <ImageIcon className="h-12 w-12 text-neutral-300 mb-4" />
+                                <p className="text-neutral-500 text-sm">
+                                    Select a receipt from the table to see its preview here.
+                                </p>
+                            </div>
+                        </>
+                    )}
                 </div>
             </div>
         </DashboardShell>

@@ -4,8 +4,8 @@ import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, Trash2, Calendar, Store, DollarSign, Loader2 } from 'lucide-react'
-import Image from 'next/image'
+import DashboardShell from '@/components/layout/DashboardShell'
+import { ArrowLeft, Trash2, Calendar, Store, DollarSign, Loader2, Save, Tag } from 'lucide-react'
 
 export default function ReceiptDetailPage({ params }: { params: { id: string } }) {
     const router = useRouter()
@@ -13,10 +13,23 @@ export default function ReceiptDetailPage({ params }: { params: { id: string } }
     const [receipt, setReceipt] = useState<any>(null)
     const [loading, setLoading] = useState(true)
     const [deleting, setDeleting] = useState(false)
+    const [saving, setSaving] = useState(false)
     const [imageUrl, setImageUrl] = useState<string | null>(null)
+
+    // Editable fields
+    const [storeName, setStoreName] = useState('')
+    const [totalAmount, setTotalAmount] = useState('')
+    const [purchaseDate, setPurchaseDate] = useState('')
+    const [notes, setNotes] = useState('')
 
     useEffect(() => {
         async function fetchReceipt() {
+            const { data: { session } } = await supabase.auth.getSession()
+            if (!session) {
+                router.push('/login')
+                return
+            }
+
             const { data, error } = await supabase
                 .from('receipts')
                 .select('*')
@@ -25,25 +38,49 @@ export default function ReceiptDetailPage({ params }: { params: { id: string } }
 
             if (data) {
                 setReceipt(data)
-                // Get Signed URL
+                setStoreName(data.store_name || '')
+                setTotalAmount(data.total_amount?.toString() || '')
+                setPurchaseDate(data.purchase_date || '')
+                setNotes(data.notes || '')
+
                 if (data.image_url) {
-                    const { data: signed } = await supabase.storage
+                    const { data: urlData } = supabase.storage
                         .from('receipts')
-                        .createSignedUrl(data.image_url, 3600)
-                    if (signed) setImageUrl(signed.signedUrl)
+                        .getPublicUrl(data.image_url)
+                    setImageUrl(urlData.publicUrl)
                 }
             }
             setLoading(false)
         }
         fetchReceipt()
-    }, [params.id])
+    }, [params.id, router, supabase])
+
+    const handleSave = async () => {
+        setSaving(true)
+        try {
+            const { error } = await supabase
+                .from('receipts')
+                .update({
+                    store_name: storeName,
+                    total_amount: totalAmount ? parseFloat(totalAmount) : null,
+                    purchase_date: purchaseDate || null,
+                    notes: notes || null
+                })
+                .eq('id', params.id)
+
+            if (error) throw error
+            router.push('/receipts')
+        } catch (error: any) {
+            alert('Error saving: ' + error.message)
+        }
+        setSaving(false)
+    }
 
     const handleDelete = async () => {
         if (!confirm('Are you sure you want to delete this receipt? This cannot be undone.')) return
 
         setDeleting(true)
         try {
-            // 1. Delete DB Record
             const { error: dbError } = await supabase
                 .from('receipts')
                 .delete()
@@ -51,8 +88,6 @@ export default function ReceiptDetailPage({ params }: { params: { id: string } }
 
             if (dbError) throw dbError
 
-            // 2. Delete File (Optional for MVP - requires advanced cleanup or explicit delete)
-            // Attempting delete if path is clear
             if (receipt.image_url) {
                 await supabase.storage.from('receipts').remove([receipt.image_url])
             }
@@ -65,69 +100,150 @@ export default function ReceiptDetailPage({ params }: { params: { id: string } }
         }
     }
 
-    if (loading) return <div className="flex justify-center p-12"><Loader2 className="animate-spin text-indigo-600" /></div>
+    if (loading) {
+        return (
+            <DashboardShell>
+                <div className="flex items-center justify-center h-96">
+                    <Loader2 className="h-8 w-8 animate-spin" />
+                </div>
+            </DashboardShell>
+        )
+    }
 
-    if (!receipt) return <div className="text-center p-12">Receipt not found</div>
+    if (!receipt) {
+        return (
+            <DashboardShell>
+                <div className="flex flex-col items-center justify-center h-96">
+                    <p className="text-lg font-bold mb-4">Receipt not found</p>
+                    <Link href="/receipts" className="underline">Back to Receipts</Link>
+                </div>
+            </DashboardShell>
+        )
+    }
 
     return (
-        <div className="min-h-screen bg-gray-50 p-4 sm:p-8">
-            <div className="max-w-4xl mx-auto">
-                <div className="mb-6 flex justify-between items-center">
-                    <Link href="/receipts" className="flex items-center text-gray-600 hover:text-gray-900">
-                        <ArrowLeft className="w-4 h-4 mr-2" />
-                        Back to List
+        <DashboardShell>
+            {/* Header */}
+            <div className="flex items-center justify-between p-6 border-b border-black bg-white">
+                <div className="flex items-center gap-4">
+                    <Link href="/receipts" className="p-2 hover:bg-neutral-100 border border-black">
+                        <ArrowLeft className="h-5 w-5" />
                     </Link>
+                    <div>
+                        <h1 className="text-2xl font-bold tracking-tighter">Edit Receipt</h1>
+                        <p className="text-xs text-neutral-500 font-mono mt-1">ID: {params.id.slice(0, 8)}...</p>
+                    </div>
+                </div>
+                <div className="flex gap-2">
+                    <button
+                        onClick={handleSave}
+                        disabled={saving}
+                        className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white font-bold hover:bg-blue-700 border border-black disabled:opacity-50"
+                    >
+                        <Save className="h-4 w-4" />
+                        {saving ? 'Saving...' : 'Save Changes'}
+                    </button>
                     <button
                         onClick={handleDelete}
                         disabled={deleting}
-                        className="flex items-center text-red-600 hover:text-red-900 disabled:opacity-50"
+                        className="flex items-center gap-2 px-4 py-3 bg-white text-red-600 font-bold hover:bg-red-50 border border-black disabled:opacity-50"
                     >
-                        {deleting ? 'Deleting...' : <><Trash2 className="w-4 h-4 mr-2" /> Delete Receipt</>}
+                        <Trash2 className="h-4 w-4" />
                     </button>
                 </div>
+            </div>
 
-                <div className="bg-white rounded-lg shadow-lg overflow-hidden grid md:grid-cols-2 gap-0">
-                    {/* Image Section */}
-                    <div className="bg-gray-100 relative h-96 md:h-auto min-h-[400px]">
-                        {imageUrl ? (
-                            <Image
-                                src={imageUrl}
-                                alt={receipt.store_name}
-                                fill
-                                className="object-contain p-4"
+            {/* Main Content - Split View */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 min-h-[calc(100vh-180px)]">
+                {/* Left: Image */}
+                <div className="bg-neutral-100 border-r border-black flex items-center justify-center p-8">
+                    {imageUrl ? (
+                        <img
+                            src={imageUrl}
+                            alt="Receipt"
+                            className="max-w-full max-h-[600px] object-contain shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]"
+                        />
+                    ) : (
+                        <div className="text-neutral-400">No Image Available</div>
+                    )}
+                </div>
+
+                {/* Right: Edit Form */}
+                <div className="bg-white p-8">
+                    <h2 className="text-lg font-bold uppercase tracking-wider mb-6 flex items-center gap-2">
+                        <Tag className="h-5 w-5" />
+                        Receipt Details
+                    </h2>
+
+                    <div className="space-y-6">
+                        {/* Store Name */}
+                        <div>
+                            <label className="block text-xs font-bold uppercase tracking-wider text-neutral-500 mb-2">
+                                Store Name
+                            </label>
+                            <input
+                                type="text"
+                                value={storeName}
+                                onChange={(e) => setStoreName(e.target.value)}
+                                placeholder="Enter store name"
+                                className="w-full px-4 py-3 border border-black font-medium focus:outline-none focus:ring-2 focus:ring-blue-500"
                             />
-                        ) : (
-                            <div className="flex items-center justify-center h-full text-gray-400">No Image</div>
-                        )}
+                        </div>
+
+                        {/* Amount */}
+                        <div>
+                            <label className="block text-xs font-bold uppercase tracking-wider text-neutral-500 mb-2">
+                                Total Amount
+                            </label>
+                            <div className="relative">
+                                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-neutral-500">$</span>
+                                <input
+                                    type="number"
+                                    step="0.01"
+                                    value={totalAmount}
+                                    onChange={(e) => setTotalAmount(e.target.value)}
+                                    placeholder="0.00"
+                                    className="w-full pl-8 pr-4 py-3 border border-black font-mono text-2xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                />
+                            </div>
+                        </div>
+
+                        {/* Date */}
+                        <div>
+                            <label className="block text-xs font-bold uppercase tracking-wider text-neutral-500 mb-2">
+                                Purchase Date
+                            </label>
+                            <input
+                                type="date"
+                                value={purchaseDate}
+                                onChange={(e) => setPurchaseDate(e.target.value)}
+                                className="w-full px-4 py-3 border border-black font-mono focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            />
+                        </div>
+
+                        {/* Notes */}
+                        <div>
+                            <label className="block text-xs font-bold uppercase tracking-wider text-neutral-500 mb-2">
+                                Notes
+                            </label>
+                            <textarea
+                                value={notes}
+                                onChange={(e) => setNotes(e.target.value)}
+                                placeholder="Add any additional notes..."
+                                rows={4}
+                                className="w-full px-4 py-3 border border-black resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            />
+                        </div>
                     </div>
 
-                    {/* Details Section */}
-                    <div className="p-8 space-y-6">
-                        <div>
-                            <h1 className="text-3xl font-bold text-gray-900">{receipt.store_name}</h1>
-                            <p className="text-sm text-gray-500 mt-1">Uploaded {new Date(receipt.created_at).toLocaleDateString()}</p>
-                        </div>
-
-                        <div className="space-y-4">
-                            <div className="flex items-center text-lg">
-                                <Calendar className="w-5 h-5 text-gray-400 mr-3" />
-                                <span className="font-medium">{receipt.purchase_date}</span>
-                            </div>
-                            <div className="flex items-center text-3xl font-bold text-indigo-600">
-                                <DollarSign className="w-6 h-6 mr-1" />
-                                {receipt.total_amount.toFixed(2)}
-                            </div>
-                        </div>
-
-                        {receipt.notes && (
-                            <div className="pt-4 border-t border-gray-100">
-                                <h3 className="text-sm font-medium text-gray-900 mb-2">Notes</h3>
-                                <p className="text-gray-600 whitespace-pre-wrap">{receipt.notes}</p>
-                            </div>
-                        )}
+                    {/* Meta Info */}
+                    <div className="mt-8 pt-6 border-t border-black">
+                        <p className="text-xs text-neutral-500 font-mono">
+                            Uploaded: {new Date(receipt.created_at).toLocaleString()}
+                        </p>
                     </div>
                 </div>
             </div>
-        </div>
+        </DashboardShell>
     )
 }

@@ -58,7 +58,6 @@ export default function ReceiptUpload() {
             }
             setFile(selectedFile)
             setPreview(URL.createObjectURL(selectedFile))
-            // Auto-trigger scan
             handleScan(selectedFile)
         }
     }
@@ -72,7 +71,6 @@ export default function ReceiptUpload() {
             const { data: { user } } = await supabase.auth.getUser()
             if (!user) throw new Error('User not authenticated')
 
-            // 1. Upload Image
             const fileExt = file.name.split('.').pop()
             const fileName = `${user.id}/${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`
 
@@ -82,10 +80,8 @@ export default function ReceiptUpload() {
 
             if (uploadError) throw uploadError
 
-            // 2. Get Public URL (or just path construction)
             const imageUrl = fileName
 
-            // 3. Insert Database Record
             const { error: dbError } = await supabase
                 .from('receipts')
                 .insert({
@@ -109,19 +105,19 @@ export default function ReceiptUpload() {
     }
 
     return (
-        <div className="w-full max-w-md mx-auto bg-white rounded-lg shadow-md p-6">
-            <h2 className="text-2xl font-bold mb-6 text-gray-800">Upload Receipt</h2>
-
-            <form onSubmit={handleUpload} className="space-y-4">
-                {/* File Input Zone */}
+        <div className="w-full max-w-lg mx-auto">
+            <form onSubmit={handleUpload} className="space-y-6">
+                {/* File Input Zone - Swiss Style */}
                 {!preview ? (
                     <div
                         onClick={() => fileInputRef.current?.click()}
-                        className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center cursor-pointer hover:border-indigo-500 hover:bg-gray-50 transition-colors"
+                        className="border-2 border-dashed border-black bg-white p-12 text-center cursor-pointer hover:bg-neutral-50 transition-colors"
                     >
-                        <Upload className="w-12 h-12 text-gray-400 mx-auto mb-2" />
-                        <p className="text-gray-600 font-medium">Click to upload or take photo</p>
-                        <p className="text-xs text-gray-400 mt-1">JPG, PNG up to 10MB</p>
+                        <div className="h-16 w-16 bg-black flex items-center justify-center mx-auto mb-4">
+                            <Upload className="w-8 h-8 text-white" />
+                        </div>
+                        <p className="text-black font-bold text-lg">Click to upload or take photo</p>
+                        <p className="text-xs text-neutral-500 font-mono mt-2">JPG, PNG up to 10MB</p>
                         <input
                             ref={fileInputRef}
                             type="file"
@@ -131,15 +127,15 @@ export default function ReceiptUpload() {
                         />
                     </div>
                 ) : (
-                    <div className="relative rounded-lg overflow-hidden border border-gray-200">
+                    <div className="relative border border-black overflow-hidden">
                         <button
                             type="button"
                             onClick={handleClear}
-                            className="absolute top-2 right-2 bg-black/50 text-white p-1 rounded-full hover:bg-black/70 z-10"
+                            className="absolute top-2 right-2 bg-black text-white p-2 hover:bg-neutral-800 z-10"
                         >
                             <X className="w-4 h-4" />
                         </button>
-                        <div className="relative h-64 w-full bg-gray-100">
+                        <div className="relative h-64 w-full bg-neutral-100">
                             <Image
                                 src={preview}
                                 alt="Receipt preview"
@@ -147,19 +143,23 @@ export default function ReceiptUpload() {
                                 className={`object-contain ${scanning ? 'opacity-50 blur-sm' : ''}`}
                             />
                             {scanning && (
-                                <div className="absolute inset-0 flex flex-col items-center justify-center text-indigo-600">
-                                    <Sparkles className="w-10 h-10 animate-spin mb-2" />
-                                    <span className="font-semibold px-4 py-1 bg-white/80 rounded-full shadow-sm">Analyzing via Groq AI...</span>
+                                <div className="absolute inset-0 flex flex-col items-center justify-center">
+                                    <div className="bg-white border border-black px-4 py-3 flex items-center gap-3 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+                                        <Sparkles className="w-5 h-5 animate-spin" />
+                                        <span className="font-bold text-sm uppercase tracking-wider">Analyzing via AI...</span>
+                                    </div>
                                 </div>
                             )}
                         </div>
                     </div>
                 )}
 
-                {/* Metadata Inputs */}
-                <div className="space-y-3">
+                {/* Metadata Inputs - Swiss Style */}
+                <div className="space-y-4">
                     <div>
-                        <label className="block text-sm font-medium text-gray-700">Store Name</label>
+                        <label className="block text-xs font-bold uppercase tracking-wider text-neutral-500 mb-2">
+                            Store Name
+                        </label>
                         <input
                             type="text"
                             required
@@ -167,28 +167,30 @@ export default function ReceiptUpload() {
                             onChange={(e) => setStoreName(e.target.value)}
                             placeholder="e.g. Walmart"
                             disabled={scanning}
-                            className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                            className="w-full px-4 py-3 border border-black font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-neutral-100 disabled:text-neutral-400"
                         />
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">
                         <div>
-                            <label className="block text-sm font-medium text-gray-700">Date</label>
+                            <label className="block text-xs font-bold uppercase tracking-wider text-neutral-500 mb-2">
+                                Date
+                            </label>
                             <input
                                 type="date"
                                 required
                                 value={date}
                                 onChange={(e) => setDate(e.target.value)}
                                 disabled={scanning}
-                                className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                                className="w-full px-4 py-3 border border-black font-mono focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-neutral-100"
                             />
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-gray-700">Total Amount</label>
-                            <div className="relative mt-1 rounded-md shadow-sm">
-                                <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                                    <span className="text-gray-500 sm:text-sm">$</span>
-                                </div>
+                            <label className="block text-xs font-bold uppercase tracking-wider text-neutral-500 mb-2">
+                                Total Amount
+                            </label>
+                            <div className="relative">
+                                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-neutral-500 font-mono">$</span>
                                 <input
                                     type="number"
                                     step="0.01"
@@ -196,7 +198,7 @@ export default function ReceiptUpload() {
                                     value={amount}
                                     onChange={(e) => setAmount(e.target.value)}
                                     disabled={scanning}
-                                    className="block w-full rounded-md border-gray-300 pl-7 pr-12 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm py-2"
+                                    className="w-full pl-8 pr-4 py-3 border border-black font-mono text-xl focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-neutral-100"
                                     placeholder="0.00"
                                 />
                             </div>
@@ -204,21 +206,23 @@ export default function ReceiptUpload() {
                     </div>
                 </div>
 
-                <div className="border-t border-gray-200 pt-4">
+                {/* Category Section */}
+                <div className="border-t border-black pt-6">
                     <CategoryManager
                         selectedId={categoryId || undefined}
                         onSelect={setCategoryId}
                     />
                 </div>
 
+                {/* Submit Button - Swiss Style */}
                 <button
                     type="submit"
                     disabled={!file || uploading || scanning}
-                    className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:bg-gray-400"
+                    className="w-full py-4 bg-black text-white font-bold text-sm uppercase tracking-wider hover:bg-neutral-800 transition-colors border border-black disabled:bg-neutral-300 disabled:text-neutral-500 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
                     {uploading ? (
                         <>
-                            <Loader2 className="animate-spin -ml-1 mr-2 h-4 w-4" />
+                            <Loader2 className="animate-spin h-4 w-4" />
                             Uploading...
                         </>
                     ) : (

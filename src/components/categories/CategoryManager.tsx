@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { Plus, X, Tag } from 'lucide-react'
+import { Plus, Tag, Check } from 'lucide-react'
 
 type Category = {
     id: string
@@ -11,12 +11,12 @@ type Category = {
 }
 
 const DEFAULT_CATEGORIES = [
-    { name: 'Food', color: '#ef4444' }, // red
-    { name: 'Transport', color: '#3b82f6' }, // blue
-    { name: 'Utilities', color: '#eab308' }, // yellow
-    { name: 'Entertainment', color: '#a855f7' }, // purple
-    { name: 'Health', color: '#22c55e' }, // green
-    { name: 'Other', color: '#64748b' }, // slate
+    { name: 'Food', color: '#ef4444' },
+    { name: 'Transport', color: '#3b82f6' },
+    { name: 'Utilities', color: '#eab308' },
+    { name: 'Entertainment', color: '#a855f7' },
+    { name: 'Health', color: '#22c55e' },
+    { name: 'Other', color: '#64748b' },
 ]
 
 export default function CategoryManager({
@@ -39,24 +39,23 @@ export default function CategoryManager({
         const { data: { user } } = await supabase.auth.getUser()
         if (!user) return
 
-        const { data, error } = await supabase
+        const { data } = await supabase
             .from('categories')
             .select('*')
             .order('name')
 
         if (data) {
-            // Logic: If empty, maybe seed? For now just show empty or defaults UI
             setCategories(data)
         }
         setLoading(false)
     }
 
-    const addCategory = async (name: string, color: string = '#6366f1') => {
+    const addCategory = async (name: string, color: string = '#000000') => {
         if (!name.trim()) return
         const { data: { user } } = await supabase.auth.getUser()
         if (!user) return
 
-        const { data, error } = await supabase
+        const { data } = await supabase
             .from('categories')
             .insert({ user_id: user.id, name, color })
             .select()
@@ -75,7 +74,7 @@ export default function CategoryManager({
 
         const toInsert = DEFAULT_CATEGORIES.map(c => ({ user_id: user.id, ...c }))
 
-        const { data, error } = await supabase
+        const { data } = await supabase
             .from('categories')
             .insert(toInsert)
             .select()
@@ -85,36 +84,44 @@ export default function CategoryManager({
 
     return (
         <div className="space-y-4">
-            <label className="block text-sm font-medium text-gray-700">Category</label>
+            <label className="block text-xs font-bold uppercase tracking-wider text-neutral-500">
+                Category
+            </label>
 
             {loading ? (
-                <div className="text-sm text-gray-500">Loading categories...</div>
+                <div className="text-sm text-neutral-500 font-mono">Loading...</div>
             ) : (
                 <div className="flex flex-wrap gap-2">
-                    {categories.map(cat => (
-                        <button
-                            key={cat.id}
-                            type="button"
-                            onClick={() => onSelect && onSelect(cat.id)}
-                            className={`inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${selectedId === cat.id
-                                    ? 'ring-2 ring-offset-2 ring-indigo-500 text-white'
-                                    : 'text-gray-700 bg-gray-100 hover:bg-gray-200'
-                                }`}
-                            style={{ backgroundColor: selectedId === cat.id ? cat.color : undefined }}
-                        >
-                            <Tag className="w-3 h-3 mr-1.5" />
-                            {cat.name}
-                        </button>
-                    ))}
+                    {categories.map(cat => {
+                        const isSelected = selectedId === cat.id
+                        return (
+                            <button
+                                key={cat.id}
+                                type="button"
+                                onClick={() => onSelect && onSelect(cat.id)}
+                                className={`inline-flex items-center gap-2 px-3 py-2 text-sm font-bold border transition-colors ${isSelected
+                                        ? 'bg-black text-white border-black'
+                                        : 'bg-white text-black border-black hover:bg-neutral-100'
+                                    }`}
+                            >
+                                <div
+                                    className="h-3 w-3 border border-black"
+                                    style={{ backgroundColor: cat.color }}
+                                />
+                                {cat.name}
+                                {isSelected && <Check className="h-3 w-3" />}
+                            </button>
+                        )
+                    })}
 
-                    {/* Add New Input */}
-                    <div className="flex items-center gap-2">
+                    {/* Add New Input - Swiss Style */}
+                    <div className="flex items-center border border-black">
                         <input
                             type="text"
                             value={newCategory}
                             onChange={(e) => setNewCategory(e.target.value)}
                             placeholder="New..."
-                            className="w-24 px-2 py-1 text-sm border-b border-gray-300 focus:outline-none focus:border-indigo-500 bg-transparent"
+                            className="w-24 px-3 py-2 text-sm font-medium focus:outline-none bg-white"
                             onKeyDown={(e) => {
                                 if (e.key === 'Enter') {
                                     e.preventDefault()
@@ -126,7 +133,7 @@ export default function CategoryManager({
                             type="button"
                             onClick={() => addCategory(newCategory)}
                             disabled={!newCategory}
-                            className="text-indigo-600 hover:text-indigo-800 disabled:opacity-50"
+                            className="px-2 py-2 bg-black text-white hover:bg-neutral-800 disabled:bg-neutral-300 disabled:cursor-not-allowed"
                         >
                             <Plus className="w-4 h-4" />
                         </button>
@@ -140,7 +147,7 @@ export default function CategoryManager({
                     <button
                         type="button"
                         onClick={seedDefaults}
-                        className="text-xs text-indigo-600 underline hover:text-indigo-800"
+                        className="text-sm font-bold underline decoration-2 underline-offset-4 hover:text-blue-600"
                     >
                         Add default categories
                     </button>

@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { User } from '@supabase/supabase-js'
+import DashboardShell from '@/components/layout/DashboardShell'
+import { User as UserIcon, Mail, Key, LogOut, Shield } from 'lucide-react'
 
 export default function ProfilePage() {
     const supabase = createClient()
@@ -13,10 +15,14 @@ export default function ProfilePage() {
     useEffect(() => {
         async function getUser() {
             const { data: { user } } = await supabase.auth.getUser()
+            if (!user) {
+                router.push('/login')
+                return
+            }
             setUser(user)
         }
         getUser()
-    }, [])
+    }, [router, supabase])
 
     const handleLogout = async () => {
         await supabase.auth.signOut()
@@ -25,31 +31,83 @@ export default function ProfilePage() {
     }
 
     return (
-        <div className="flex min-h-screen flex-col items-center bg-gray-50 p-8">
-            <div className="w-full max-w-2xl rounded-lg bg-white p-6 shadow-md">
-                <h1 className="mb-6 text-2xl font-bold text-gray-900">User Profile</h1>
+        <DashboardShell>
+            {/* Header */}
+            <div className="p-6 border-b border-black bg-white">
+                <h1 className="text-3xl font-bold tracking-tighter">Account Settings</h1>
+                <p className="text-sm text-neutral-500 mt-1">Manage your profile and preferences</p>
+            </div>
 
-                <div className="space-y-4">
-                    <div className="rounded-md bg-gray-100 p-4">
-                        <p className="text-sm font-medium text-gray-500">Email Address</p>
-                        <p className="text-lg text-gray-900">{user?.email || 'Loading...'}</p>
+            {/* Main Content */}
+            <div className="p-8 max-w-3xl">
+                {/* Profile Card */}
+                <div className="border border-black bg-white mb-6">
+                    <div className="p-4 border-b border-black bg-neutral-50 flex items-center gap-3">
+                        <UserIcon className="h-5 w-5" />
+                        <h2 className="font-bold uppercase text-sm tracking-wider">Profile Information</h2>
                     </div>
+                    <div className="p-6 space-y-6">
+                        {/* Email */}
+                        <div className="flex items-start gap-4">
+                            <div className="h-10 w-10 bg-neutral-100 border border-black flex items-center justify-center">
+                                <Mail className="h-5 w-5" />
+                            </div>
+                            <div className="flex-1">
+                                <p className="text-xs font-bold uppercase tracking-wider text-neutral-500">Email Address</p>
+                                <p className="text-lg font-medium mt-1">{user?.email || 'Loading...'}</p>
+                            </div>
+                        </div>
 
-                    <div className="rounded-md bg-gray-100 p-4">
-                        <p className="text-sm font-medium text-gray-500">User ID</p>
-                        <p className="font-mono text-sm text-gray-700">{user?.id || '...'}</p>
+                        {/* User ID */}
+                        <div className="flex items-start gap-4">
+                            <div className="h-10 w-10 bg-neutral-100 border border-black flex items-center justify-center">
+                                <Key className="h-5 w-5" />
+                            </div>
+                            <div className="flex-1">
+                                <p className="text-xs font-bold uppercase tracking-wider text-neutral-500">User ID</p>
+                                <p className="font-mono text-sm text-neutral-700 mt-1 break-all">{user?.id || '...'}</p>
+                            </div>
+                        </div>
+
+                        {/* Created At */}
+                        <div className="flex items-start gap-4">
+                            <div className="h-10 w-10 bg-neutral-100 border border-black flex items-center justify-center">
+                                <Shield className="h-5 w-5" />
+                            </div>
+                            <div className="flex-1">
+                                <p className="text-xs font-bold uppercase tracking-wider text-neutral-500">Account Created</p>
+                                <p className="text-sm text-neutral-700 mt-1">
+                                    {user?.created_at ? new Date(user.created_at).toLocaleDateString('en-US', {
+                                        year: 'numeric',
+                                        month: 'long',
+                                        day: 'numeric'
+                                    }) : '...'}
+                                </p>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                <div className="mt-8">
-                    <button
-                        onClick={handleLogout}
-                        className="rounded-md bg-red-600 px-4 py-2 text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
-                    >
-                        Sign Out
-                    </button>
+                {/* Danger Zone */}
+                <div className="border border-red-600 bg-white">
+                    <div className="p-4 border-b border-red-600 bg-red-50 flex items-center gap-3">
+                        <LogOut className="h-5 w-5 text-red-600" />
+                        <h2 className="font-bold uppercase text-sm tracking-wider text-red-600">Session</h2>
+                    </div>
+                    <div className="p-6 flex items-center justify-between">
+                        <div>
+                            <p className="font-bold">Sign Out</p>
+                            <p className="text-sm text-neutral-500">End your current session and return to login</p>
+                        </div>
+                        <button
+                            onClick={handleLogout}
+                            className="px-6 py-3 bg-red-600 text-white font-bold hover:bg-red-700 border border-black transition-colors"
+                        >
+                            Sign Out
+                        </button>
+                    </div>
                 </div>
             </div>
-        </div>
+        </DashboardShell>
     )
 }

@@ -8,16 +8,21 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  /* Swiss Style Accents */
+  --color-swiss-orange: #FF3B30;
+  --color-swiss-blue: #007AFF;
 }
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Swiss Style: Stark & Contrast */
+  --background: #FFFFFF;
+  --foreground: #000000;
 }
 
+/* Force Light Mode everywhere */
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: #FFFFFF;
+    --foreground: #000000;
   }
 }
