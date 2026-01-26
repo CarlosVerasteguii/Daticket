@@ -89,10 +89,10 @@ export default function ProfilePage() {
                 </div>
 
                 {/* Danger Zone */}
-                <div className="border border-red-600 bg-white">
-                    <div className="p-4 border-b border-red-600 bg-red-50 flex items-center gap-3">
-                        <LogOut className="h-5 w-5 text-red-600" />
-                        <h2 className="font-bold uppercase text-sm tracking-wider text-red-600">Session</h2>
+                <div className="border border-swiss-orange bg-white">
+                    <div className="p-4 border-b border-swiss-orange bg-orange-50 flex items-center gap-3">
+                        <LogOut className="h-5 w-5 text-swiss-orange" />
+                        <h2 className="font-bold uppercase text-sm tracking-wider text-swiss-orange">Session</h2>
                     </div>
                     <div className="p-6 flex items-center justify-between">
                         <div>
@@ -101,7 +101,7 @@ export default function ProfilePage() {
                         </div>
                         <button
                             onClick={handleLogout}
-                            className="px-6 py-3 bg-red-600 text-white font-bold hover:bg-red-700 border border-black transition-colors"
+                            className="px-6 py-3 bg-swiss-orange text-white font-bold hover:opacity-90 border border-black transition-colors"
                         >
                             Sign Out
                         </button>

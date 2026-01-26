@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/client'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
+import Link from 'next/link'
 import { Loader2 } from 'lucide-react'
 
 const loginSchema = z.object({
@@ -48,7 +49,7 @@ export default function LoginPage() {
             }
 
             router.push('/dashboard')
-            router.refresh() // Refresh to update middleware/auth state
+            router.refresh()
         } catch (err: any) {
             setError(err.message || 'Invalid email or password')
         } finally {
@@ -57,25 +58,25 @@ export default function LoginPage() {
     }
 
     return (
-        <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4 py-12 sm:px-6 lg:px-8">
-            <div className="w-full max-w-md space-y-8 rounded-lg bg-white p-8 shadow-md">
+        <div className="flex min-h-screen items-center justify-center bg-white px-4 py-12">
+            <div className="w-full max-w-md space-y-8 border border-black bg-white p-8">
                 <div className="text-center">
-                    <h2 className="mt-6 text-3xl font-extrabold text-gray-900">
-                        Welcome back
-                    </h2>
-                    <p className="mt-2 text-sm text-gray-600">
+                    <h1 className="text-4xl font-bold tracking-tighter text-black">
+                        Daticket
+                    </h1>
+                    <p className="mt-2 text-sm font-bold uppercase tracking-widest text-black">
                         Sign in to your account
                     </p>
                 </div>
 
                 {registered && (
-                    <div className="rounded-md bg-green-50 p-4 text-sm text-green-700 text-center">
+                    <div className="border border-black bg-neutral-100 p-4 text-sm text-black text-center font-medium">
                         Registration successful! Please sign in.
                     </div>
                 )}
 
                 {error && (
-                    <div className="rounded-md bg-red-50 p-4 text-sm text-red-700">
+                    <div className="border border-swiss-orange bg-orange-50 p-4 text-sm text-swiss-orange font-medium">
                         {error}
                     </div>
                 )}
@@ -83,34 +84,34 @@ export default function LoginPage() {
                 <form className="mt-8 space-y-6" onSubmit={handleSubmit(onSubmit)}>
                     <div className="space-y-4">
                         <div>
-                            <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+                            <label htmlFor="email" className="block text-xs font-bold uppercase tracking-wider text-black mb-2">
                                 Email address
                             </label>
                             <input
                                 id="email"
                                 type="email"
                                 autoComplete="email"
-                                className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm text-gray-900 placeholder:text-gray-400"
+                                className="block w-full border border-black px-4 py-3 text-black placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-black"
                                 {...register('email')}
                             />
                             {errors.email && (
-                                <p className="mt-1 text-sm text-red-600">{errors.email.message}</p>
+                                <p className="mt-1 text-sm text-swiss-orange font-medium">{errors.email.message}</p>
                             )}
                         </div>
 
                         <div>
-                            <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+                            <label htmlFor="password" className="block text-xs font-bold uppercase tracking-wider text-black mb-2">
                                 Password
                             </label>
                             <input
                                 id="password"
                                 type="password"
                                 autoComplete="current-password"
-                                className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm text-gray-900 placeholder:text-gray-400"
+                                className="block w-full border border-black px-4 py-3 text-black placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-black"
                                 {...register('password')}
                             />
                             {errors.password && (
-                                <p className="mt-1 text-sm text-red-600">{errors.password.message}</p>
+                                <p className="mt-1 text-sm text-swiss-orange font-medium">{errors.password.message}</p>
                             )}
                         </div>
                     </div>
@@ -119,7 +120,7 @@ export default function LoginPage() {
                         <button
                             type="submit"
                             disabled={isLoading}
-                            className="flex w-full justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:bg-indigo-400"
+                            className="flex w-full justify-center border border-black bg-black px-4 py-3 text-sm font-bold uppercase tracking-wider text-white hover:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2 disabled:bg-neutral-400"
                         >
                             {isLoading ? (
                                 <>
@@ -133,23 +134,23 @@ export default function LoginPage() {
                     </div>
 
                     <div className="text-center text-sm">
-                        <a href="/register" className="font-medium text-indigo-600 hover:text-indigo-500">
-                            Don't have an account? Sign up
-                        </a>
+                        <Link href="/register" className="font-bold text-black underline decoration-2 underline-offset-4 hover:text-swiss-blue">
+                            Don&apos;t have an account? Sign up
+                        </Link>
                     </div>
                 </form>
 
                 {process.env.NODE_ENV === 'development' && (
-                    <div className="mt-6 border-t pt-6">
+                    <div className="mt-6 border-t border-black pt-6">
                         <button
                             type="button"
                             onClick={() => {
                                 setValue('email', 'c.verastegui.cc@gmail.com')
                                 setValue('password', 'Admin123')
                             }}
-                            className="flex w-full items-center justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                            className="flex w-full items-center justify-center border border-black bg-white px-4 py-3 text-sm font-bold text-black hover:bg-neutral-100 focus:outline-none focus:ring-2 focus:ring-black"
                         >
-                            <span className="mr-2">🔧</span> Prefill Credentials (Dev Only)
+                            🔧 Prefill Credentials (Dev Only)
                         </button>
                     </div>
                 )}

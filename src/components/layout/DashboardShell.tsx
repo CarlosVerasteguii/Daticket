@@ -88,7 +88,7 @@ export default function DashboardShell({ children }: { children: React.ReactNode
                     {/* User Section (Bottom) */}
                     <div className="p-4 border-t border-black">
                         <button className="flex w-full items-center gap-3 px-2 py-2 hover:bg-neutral-100 transition-colors text-left">
-                            <div className="h-8 w-8 bg-black rounded-full flex items-center justify-center text-white">
+                            <div className="h-8 w-8 bg-black flex items-center justify-center text-white">
                                 <User className="h-4 w-4" />
                             </div>
                             <div className="flex-1 overflow-hidden">
@@ -125,7 +125,7 @@ export default function DashboardShell({ children }: { children: React.ReactNode
                             System Status: ONLINE
                         </div>
                         <button className="relative p-2 hover:bg-neutral-100">
-                            <div className="absolute top-2 right-2 h-2 w-2 bg-swiss-orange rounded-full" />
+                            <div className="absolute top-2 right-2 h-2 w-2 bg-swiss-orange" />
                             <Bell className="h-5 w-5" />
                         </button>
                     </div>

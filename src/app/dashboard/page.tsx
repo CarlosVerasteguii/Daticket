@@ -91,7 +91,7 @@ export default function DashboardPage() {
         <div className="bg-white border text-black p-6 flex flex-col justify-between h-48 border-black hover:bg-neutral-50 transition-colors cursor-default group">
             <div className="flex justify-between items-start">
                 <span className="text-xs font-bold uppercase tracking-widest text-neutral-500">{label}</span>
-                {alert && <div className="h-3 w-3 bg-orange-500 rounded-full animate-pulse" />}
+                {alert && <div className="h-3 w-3 bg-swiss-orange animate-pulse" />}
             </div>
             <div>
                 <h3 className="text-5xl font-bold tracking-tighter mb-2 group-hover:translate-x-1 transition-transform">{value}</h3>
@@ -231,10 +231,23 @@ export default function DashboardPage() {
 
                             {/* Actions */}
                             <div className="p-4 border-t border-black flex gap-2">
-                                <button className="flex-1 py-2 bg-blue-600 text-white font-bold text-sm hover:bg-blue-700 border border-black">
+                                <Link
+                                    href={`/receipts/${selectedReceipt.id}`}
+                                    className="flex-1 py-2 bg-black text-white font-bold text-sm hover:bg-neutral-800 border border-black text-center"
+                                >
                                     Edit
-                                </button>
-                                <button className="flex-1 py-2 bg-white text-black font-bold text-sm hover:bg-neutral-100 border border-black">
+                                </Link>
+                                <button
+                                    onClick={() => {
+                                        if (confirm('Delete this receipt?')) {
+                                            supabase.from('receipts').delete().eq('id', selectedReceipt.id).then(() => {
+                                                setSelectedReceipt(null)
+                                                setReceipts(receipts.filter(r => r.id !== selectedReceipt.id))
+                                            })
+                                        }
+                                    }}
+                                    className="flex-1 py-2 bg-white text-swiss-orange font-bold text-sm hover:bg-orange-50 border border-black"
+                                >
                                     Delete
                                 </button>
                             </div>

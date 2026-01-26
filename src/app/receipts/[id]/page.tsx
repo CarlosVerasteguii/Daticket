@@ -1,13 +1,14 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, use } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import DashboardShell from '@/components/layout/DashboardShell'
 import { ArrowLeft, Trash2, Calendar, Store, DollarSign, Loader2, Save, Tag } from 'lucide-react'
 
-export default function ReceiptDetailPage({ params }: { params: { id: string } }) {
+export default function ReceiptDetailPage({ params }: { params: Promise<{ id: string }> }) {
+    const { id } = use(params)
     const router = useRouter()
     const supabase = createClient()
     const [receipt, setReceipt] = useState<any>(null)
@@ -33,7 +34,7 @@ export default function ReceiptDetailPage({ params }: { params: { id: string } }
             const { data, error } = await supabase
                 .from('receipts')
                 .select('*')
-                .eq('id', params.id)
+                .eq('id', id)
                 .single()
 
             if (data) {
@@ -53,7 +54,7 @@ export default function ReceiptDetailPage({ params }: { params: { id: string } }
             setLoading(false)
         }
         fetchReceipt()
-    }, [params.id, router, supabase])
+    }, [id, router, supabase])
 
     const handleSave = async () => {
         setSaving(true)
@@ -66,9 +67,7 @@ export default function ReceiptDetailPage({ params }: { params: { id: string } }
                     purchase_date: purchaseDate || null,
                     notes: notes || null
                 })
-                .eq('id', params.id)
-
-            if (error) throw error
+                .eq('id', id)
             router.push('/receipts')
         } catch (error: any) {
             alert('Error saving: ' + error.message)
@@ -84,7 +83,7 @@ export default function ReceiptDetailPage({ params }: { params: { id: string } }
             const { error: dbError } = await supabase
                 .from('receipts')
                 .delete()
-                .eq('id', params.id)
+                .eq('id', id)
 
             if (dbError) throw dbError
 
@@ -131,7 +130,7 @@ export default function ReceiptDetailPage({ params }: { params: { id: string } }
                     </Link>
                     <div>
                         <h1 className="text-2xl font-bold tracking-tighter">Edit Receipt</h1>
-                        <p className="text-xs text-neutral-500 font-mono mt-1">ID: {params.id.slice(0, 8)}...</p>
+                        <p className="text-xs text-neutral-500 font-mono mt-1">ID: {id.slice(0, 8)}...</p>
                     </div>
                 </div>
                 <div className="flex gap-2">
