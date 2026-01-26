@@ -1,21 +1,53 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useRef, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
-import { Loader2, Upload, X } from 'lucide-react'
+import { Loader2, Upload, X, Sparkles } from 'lucide-react'
 import Image from 'next/image'
+import CategoryManager from '@/components/categories/CategoryManager'
+import { scanReceipt } from '@/actions/scan-receipt'
 
 export default function ReceiptUpload() {
     const [file, setFile] = useState<File | null>(null)
     const [preview, setPreview] = useState<string | null>(null)
     const [uploading, setUploading] = useState(false)
+    const [scanning, setScanning] = useState(false)
     const [storeName, setStoreName] = useState('')
     const [amount, setAmount] = useState('')
     const [date, setDate] = useState(new Date().toISOString().split('T')[0])
+    const [categoryId, setCategoryId] = useState<string | null>(null)
     const fileInputRef = useRef<HTMLInputElement>(null)
     const router = useRouter()
     const supabase = createClient()
+
+    const handleClear = () => {
+        setFile(null)
+        setPreview(null)
+        setStoreName('')
+        setAmount('')
+        if (fileInputRef.current) fileInputRef.current.value = ''
+    }
+
+    const handleScan = async (fileToScan: File) => {
+        setScanning(true)
+        try {
+            const formData = new FormData()
+            formData.append('file', fileToScan)
+            const data = await scanReceipt(formData)
+
+            if (data) {
+                if (data.store_name) setStoreName(data.store_name)
+                if (data.total_amount) setAmount(data.total_amount.toString())
+                if (data.purchase_date) setDate(data.purchase_date)
+            }
+        } catch (error) {
+            console.error("Scan failed", error)
+            alert("Could not scan receipt. Please enter details manually.")
+        } finally {
+            setScanning(false)
+        }
+    }
 
     const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files[0]) {
@@ -26,13 +58,9 @@ export default function ReceiptUpload() {
             }
             setFile(selectedFile)
             setPreview(URL.createObjectURL(selectedFile))
+            // Auto-trigger scan
+            handleScan(selectedFile)
         }
-    }
-
-    const handleClear = () => {
-        setFile(null)
-        setPreview(null)
-        if (fileInputRef.current) fileInputRef.current.value = ''
     }
 
     const handleUpload = async (e: React.FormEvent) => {
@@ -55,7 +83,6 @@ export default function ReceiptUpload() {
             if (uploadError) throw uploadError
 
             // 2. Get Public URL (or just path construction)
-            // Note: We use the path we know: bucket/path
             const imageUrl = fileName
 
             // 3. Insert Database Record
@@ -66,7 +93,8 @@ export default function ReceiptUpload() {
                     store_name: storeName,
                     total_amount: parseFloat(amount),
                     purchase_date: date,
-                    image_url: imageUrl
+                    image_url: imageUrl,
+                    category_id: categoryId
                 })
 
             if (dbError) throw dbError
@@ -116,13 +144,19 @@ export default function ReceiptUpload() {
                                 src={preview}
                                 alt="Receipt preview"
                                 fill
-                                className="object-contain"
+                                className={`object-contain ${scanning ? 'opacity-50 blur-sm' : ''}`}
                             />
+                            {scanning && (
+                                <div className="absolute inset-0 flex flex-col items-center justify-center text-indigo-600">
+                                    <Sparkles className="w-10 h-10 animate-spin mb-2" />
+                                    <span className="font-semibold px-4 py-1 bg-white/80 rounded-full shadow-sm">Analyzing via Groq AI...</span>
+                                </div>
+                            )}
                         </div>
                     </div>
                 )}
 
-                {/* Metadata Inputs (WIP Phase) */}
+                {/* Metadata Inputs */}
                 <div className="space-y-3">
                     <div>
                         <label className="block text-sm font-medium text-gray-700">Store Name</label>
@@ -132,6 +166,7 @@ export default function ReceiptUpload() {
                             value={storeName}
                             onChange={(e) => setStoreName(e.target.value)}
                             placeholder="e.g. Walmart"
+                            disabled={scanning}
                             className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                         />
                     </div>
@@ -144,6 +179,7 @@ export default function ReceiptUpload() {
                                 required
                                 value={date}
                                 onChange={(e) => setDate(e.target.value)}
+                                disabled={scanning}
                                 className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                             />
                         </div>
@@ -159,6 +195,7 @@ export default function ReceiptUpload() {
                                     required
                                     value={amount}
                                     onChange={(e) => setAmount(e.target.value)}
+                                    disabled={scanning}
                                     className="block w-full rounded-md border-gray-300 pl-7 pr-12 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm py-2"
                                     placeholder="0.00"
                                 />
@@ -167,9 +204,16 @@ export default function ReceiptUpload() {
                     </div>
                 </div>
 
+                <div className="border-t border-gray-200 pt-4">
+                    <CategoryManager
+                        selectedId={categoryId || undefined}
+                        onSelect={setCategoryId}
+                    />
+                </div>
+
                 <button
                     type="submit"
-                    disabled={!file || uploading}
+                    disabled={!file || uploading || scanning}
                     className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:bg-gray-400"
                 >
                     {uploading ? (

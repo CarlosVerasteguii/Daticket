@@ -27,6 +27,7 @@ export default function LoginPage() {
     const {
         register,
         handleSubmit,
+        setValue,
         formState: { errors },
     } = useForm<LoginFormData>({
         resolver: zodResolver(loginSchema),
@@ -137,6 +138,21 @@ export default function LoginPage() {
                         </a>
                     </div>
                 </form>
+
+                {process.env.NODE_ENV === 'development' && (
+                    <div className="mt-6 border-t pt-6">
+                        <button
+                            type="button"
+                            onClick={() => {
+                                setValue('email', 'c.verastegui.cc@gmail.com')
+                                setValue('password', 'Admin123')
+                            }}
+                            className="flex w-full items-center justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                        >
+                            <span className="mr-2">🔧</span> Prefill Credentials (Dev Only)
+                        </button>
+                    </div>
+                )}
             </div>
         </div>
     )
