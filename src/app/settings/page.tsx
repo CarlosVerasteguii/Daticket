@@ -4,7 +4,8 @@ import { useEffect, useState, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import DashboardShell from '@/components/layout/DashboardShell'
-import { Settings as SettingsIcon, Bell, Moon, Sun, Monitor, Globe, Database, Shield, ChevronRight, Check, DollarSign, Mail, TrendingUp, Calendar, AlertTriangle, Download, Upload, Trash2, AlertCircle } from 'lucide-react'
+import { Settings as SettingsIcon, Bell, Moon, Sun, Monitor, Globe, Database, Shield, ChevronRight, Check, DollarSign, Mail, TrendingUp, Calendar, AlertTriangle, Download, Upload, Trash2, AlertCircle, Lock } from 'lucide-react'
+import SessionsList from '@/components/settings/SessionsList'
 import { useTheme } from '@/lib/theme'
 import { useCurrency, CURRENCIES } from '@/lib/currency'
 import { useNotifications, NotificationPreferences } from '@/lib/notifications'
@@ -424,6 +425,24 @@ export default function SettingsPage() {
                         description="Interface language"
                         action={<span className="text-sm font-mono text-neutral-500 dark:text-neutral-400">English</span>}
                     />
+                </div>
+
+                {/* Security Section */}
+                <div className="border border-black dark:border-neutral-700 bg-white dark:bg-neutral-900">
+                    <div className="p-4 border-b border-black dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 flex items-center gap-3">
+                        <Lock className="h-5 w-5" />
+                        <h2 className="font-bold uppercase text-sm tracking-wider">Security</h2>
+                    </div>
+
+                    <div className="p-4">
+                        <div className="mb-4">
+                            <h3 className="font-bold text-sm mb-1">Active Sessions</h3>
+                            <p className="text-xs text-neutral-500 dark:text-neutral-400">
+                                View and manage devices where you're currently logged in
+                            </p>
+                        </div>
+                        <SessionsList />
+                    </div>
                 </div>
 
                 {/* Data Section */}
