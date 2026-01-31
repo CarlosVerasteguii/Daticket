@@ -107,7 +107,8 @@ development_status:
 
   4-4-store-analysis:
     title: "Store-Wise Analysis"
-    status: backlog
+    status: done
+    completed: "2026-01-31T01:05:00-06:00"
     description: "Table/bar chart of spending per store, top stores"
 
   4-5-quick-stats-cards:
@@ -303,11 +304,11 @@ development_status:
 # =============================================================================
 metrics:
   total_stories: 42
-  done: 18
+  done: 19
   in_progress: 0
   ready_for_dev: 0
-  backlog: 24
-  completion_percentage: 42.9
+  backlog: 23
+  completion_percentage: 45.2
 
 # =============================================================================
 # QUICK QUEUE (PRIORITY ORDER FOR ORCHESTRATOR)

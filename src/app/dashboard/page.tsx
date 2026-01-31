@@ -23,6 +23,7 @@ import {
 } from 'lucide-react'
 import CategoryBreakdownChart from '@/components/analytics/CategoryBreakdownChart'
 import SpendingTrendsChart from '@/components/analytics/SpendingTrendsChart'
+import StoreAnalysisChart from '@/components/analytics/StoreAnalysisChart'
 import { motion, AnimatePresence } from 'framer-motion'
 import { cn } from '@/lib/utils'
 
@@ -343,16 +344,22 @@ export default function DashboardPage() {
                     />
                 </div>
 
-                {/* Spending Trends Chart - Full Width */}
+                {/* Analytics Charts Row */}
                 <motion.div 
                     className="border-t border-black bg-neutral-50 p-8"
                     variants={itemVariants}
                 >
-                    <SpendingTrendsChart 
-                        receipts={currentPeriodReceipts}
-                        period={selectedPeriod}
-                        className="shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
-                    />
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        <SpendingTrendsChart 
+                            receipts={currentPeriodReceipts}
+                            period={selectedPeriod}
+                            className="shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
+                        />
+                        <StoreAnalysisChart 
+                            receipts={currentPeriodReceipts}
+                            className="shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
+                        />
+                    </div>
                 </motion.div>
 
                 {/* Main Workspace - Split View */}
