@@ -107,6 +107,11 @@ export default function ReceiptsPage() {
     const touchStartY = useRef(0)
     const isPulling = useRef(false)
     const PULL_THRESHOLD = 80
+    
+    // Infinite scroll state
+    const [visibleCount, setVisibleCount] = useState(12)
+    const loadMoreRef = useRef<HTMLDivElement>(null)
+    const ITEMS_PER_LOAD = 12
 
     // Load saved filters from localStorage
     useEffect(() => {
@@ -288,6 +293,24 @@ export default function ReceiptsPage() {
         setPullDistance(0)
     }, [pullDistance, fetchReceipts])
 
+    // Infinite scroll: load more when reaching bottom
+    useEffect(() => {
+        const observer = new IntersectionObserver(
+            (entries) => {
+                if (entries[0].isIntersecting) {
+                    setVisibleCount(prev => prev + ITEMS_PER_LOAD)
+                }
+            },
+            { threshold: 0.1 }
+        )
+        
+        if (loadMoreRef.current) {
+            observer.observe(loadMoreRef.current)
+        }
+        
+        return () => observer.disconnect()
+    }, [])
+
     const getImageUrl = (path: string) => {
         const { data } = supabase.storage.from('receipts').getPublicUrl(path)
         return data.publicUrl
@@ -394,6 +417,10 @@ export default function ReceiptsPage() {
             return false
         })
     }
+    
+    // Infinite scroll: only show visible portion
+    const visibleReceipts = filteredReceipts.slice(0, visibleCount)
+    const hasMore = filteredReceipts.length > visibleCount
 
     // Calculate stats
     const totalAmount = filteredReceipts.reduce((sum, r) => sum + (Number(r.total_amount) || 0), 0)
@@ -925,14 +952,14 @@ export default function ReceiptsPage() {
                                 animate="visible"
                             >
                                 <AnimatePresence>
-                                    {filteredReceipts.map((receipt, index) => (
+                                    {visibleReceipts.map((receipt, index) => (
                                         <motion.div
                                             key={receipt.id}
                                             layout
                                             initial={{ opacity: 0, scale: 0.9 }}
                                             animate={{ opacity: 1, scale: 1 }}
                                             exit={{ opacity: 0, scale: 0.9 }}
-                                            transition={{ delay: index * 0.05 }}
+                                            transition={{ delay: Math.min(index * 0.05, 0.5) }}
                                             onClick={() => setSelectedReceipt(receipt)}
                                             className={cn(
                                                 "group border border-black bg-white cursor-pointer transition-all duration-300",
@@ -974,6 +1001,19 @@ export default function ReceiptsPage() {
                                         </motion.div>
                                     ))}
                                 </AnimatePresence>
+                                
+                                {/* Infinite Scroll Trigger */}
+                                {hasMore && (
+                                    <div 
+                                        ref={loadMoreRef}
+                                        className="col-span-full flex justify-center py-8"
+                                    >
+                                        <div className="flex items-center gap-2 text-neutral-400 text-sm">
+                                            <RefreshCw className="w-4 h-4 animate-spin" />
+                                            Loading more...
+                                        </div>
+                                    </div>
+                                )}
                             </motion.div>
                         )}
                     </div>
