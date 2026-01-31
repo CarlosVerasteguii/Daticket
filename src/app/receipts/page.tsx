@@ -19,7 +19,8 @@ import {
   Search,
   ArrowUpRight,
   Save,
-  Bookmark
+  Bookmark,
+  Download
 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { cn } from '@/lib/utils'
@@ -179,6 +180,34 @@ export default function ReceiptsPage() {
         setSavedFilters(updated)
         localStorage.setItem(SAVED_FILTERS_KEY, JSON.stringify(updated))
     }, [savedFilters])
+
+    const exportToCSV = useCallback((receiptsToExport: Receipt[]) => {
+        if (receiptsToExport.length === 0) return
+        
+        const headers = ['Store', 'Date', 'Amount', 'Category', 'Notes', 'Created At']
+        const csvContent = [
+            headers.join(','),
+            ...receiptsToExport.map(r => [
+                `"${(r.store_name || 'Unknown').replace(/"/g, '""')}"`,
+                r.purchase_date || '',
+                r.total_amount?.toFixed(2) || '0.00',
+                `"${(r.category_name || 'Uncategorized').replace(/"/g, '""')}"`,
+                `"${(r.notes || '').replace(/"/g, '""')}"`,
+                r.created_at.split('T')[0]
+            ].join(','))
+        ].join('\n')
+        
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+        const url = URL.createObjectURL(blob)
+        const link = document.createElement('a')
+        link.setAttribute('href', url)
+        const dateStr = new Date().toISOString().split('T')[0]
+        link.setAttribute('download', `receipts-export-${dateStr}.csv`)
+        document.body.appendChild(link)
+        link.click()
+        document.body.removeChild(link)
+        URL.revokeObjectURL(url)
+    }, [])
 
     useEffect(() => {
         const fetchReceipts = async () => {
@@ -343,15 +372,34 @@ export default function ReceiptsPage() {
                             {selectedCategories.length > 0 && ` in ${selectedCategories.join(', ')}`}
                         </p>
                     </div>
-                    <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                        <Link
-                            href="/upload"
-                            className="inline-flex items-center px-6 py-3 bg-black text-white font-bold hover:bg-neutral-800 transition-all border border-black shadow-[3px_3px_0px_0px_rgba(0,0,0,0.2)] hover:shadow-[5px_5px_0px_0px_rgba(0,0,0,0.2)] hover:-translate-x-0.5 hover:-translate-y-0.5"
+                    <div className="flex items-center gap-3">
+                        {/* CSV Export Button */}
+                        <motion.button
+                            whileHover={{ scale: 1.02 }}
+                            whileTap={{ scale: 0.98 }}
+                            onClick={() => exportToCSV(filteredReceipts)}
+                            disabled={filteredReceipts.length === 0}
+                            className={cn(
+                                "inline-flex items-center px-4 py-3 font-bold transition-all border-2 border-black shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] hover:shadow-[5px_5px_0px_0px_rgba(0,0,0,1)] hover:-translate-x-0.5 hover:-translate-y-0.5",
+                                filteredReceipts.length > 0
+                                    ? "bg-white text-black hover:bg-neutral-100"
+                                    : "bg-neutral-200 text-neutral-400 cursor-not-allowed shadow-none"
+                            )}
                         >
-                            <Plus className="w-5 h-5 mr-2" />
-                            New Receipt
-                        </Link>
-                    </motion.div>
+                            <Download className="w-5 h-5 mr-2" />
+                            Export CSV
+                        </motion.button>
+                        {/* New Receipt Button */}
+                        <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                            <Link
+                                href="/upload"
+                                className="inline-flex items-center px-6 py-3 bg-black text-white font-bold hover:bg-neutral-800 transition-all border-2 border-black shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] hover:shadow-[5px_5px_0px_0px_rgba(0,0,0,1)] hover:-translate-x-0.5 hover:-translate-y-0.5"
+                            >
+                                <Plus className="w-5 h-5 mr-2" />
+                                New Receipt
+                            </Link>
+                        </motion.div>
+                    </div>
                 </motion.div>
 
                 {/* Stats Bar */}
