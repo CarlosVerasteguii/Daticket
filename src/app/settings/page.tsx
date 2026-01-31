@@ -4,9 +4,10 @@ import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import DashboardShell from '@/components/layout/DashboardShell'
-import { Settings as SettingsIcon, Bell, Moon, Sun, Monitor, Globe, Database, Shield, ChevronRight, Check, DollarSign } from 'lucide-react'
+import { Settings as SettingsIcon, Bell, Moon, Sun, Monitor, Globe, Database, Shield, ChevronRight, Check, DollarSign, Mail, TrendingUp, Calendar, AlertTriangle } from 'lucide-react'
 import { useTheme } from '@/lib/theme'
 import { useCurrency, CURRENCIES } from '@/lib/currency'
+import { useNotifications, NotificationPreferences } from '@/lib/notifications'
 import { cn } from '@/lib/utils'
 import { motion, AnimatePresence } from 'framer-motion'
 
@@ -15,8 +16,10 @@ export default function SettingsPage() {
     const supabase = createClient()
     const { theme, setTheme, resolvedTheme } = useTheme()
     const { currency, setCurrency, formatAmount } = useCurrency()
+    const { preferences, updatePreference } = useNotifications()
     const [showThemeMenu, setShowThemeMenu] = useState(false)
     const [showCurrencyMenu, setShowCurrencyMenu] = useState(false)
+    const [showNotificationMenu, setShowNotificationMenu] = useState(false)
 
     useEffect(() => {
         const checkAuth = async () => {
@@ -33,6 +36,15 @@ export default function SettingsPage() {
         { value: 'dark' as const, label: 'Dark', icon: Moon },
         { value: 'system' as const, label: 'System', icon: Monitor },
     ]
+
+    const notificationOptions: { key: keyof NotificationPreferences; label: string; description: string; icon: any }[] = [
+        { key: 'emailDigest', label: 'Email Digest', description: 'Daily summary of receipts', icon: Mail },
+        { key: 'spendingAlerts', label: 'Spending Alerts', description: 'When expenses exceed threshold', icon: TrendingUp },
+        { key: 'weeklyReports', label: 'Weekly Reports', description: 'Sunday expense summary', icon: Calendar },
+        { key: 'budgetWarnings', label: 'Budget Warnings', description: 'Alert when nearing budget limit', icon: AlertTriangle },
+    ]
+
+    const enabledCount = Object.values(preferences).filter(Boolean).length
 
     const SettingRow = ({ icon: Icon, title, description, action, onClick }: any) => (
         <div 
@@ -75,12 +87,70 @@ export default function SettingsPage() {
                         <h2 className="font-bold uppercase text-sm tracking-wider">Preferences</h2>
                     </div>
 
-                    <SettingRow
-                        icon={Bell}
-                        title="Notifications"
-                        description="Email alerts for new receipts"
-                        action={<span className="text-sm font-mono text-neutral-500 dark:text-neutral-400">Enabled</span>}
-                    />
+                    {/* Notifications Toggle */}
+                    <div className="relative">
+                        <SettingRow
+                            icon={Bell}
+                            title="Notifications"
+                            description="Email alerts and spending notifications"
+                            action={
+                                <span className="text-sm font-mono text-neutral-500 dark:text-neutral-400">
+                                    {enabledCount}/{notificationOptions.length} enabled
+                                </span>
+                            }
+                            onClick={() => setShowNotificationMenu(!showNotificationMenu)}
+                        />
+                        
+                        <AnimatePresence>
+                            {showNotificationMenu && (
+                                <motion.div
+                                    initial={{ opacity: 0, y: -10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, y: -10 }}
+                                    className="absolute right-4 top-full mt-2 z-10 border border-black dark:border-neutral-700 bg-white dark:bg-neutral-800 shadow-lg min-w-[280px]"
+                                >
+                                    {notificationOptions.map((option) => {
+                                        const Icon = option.icon
+                                        const isEnabled = preferences[option.key]
+                                        return (
+                                            <button
+                                                key={option.key}
+                                                onClick={(e) => {
+                                                    e.stopPropagation()
+                                                    updatePreference(option.key, !isEnabled)
+                                                }}
+                                                className={cn(
+                                                    "flex items-center justify-between w-full px-4 py-3 text-left hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors border-b border-neutral-200 dark:border-neutral-700 last:border-b-0",
+                                                    isEnabled && "bg-neutral-50 dark:bg-neutral-700/50"
+                                                )}
+                                            >
+                                                <div className="flex items-center gap-3">
+                                                    <Icon className="h-4 w-4 text-neutral-500" />
+                                                    <div>
+                                                        <p className="font-medium text-sm">{option.label}</p>
+                                                        <p className="text-xs text-neutral-400">{option.description}</p>
+                                                    </div>
+                                                </div>
+                                                <div className={cn(
+                                                    "w-10 h-6 rounded-full relative transition-colors",
+                                                    isEnabled ? "bg-black dark:bg-white" : "bg-neutral-300 dark:bg-neutral-600"
+                                                )}>
+                                                    <motion.div
+                                                        layout
+                                                        className={cn(
+                                                            "absolute top-1 w-4 h-4 rounded-full",
+                                                            isEnabled ? "bg-white dark:bg-black right-1" : "bg-white left-1"
+                                                        )}
+                                                        style={{ left: isEnabled ? 'auto' : '4px', right: isEnabled ? '4px' : 'auto' }}
+                                                    />
+                                                </div>
+                                            </button>
+                                        )
+                                    })}
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
+                    </div>
                     
                     {/* Theme Toggle */}
                     <div className="relative">
