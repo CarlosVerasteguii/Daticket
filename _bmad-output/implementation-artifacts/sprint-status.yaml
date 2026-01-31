@@ -329,7 +329,8 @@ development_status:
 
   10-2-password-change:
     title: "Password Change Flow"
-    status: backlog
+    status: done
+    completed: "2026-01-31T10:55:00-06:00"
     description: "Change password with current password verification"
 
   10-3-password-recovery:
@@ -346,12 +347,12 @@ development_status:
 # SPRINT METRICS
 # =============================================================================
 metrics:
-  total_stories: 43
-  done: 43
+  total_stories: 44
+  done: 44
   in_progress: 0
   ready_for_dev: 0
-  backlog: 3
-  completion_percentage: 93.5
+  backlog: 2
+  completion_percentage: 95.7
 
 # =============================================================================
 # QUICK QUEUE (PRIORITY ORDER FOR ORCHESTRATOR)
