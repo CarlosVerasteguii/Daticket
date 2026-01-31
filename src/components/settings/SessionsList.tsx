@@ -140,6 +140,23 @@ export default function SessionsList({ className }: SessionsListProps) {
             }
 
             showToast('success', 'Session revoked successfully')
+            
+            // Log audit event
+            const { data: { session } } = await supabase.auth.getSession()
+            if (session?.access_token) {
+                fetch('/api/audit', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${session.access_token}`,
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        type: 'session_revoked',
+                        details: `${sessionToRevoke.device.browser} on ${sessionToRevoke.device.os}`,
+                    }),
+                }).catch(() => {/* Audit logging is best-effort */})
+            }
+            
             await fetchSessions()
         } catch (err) {
             console.error('Error revoking session:', err)
@@ -163,6 +180,23 @@ export default function SessionsList({ className }: SessionsListProps) {
             }
 
             showToast('success', 'Signed out from all devices')
+            
+            // Log audit event before redirect
+            const { data: { session } } = await supabase.auth.getSession()
+            if (session?.access_token) {
+                await fetch('/api/audit', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${session.access_token}`,
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        type: 'session_revoked_all',
+                        details: 'All sessions terminated from settings',
+                    }),
+                }).catch(() => {/* Audit logging is best-effort */})
+            }
+            
             setShowSignOutAllModal(false)
             
             // Redirect to login after signing out all

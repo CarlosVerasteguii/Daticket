@@ -72,7 +72,22 @@ export default function PasswordChange() {
                 return
             }
 
-            // Success
+            // Success - log audit event
+            const { data: { session } } = await supabase.auth.getSession()
+            if (session?.access_token) {
+                fetch('/api/audit', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${session.access_token}`,
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        type: 'password_change',
+                        details: 'Password changed from settings',
+                    }),
+                }).catch(() => {/* Audit logging is best-effort */})
+            }
+
             setSuccess(true)
             setCurrentPassword('')
             setNewPassword('')

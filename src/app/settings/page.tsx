@@ -7,6 +7,7 @@ import DashboardShell from '@/components/layout/DashboardShell'
 import { Settings as SettingsIcon, Bell, Moon, Sun, Monitor, Globe, Database, Shield, ChevronRight, Check, DollarSign, Mail, TrendingUp, Calendar, AlertTriangle, Download, Upload, Trash2, AlertCircle, Lock } from 'lucide-react'
 import SessionsList from '@/components/settings/SessionsList'
 import PasswordChange from '@/components/settings/PasswordChange'
+import AuditLog from '@/components/settings/AuditLog'
 import { useTheme } from '@/lib/theme'
 import { useCurrency, CURRENCIES } from '@/lib/currency'
 import { useNotifications, NotificationPreferences } from '@/lib/notifications'
@@ -445,6 +446,8 @@ export default function SettingsPage() {
                         <SessionsList />
                         
                         <PasswordChange />
+
+                        <AuditLog />
                     </div>
                 </div>
 
