@@ -281,12 +281,13 @@ development_status:
   # ===========================================================================
   epic-9:
     title: "Budgets & Spending Goals"
-    status: backlog
+    status: in-progress
     priority: low
 
   9-1-monthly-budget:
     title: "Monthly Budget Setting"
-    status: backlog
+    status: done
+    completed: "2026-01-31T04:10:00-06:00"
     description: "Set total monthly budget, per-category budgets"
 
   9-2-budget-progress:
@@ -337,11 +338,11 @@ development_status:
 # =============================================================================
 metrics:
   total_stories: 42
-  done: 38
+  done: 39
   in_progress: 0
   ready_for_dev: 0
-  backlog: 4
-  completion_percentage: 90.5
+  backlog: 3
+  completion_percentage: 92.9
 
 # =============================================================================
 # QUICK QUEUE (PRIORITY ORDER FOR ORCHESTRATOR)

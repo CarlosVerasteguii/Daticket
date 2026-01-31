@@ -15,7 +15,8 @@ import {
     Bell,
     Search,
     ChevronRight,
-    WifiOff
+    WifiOff,
+    Wallet
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -45,6 +46,7 @@ export default function DashboardShell({ children }: { children: React.ReactNode
         { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
         { name: 'Receipts', href: '/receipts', icon: Receipt },
         { name: 'Upload', href: '/upload', icon: Upload },
+        { name: 'Budget', href: '/budget', icon: Wallet },
         { name: 'Profile', href: '/profile', icon: User },
         { name: 'Settings', href: '/settings', icon: Settings },
     ]
