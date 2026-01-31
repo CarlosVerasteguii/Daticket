@@ -968,15 +968,31 @@ export default function ReceiptsPage() {
                                                     : 'hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:-translate-x-[3px] hover:-translate-y-[3px]'
                                             )}
                                         >
-                                            {/* Thumbnail */}
+                                            {/* Thumbnail with Lazy Loading */}
                                             <div className="h-32 bg-neutral-100 overflow-hidden relative">
                                                 <motion.img
                                                     src={getImageUrl(receipt.image_url)}
                                                     alt="Receipt"
-                                                    className="w-full h-full object-cover"
+                                                    loading="lazy"
+                                                    className="w-full h-full object-cover transition-all duration-500"
+                                                    style={{ 
+                                                        filter: 'blur(0px)',
+                                                        opacity: 1 
+                                                    }}
+                                                    onLoad={(e) => {
+                                                        const img = e.currentTarget
+                                                        img.style.filter = 'blur(0px)'
+                                                        img.style.opacity = '1'
+                                                    }}
+                                                    onError={(e) => {
+                                                        const img = e.currentTarget
+                                                        img.style.opacity = '0.5'
+                                                    }}
                                                     whileHover={{ scale: 1.05 }}
                                                     transition={{ duration: 0.4 }}
                                                 />
+                                                {/* Blur placeholder */}
+                                                <div className="absolute inset-0 bg-gradient-to-br from-neutral-200 to-neutral-100 -z-10" />
                                                 {receipt.category_name && (
                                                     <div className="absolute top-2 left-2 px-2 py-1 bg-white/90 border border-black text-xs font-bold uppercase">
                                                         {receipt.category_name}
