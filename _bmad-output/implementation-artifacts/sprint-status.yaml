@@ -1,47 +1,316 @@
-# generated: 2026-01-18
-# project: Daticket
-# project_key: daticket
-# tracking_system: file-system
-# story_location: docs/stories
+# Sprint Status - Daticket
+# Generated: 2026-01-30
+# Updated: 2026-01-30T23:56:00-06:00
+# Source of Truth for BMAD Orchestrator
 
-generated: 2026-01-18
 project: Daticket
 project_key: daticket
 tracking_system: file-system
-story_location: docs/stories
+story_location: _bmad-output/implementation-artifacts/stories
+
+# =============================================================================
+# LEGEND
+# =============================================================================
+# backlog       → Not started, needs story creation
+# ready-for-dev → Story exists, validated, ready to implement
+# in-progress   → Currently being implemented
+# in-review     → Implementation done, awaiting code review
+# done          → Completed and verified
+# blocked       → Cannot proceed, needs intervention
+# =============================================================================
 
 development_status:
-  # Epic 1: User Authentication (COMPLETED)
-  epic-1: done
+
+  # ===========================================================================
+  # EPIC 1: USER AUTHENTICATION (COMPLETED)
+  # ===========================================================================
+  epic-1:
+    title: "User Authentication"
+    status: done
   1-1-user-registration: done
   1-2-user-login: done
   1-4-user-profile: done
-  epic-1-retrospective: optional
 
-  # Epic 2: Receipt Upload & Storage (COMPLETED)
-  epic-2: done
+  # ===========================================================================
+  # EPIC 2: RECEIPT UPLOAD & STORAGE (COMPLETED)
+  # ===========================================================================
+  epic-2:
+    title: "Receipt Upload & Storage"
+    status: done
   2-1-receipt-photo-upload: done
   2-2-receipt-metadata: done
   2-3-receipt-image-storage: done
   2-4-receipt-list-view: done
   2-5-receipt-detail-management: done
-  epic-2-retrospective: optional
 
-  # Epic 3: Expense Categorization (COMPLETED)
-  epic-3: done
+  # ===========================================================================
+  # EPIC 3: EXPENSE CATEGORIZATION (COMPLETED)
+  # ===========================================================================
+  epic-3:
+    title: "Expense Categorization"
+    status: done
   3-1-default-custom-categories: done
   3-4-receipt-categorization: done
   3-5-category-based-filtering: done
-  epic-3-retrospective: optional
 
-  # AI Feature: Groq OCR
-  feature-ai-ocr: in-progress
-  ai-1-groq-integration: in-progress
-  ai-2-receipt-scanning-ui: ready-for-dev
+  # ===========================================================================
+  # FEATURE: AI-POWERED OCR (GROQ INTEGRATION)
+  # ===========================================================================
+  feature-ai-ocr:
+    title: "AI Receipt Scanning with Groq"
+    status: in-progress
+    priority: high
+  
+  ai-1-groq-integration:
+    title: "Groq API Integration & OCR Logic"
+    status: in-progress
+    description: "Create Groq client, Vision API calls, receipt parsing"
+  
+  ai-2-receipt-scanning-ui:
+    title: "Receipt Scanning UI Flow"
+    status: ready-for-dev
+    description: "Camera capture, preview, AI extraction feedback, field population"
 
-  # Epic 4: Analytics Dashboard
-  epic-4: ready-for-dev
-  4-1-dashboard-overview: ready-for-dev
-  4-2-category-breakdown: ready-for-dev
-  4-3-spending-trends: ready-for-dev
-  epic-4-retrospective: optional
+  ai-3-ocr-error-handling:
+    title: "OCR Error Handling & Fallbacks"
+    status: backlog
+    description: "Handle API failures, partial matches, manual override"
+
+  # ===========================================================================
+  # EPIC 4: ANALYTICS DASHBOARD
+  # ===========================================================================
+  epic-4:
+    title: "Analytics Dashboard"
+    status: ready-for-dev
+    priority: high
+
+  4-1-dashboard-overview:
+    title: "Dashboard Overview Metrics"
+    status: ready-for-dev
+    description: "Total spending, receipt count, average, period comparison cards"
+  
+  4-2-category-breakdown:
+    title: "Category Breakdown Chart"
+    status: backlog
+    description: "Pie/donut chart of spending by category with legend"
+
+  4-3-spending-trends:
+    title: "Spending Trends Line Chart"
+    status: backlog
+    description: "Line chart showing daily/weekly/monthly spending trends"
+
+  4-4-store-analysis:
+    title: "Store-Wise Analysis"
+    status: backlog
+    description: "Table/bar chart of spending per store, top stores"
+
+  4-5-quick-stats-cards:
+    title: "Quick Stats Cards"
+    status: backlog
+    description: "Top category, biggest purchase, favorite store, etc."
+
+  # ===========================================================================
+  # EPIC 5: SEARCH & FILTERING (NEW)
+  # ===========================================================================
+  epic-5:
+    title: "Advanced Search & Filtering"
+    status: backlog
+    priority: medium
+
+  5-1-global-search:
+    title: "Global Search Functionality"
+    status: backlog
+    description: "Full-text search across stores, notes, amounts"
+
+  5-2-date-range-filter:
+    title: "Date Range Picker Filter"
+    status: backlog
+    description: "Filter receipts by custom date ranges, presets (this week, month)"
+
+  5-3-amount-range-filter:
+    title: "Amount Range Filter"
+    status: backlog
+    description: "Filter by min/max amount with slider or inputs"
+
+  5-4-multi-category-filter:
+    title: "Multi-Category Filter"
+    status: backlog
+    description: "Select multiple categories with chip UI"
+
+  5-5-saved-filters:
+    title: "Saved Filter Presets"
+    status: backlog
+    description: "Save and reuse common filter combinations"
+
+  # ===========================================================================
+  # EPIC 6: EXPORT & REPORTS
+  # ===========================================================================
+  epic-6:
+    title: "Export & Reports"
+    status: backlog
+    priority: medium
+
+  6-1-csv-export:
+    title: "CSV Export"
+    status: backlog
+    description: "Export receipts to CSV with date range selection"
+
+  6-2-pdf-report:
+    title: "PDF Monthly Report"
+    status: backlog
+    description: "Generate PDF expense report with charts and breakdown"
+
+  6-3-email-report:
+    title: "Email Report Sharing"
+    status: backlog
+    description: "Send expense report via email"
+
+  # ===========================================================================
+  # EPIC 7: UX POLISH & PERFORMANCE
+  # ===========================================================================
+  epic-7:
+    title: "UX Polish & Performance"
+    status: backlog
+    priority: high
+
+  7-1-skeleton-loading-states:
+    title: "Skeleton Loading States"
+    status: done
+    description: "Add skeleton loaders for all async content"
+
+  7-2-optimistic-updates:
+    title: "Optimistic Updates"
+    status: backlog
+    description: "Instant UI feedback before server response"
+
+  7-3-pull-to-refresh:
+    title: "Pull to Refresh (Mobile)"
+    status: backlog
+    description: "Mobile gesture for refreshing receipt lists"
+
+  7-4-infinite-scroll:
+    title: "Infinite Scroll Pagination"
+    status: backlog
+    description: "Replace pagination with infinite scroll on receipt list"
+
+  7-5-image-lazy-loading:
+    title: "Image Lazy Loading"
+    status: backlog
+    description: "Lazy load receipt thumbnails with blur-up effect"
+
+  7-6-offline-indicator:
+    title: "Offline Status Indicator"
+    status: backlog
+    description: "Show offline mode banner, queue actions"
+
+  # ===========================================================================
+  # EPIC 8: SETTINGS & PREFERENCES
+  # ===========================================================================
+  epic-8:
+    title: "Settings & User Preferences"
+    status: backlog
+    priority: low
+
+  8-1-dark-mode:
+    title: "Dark Mode Toggle"
+    status: backlog
+    description: "System preference detection, manual toggle, persist"
+
+  8-2-currency-format:
+    title: "Currency Format Settings"
+    status: backlog
+    description: "Select currency symbol, decimal format"
+
+  8-3-notification-preferences:
+    title: "Notification Preferences"
+    status: backlog
+    description: "Email digest, spending alerts settings"
+
+  8-4-data-export-import:
+    title: "Data Export/Import"
+    status: backlog
+    description: "Export all data as JSON, import from backup"
+
+  8-5-account-deletion:
+    title: "Account Deletion"
+    status: backlog
+    description: "GDPR-compliant account and data deletion"
+
+  # ===========================================================================
+  # EPIC 9: BUDGETS & GOALS (PHASE 2)
+  # ===========================================================================
+  epic-9:
+    title: "Budgets & Spending Goals"
+    status: backlog
+    priority: low
+
+  9-1-monthly-budget:
+    title: "Monthly Budget Setting"
+    status: backlog
+    description: "Set total monthly budget, per-category budgets"
+
+  9-2-budget-progress:
+    title: "Budget Progress Visualization"
+    status: backlog
+    description: "Progress bars, warnings when approaching limit"
+
+  9-3-spending-alerts:
+    title: "Spending Alerts"
+    status: backlog
+    description: "Notify when budget threshold reached"
+
+  9-4-budget-history:
+    title: "Budget History & Comparison"
+    status: backlog
+    description: "Compare budget performance across months"
+
+  # ===========================================================================
+  # EPIC 10: SECURITY & COMPLIANCE
+  # ===========================================================================
+  epic-10:
+    title: "Security & Compliance"
+    status: backlog
+    priority: medium
+
+  10-1-session-management:
+    title: "Session Management UI"
+    status: backlog
+    description: "View active sessions, revoke access"
+
+  10-2-password-change:
+    title: "Password Change Flow"
+    status: backlog
+    description: "Change password with current password verification"
+
+  10-3-password-recovery:
+    title: "Password Recovery (Forgot Password)"
+    status: backlog
+    description: "Email-based password reset flow"
+
+  10-4-audit-log:
+    title: "User Activity Audit Log"
+    status: backlog
+    description: "Log of login, changes, deletions"
+
+# =============================================================================
+# SPRINT METRICS
+# =============================================================================
+metrics:
+  total_stories: 42
+  done: 12
+  in_progress: 1
+  ready_for_dev: 2
+  backlog: 27
+  completion_percentage: 28.6
+
+# =============================================================================
+# QUICK QUEUE (PRIORITY ORDER FOR ORCHESTRATOR)
+# =============================================================================
+queue:
+  - ai-1-groq-integration     # Currently in-progress - FINISH THIS
+  - ai-2-receipt-scanning-ui  # Ready for dev
+  - 4-1-dashboard-overview    # Ready for dev
+  - 4-2-category-breakdown    # Backlog but high priority
+  - 4-3-spending-trends       # Backlog but high priority
+  - 7-2-optimistic-updates    # UX improvement
+  - 5-1-global-search         # User-requested feature
