@@ -24,6 +24,7 @@ import {
 import CategoryBreakdownChart from '@/components/analytics/CategoryBreakdownChart'
 import SpendingTrendsChart from '@/components/analytics/SpendingTrendsChart'
 import StoreAnalysisChart from '@/components/analytics/StoreAnalysisChart'
+import QuickStatsCards from '@/components/analytics/QuickStatsCards'
 import { motion, AnimatePresence } from 'framer-motion'
 import { cn } from '@/lib/utils'
 
@@ -360,6 +361,15 @@ export default function DashboardPage() {
                             className="shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
                         />
                     </div>
+                </motion.div>
+
+                {/* Quick Stats Cards */}
+                <motion.div 
+                    className="border-t border-black bg-white p-8"
+                    variants={itemVariants}
+                >
+                    <h3 className="text-lg font-bold uppercase tracking-wider mb-6">Quick Insights</h3>
+                    <QuickStatsCards receipts={currentPeriodReceipts} />
                 </motion.div>
 
                 {/* Main Workspace - Split View */}
