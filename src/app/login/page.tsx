@@ -139,6 +139,12 @@ function LoginForm() {
                         Don&apos;t have an account? Sign up
                     </Link>
                 </div>
+
+                <div className="text-center text-sm">
+                    <Link href="/forgot-password" className="font-bold text-neutral-600 hover:text-black transition-colors">
+                        Forgot your password?
+                    </Link>
+                </div>
             </form>
 
             {process.env.NODE_ENV === 'development' && (
