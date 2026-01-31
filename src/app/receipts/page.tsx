@@ -20,7 +20,8 @@ import {
   ArrowUpRight,
   Save,
   Bookmark,
-  Download
+  Download,
+  FileText
 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { cn } from '@/lib/utils'
@@ -373,6 +374,19 @@ export default function ReceiptsPage() {
                         </p>
                     </div>
                     <div className="flex items-center gap-3">
+                        {/* PDF Report Button */}
+                        <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                            <Link
+                                href={`/receipts/report${dateRange.start ? `?start=${dateRange.start.toISOString().split('T')[0]}&end=${dateRange.end?.toISOString().split('T')[0] || new Date().toISOString().split('T')[0]}` : ''}`}
+                                className={cn(
+                                    "inline-flex items-center px-4 py-3 font-bold transition-all border-2 border-black shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] hover:shadow-[5px_5px_0px_0px_rgba(0,0,0,1)] hover:-translate-x-0.5 hover:-translate-y-0.5",
+                                    "bg-white text-black hover:bg-neutral-100"
+                                )}
+                            >
+                                <FileText className="w-5 h-5 mr-2" />
+                                Report
+                            </Link>
+                        </motion.div>
                         {/* CSV Export Button */}
                         <motion.button
                             whileHover={{ scale: 1.02 }}
@@ -387,7 +401,7 @@ export default function ReceiptsPage() {
                             )}
                         >
                             <Download className="w-5 h-5 mr-2" />
-                            Export CSV
+                            CSV
                         </motion.button>
                         {/* New Receipt Button */}
                         <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
