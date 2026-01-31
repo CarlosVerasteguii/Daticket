@@ -4,8 +4,9 @@ import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import DashboardShell from '@/components/layout/DashboardShell'
-import { Settings as SettingsIcon, Bell, Moon, Sun, Monitor, Globe, Database, Shield, ChevronRight, Check } from 'lucide-react'
+import { Settings as SettingsIcon, Bell, Moon, Sun, Monitor, Globe, Database, Shield, ChevronRight, Check, DollarSign } from 'lucide-react'
 import { useTheme } from '@/lib/theme'
+import { useCurrency, CURRENCIES } from '@/lib/currency'
 import { cn } from '@/lib/utils'
 import { motion, AnimatePresence } from 'framer-motion'
 
@@ -13,7 +14,9 @@ export default function SettingsPage() {
     const router = useRouter()
     const supabase = createClient()
     const { theme, setTheme, resolvedTheme } = useTheme()
+    const { currency, setCurrency, formatAmount } = useCurrency()
     const [showThemeMenu, setShowThemeMenu] = useState(false)
+    const [showCurrencyMenu, setShowCurrencyMenu] = useState(false)
 
     useEffect(() => {
         const checkAuth = async () => {
@@ -118,6 +121,54 @@ export default function SettingsPage() {
                                             <span className="font-medium">{option.label}</span>
                                             {theme === option.value && (
                                                 <Check className="h-4 w-4 ml-auto text-green-600" />
+                                            )}
+                                        </button>
+                                    ))}
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
+                    </div>
+
+                    {/* Currency Selector */}
+                    <div className="relative">
+                        <SettingRow
+                            icon={DollarSign}
+                            title="Currency"
+                            description="Display format for amounts"
+                            action={
+                                <span className="text-sm font-mono text-neutral-500 dark:text-neutral-400">
+                                    {currency.code} ({currency.symbol})
+                                </span>
+                            }
+                            onClick={() => setShowCurrencyMenu(!showCurrencyMenu)}
+                        />
+                        
+                        <AnimatePresence>
+                            {showCurrencyMenu && (
+                                <motion.div
+                                    initial={{ opacity: 0, y: -10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, y: -10 }}
+                                    className="absolute right-4 top-full mt-2 z-10 border border-black dark:border-neutral-700 bg-white dark:bg-neutral-800 shadow-lg max-h-64 overflow-y-auto"
+                                >
+                                    {CURRENCIES.map((curr) => (
+                                        <button
+                                            key={curr.code}
+                                            onClick={(e) => {
+                                                e.stopPropagation()
+                                                setCurrency(curr.code)
+                                                setShowCurrencyMenu(false)
+                                            }}
+                                            className={cn(
+                                                "w-full flex items-center gap-3 px-4 py-3 hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors min-w-[200px]",
+                                                currency.code === curr.code && "bg-neutral-100 dark:bg-neutral-700"
+                                            )}
+                                        >
+                                            <span className="font-mono w-6">{curr.symbol}</span>
+                                            <span className="font-medium">{curr.name}</span>
+                                            <span className="text-xs text-neutral-400 ml-auto">{curr.code}</span>
+                                            {currency.code === curr.code && (
+                                                <Check className="h-4 w-4 text-green-600" />
                                             )}
                                         </button>
                                     ))}
