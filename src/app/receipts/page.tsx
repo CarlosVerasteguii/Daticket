@@ -61,6 +61,11 @@ type DateRange = {
     preset: string
 }
 
+type AmountRange = {
+    min: number | null
+    max: number | null
+}
+
 export default function ReceiptsPage() {
     const router = useRouter()
     const supabase = createClient()
@@ -71,6 +76,8 @@ export default function ReceiptsPage() {
     const [searchQuery, setSearchQuery] = useState('')
     const [dateRange, setDateRange] = useState<DateRange>({ start: null, end: null, preset: 'all' })
     const [showDatePicker, setShowDatePicker] = useState(false)
+    const [amountRange, setAmountRange] = useState<AmountRange>({ min: null, max: null })
+    const [showAmountPicker, setShowAmountPicker] = useState(false)
 
     useEffect(() => {
         const fetchReceipts = async () => {
@@ -172,6 +179,16 @@ export default function ReceiptsPage() {
             const receiptDate = new Date(r.purchase_date)
             if (dateRange.start && receiptDate < dateRange.start) return false
             if (dateRange.end && receiptDate > dateRange.end) return false
+            return true
+        })
+    }
+    
+    // Amount range filter
+    if (amountRange.min !== null || amountRange.max !== null) {
+        filteredReceipts = filteredReceipts.filter(r => {
+            const amount = Number(r.total_amount) || 0
+            if (amountRange.min !== null && amount < amountRange.min) return false
+            if (amountRange.max !== null && amount > amountRange.max) return false
             return true
         })
     }
@@ -374,6 +391,109 @@ export default function ReceiptsPage() {
                                                 Apply
                                             </button>
                                         </div>
+                                    </div>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
+                    </div>
+
+                    {/* Amount Range Picker */}
+                    <div className="relative">
+                        <motion.button
+                            onClick={() => setShowAmountPicker(!showAmountPicker)}
+                            className={cn(
+                                "flex items-center gap-2 px-4 py-2 text-sm font-bold border border-black transition-all",
+                                (amountRange.min !== null || amountRange.max !== null)
+                                    ? 'bg-swiss-blue text-white border-swiss-blue' 
+                                    : 'bg-white text-black hover:bg-neutral-100'
+                            )}
+                            whileHover={{ scale: 1.02 }}
+                            whileTap={{ scale: 0.98 }}
+                        >
+                            <DollarSign className="h-4 w-4" />
+                            {amountRange.min === null && amountRange.max === null && 'Any Amount'}
+                            {amountRange.min !== null && amountRange.max === null && `$${amountRange.min}+`}
+                            {amountRange.min === null && amountRange.max !== null && `Up to $${amountRange.max}`}
+                            {amountRange.min !== null && amountRange.max !== null && `$${amountRange.min} - $${amountRange.max}`}
+                        </motion.button>
+                        
+                        <AnimatePresence>
+                            {showAmountPicker && (
+                                <motion.div
+                                    initial={{ opacity: 0, y: -10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, y: -10 }}
+                                    className="absolute top-full left-0 mt-2 z-50 bg-white border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] p-4 min-w-[240px]"
+                                >
+                                    <p className="text-xs font-bold uppercase tracking-wider text-neutral-500 mb-3">Amount Range</p>
+                                    
+                                    {/* Quick Presets */}
+                                    <div className="space-y-1 mb-4">
+                                        {[
+                                            { min: null, max: null, label: 'Any Amount' },
+                                            { min: null, max: 25, label: 'Under $25' },
+                                            { min: 25, max: 50, label: '$25 - $50' },
+                                            { min: 50, max: 100, label: '$50 - $100' },
+                                            { min: 100, max: null, label: '$100+' },
+                                        ].map(({ min, max, label }) => (
+                                            <button
+                                                key={label}
+                                                onClick={() => {
+                                                    setAmountRange({ min, max })
+                                                    setShowAmountPicker(false)
+                                                }}
+                                                className={cn(
+                                                    "block w-full text-left px-3 py-2 text-sm font-medium transition-colors",
+                                                    amountRange.min === min && amountRange.max === max
+                                                        ? 'bg-black text-white' 
+                                                        : 'hover:bg-neutral-100'
+                                                )}
+                                            >
+                                                {label}
+                                            </button>
+                                        ))}
+                                    </div>
+                                    
+                                    <div className="border-t border-neutral-200 pt-3">
+                                        <p className="text-xs font-bold uppercase tracking-wider text-neutral-500 mb-2">Custom Range</p>
+                                        <div className="grid grid-cols-2 gap-2">
+                                            <div>
+                                                <label className="text-xs text-neutral-500">Min ($)</label>
+                                                <input
+                                                    type="number"
+                                                    min="0"
+                                                    step="0.01"
+                                                    placeholder="0"
+                                                    value={amountRange.min ?? ''}
+                                                    onChange={(e) => setAmountRange(prev => ({ 
+                                                        ...prev, 
+                                                        min: e.target.value ? parseFloat(e.target.value) : null 
+                                                    }))}
+                                                    className="w-full px-2 py-1 text-sm border border-black"
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="text-xs text-neutral-500">Max ($)</label>
+                                                <input
+                                                    type="number"
+                                                    min="0"
+                                                    step="0.01"
+                                                    placeholder="∞"
+                                                    value={amountRange.max ?? ''}
+                                                    onChange={(e) => setAmountRange(prev => ({ 
+                                                        ...prev, 
+                                                        max: e.target.value ? parseFloat(e.target.value) : null 
+                                                    }))}
+                                                    className="w-full px-2 py-1 text-sm border border-black"
+                                                />
+                                            </div>
+                                        </div>
+                                        <button
+                                            onClick={() => setShowAmountPicker(false)}
+                                            className="w-full mt-2 px-3 py-2 bg-black text-white text-sm font-bold"
+                                        >
+                                            Apply
+                                        </button>
                                     </div>
                                 </motion.div>
                             )}
