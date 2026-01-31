@@ -30,11 +30,12 @@ interface SpendingData {
 export default function BudgetPage() {
     const router = useRouter()
     const supabase = createClient()
-    const { currentMonthBudget, setTotalBudget, setCategoryBudget, removeCategoryBudget } = useBudget()
+    const { budgets, currentMonthBudget, setTotalBudget, setCategoryBudget, removeCategoryBudget } = useBudget()
     const { formatAmount } = useCurrency()
     const { checkBudgetAlert } = useNotifications()
     
     const [spending, setSpending] = useState<SpendingData>({ total: 0, byCategory: {} })
+    const [historicalSpending, setHistoricalSpending] = useState<Record<string, number>>({})
     const [loading, setLoading] = useState(true)
     const [editingTotal, setEditingTotal] = useState(false)
     const [totalInput, setTotalInput] = useState('')
@@ -84,6 +85,41 @@ export default function BudgetPage() {
         }
         fetchSpending()
     }, [supabase])
+
+    // Fetch historical spending for previous months with budgets
+    useEffect(() => {
+        const fetchHistoricalSpending = async () => {
+            const { data: { session } } = await supabase.auth.getSession()
+            if (!session || budgets.length === 0) return
+
+            const now = new Date()
+            const currentMonthStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
+            const pastBudgets = budgets.filter(b => b.month !== currentMonthStr)
+
+            const spendingByMonth: Record<string, number> = {}
+
+            for (const budget of pastBudgets) {
+                const [year, month] = budget.month.split('-').map(Number)
+                const startOfMonth = new Date(year, month - 1, 1).toISOString().split('T')[0]
+                const endOfMonth = new Date(year, month, 0).toISOString().split('T')[0]
+
+                const { data: receipts } = await supabase
+                    .from('receipts')
+                    .select('amount')
+                    .eq('user_id', session.user.id)
+                    .gte('receipt_date', startOfMonth)
+                    .lte('receipt_date', endOfMonth)
+
+                if (receipts) {
+                    spendingByMonth[budget.month] = receipts.reduce((sum, r) => sum + (r.amount || 0), 0)
+                }
+            }
+
+            setHistoricalSpending(spendingByMonth)
+        }
+
+        fetchHistoricalSpending()
+    }, [supabase, budgets])
 
     // Check for budget alerts when spending data changes
     useEffect(() => {
@@ -464,6 +500,69 @@ export default function BudgetPage() {
                         ))}
                     </div>
                 </div>
+
+                {/* Budget History */}
+                {budgets.length > 1 && (
+                    <div className="border border-black dark:border-neutral-700 bg-white dark:bg-neutral-900">
+                        <div className="p-4 border-b border-black dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 flex items-center gap-3">
+                            <TrendingUp className="h-5 w-5" />
+                            <h2 className="font-bold uppercase text-sm tracking-wider">Budget History</h2>
+                        </div>
+
+                        <div className="divide-y divide-neutral-200 dark:divide-neutral-700">
+                            {budgets
+                                .filter(b => b.month !== currentMonth.split(' ').pop())
+                                .sort((a, b) => b.month.localeCompare(a.month))
+                                .slice(0, 6)
+                                .map(budget => {
+                                    const spent = historicalSpending[budget.month] || 0
+                                    const percentage = budget.totalBudget > 0 ? (spent / budget.totalBudget) * 100 : 0
+                                    const isOver = spent > budget.totalBudget
+                                    const monthDate = new Date(budget.month + '-01')
+                                    const monthName = monthDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
+
+                                    return (
+                                        <div key={budget.month} className="p-4">
+                                            <div className="flex justify-between items-center mb-2">
+                                                <span className="font-medium">{monthName}</span>
+                                                <span className={cn(
+                                                    "text-sm font-mono",
+                                                    isOver ? "text-red-500" : "text-green-600 dark:text-green-400"
+                                                )}>
+                                                    {isOver ? 'Over by ' : 'Under by '}
+                                                    {formatAmount(Math.abs(budget.totalBudget - spent))}
+                                                </span>
+                                            </div>
+                                            <div className="flex gap-4 text-sm text-neutral-500 dark:text-neutral-400">
+                                                <span>Budget: {formatAmount(budget.totalBudget)}</span>
+                                                <span>Spent: {formatAmount(spent)}</span>
+                                                <span className={cn(
+                                                    isOver ? "text-red-500" : percentage >= 80 ? "text-yellow-600" : "text-green-600"
+                                                )}>
+                                                    {percentage.toFixed(0)}% used
+                                                </span>
+                                            </div>
+                                            <div className="h-2 bg-neutral-200 dark:bg-neutral-700 mt-2 overflow-hidden">
+                                                <div
+                                                    className={cn(
+                                                        "h-full transition-all duration-300",
+                                                        isOver ? "bg-red-500" : percentage >= 80 ? "bg-yellow-500" : "bg-green-500"
+                                                    )}
+                                                    style={{ width: `${Math.min(percentage, 100)}%` }}
+                                                />
+                                            </div>
+                                        </div>
+                                    )
+                                })}
+                        </div>
+
+                        {budgets.length <= 1 && (
+                            <div className="p-8 text-center text-neutral-500 dark:text-neutral-400">
+                                <p>No budget history yet. Your previous months&apos; budgets will appear here.</p>
+                            </div>
+                        )}
+                    </div>
+                )}
 
                 {/* Info */}
                 <div className="p-4 border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 text-sm text-neutral-500 dark:text-neutral-400">
