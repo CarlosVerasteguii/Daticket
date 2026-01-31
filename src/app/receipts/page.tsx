@@ -72,7 +72,7 @@ export default function ReceiptsPage() {
     const [receipts, setReceipts] = useState<Receipt[]>([])
     const [selectedReceipt, setSelectedReceipt] = useState<Receipt | null>(null)
     const [loading, setLoading] = useState(true)
-    const [filter, setFilter] = useState('all')
+    const [selectedCategories, setSelectedCategories] = useState<string[]>([])
     const [searchQuery, setSearchQuery] = useState('')
     const [dateRange, setDateRange] = useState<DateRange>({ start: null, end: null, preset: 'all' })
     const [showDatePicker, setShowDatePicker] = useState(false)
@@ -193,8 +193,11 @@ export default function ReceiptsPage() {
         })
     }
     
-    if (filter !== 'all') {
-        filteredReceipts = filteredReceipts.filter(r => r.category_name === filter)
+    // Multi-category filter
+    if (selectedCategories.length > 0) {
+        filteredReceipts = filteredReceipts.filter(r => 
+            r.category_name && selectedCategories.includes(r.category_name)
+        )
     }
     if (searchQuery.trim()) {
         const query = searchQuery.toLowerCase().trim()
@@ -236,7 +239,7 @@ export default function ReceiptsPage() {
                         <h1 className="text-3xl font-bold tracking-tighter">All Receipts</h1>
                         <p className="text-sm text-neutral-500 font-mono mt-1">
                             {filteredReceipts.length} of {receipts.length} records
-                            {filter !== 'all' && ` in ${filter}`}
+                            {selectedCategories.length > 0 && ` in ${selectedCategories.join(', ')}`}
                         </p>
                     </div>
                     <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
@@ -500,14 +503,14 @@ export default function ReceiptsPage() {
                         </AnimatePresence>
                     </div>
 
-                    {/* Category Filters */}
+                    {/* Multi-Category Filters */}
                     <div className="flex items-center gap-2 overflow-x-auto pb-2 md:pb-0 scrollbar-hide">
                         <Filter className="h-4 w-4 text-neutral-400 flex-shrink-0" />
                         <motion.button
-                            onClick={() => setFilter('all')}
+                            onClick={() => setSelectedCategories([])}
                             className={cn(
                                 "px-4 py-2 text-sm font-bold border border-black transition-all whitespace-nowrap",
-                                filter === 'all' 
+                                selectedCategories.length === 0 
                                     ? 'bg-black text-white' 
                                     : 'bg-white text-black hover:bg-neutral-100'
                             )}
@@ -516,22 +519,32 @@ export default function ReceiptsPage() {
                         >
                             All
                         </motion.button>
-                        {categories.map((cat) => (
-                            <motion.button
-                                key={cat}
-                                onClick={() => setFilter(cat!)}
-                                className={cn(
-                                    "px-4 py-2 text-sm font-bold border border-black transition-all whitespace-nowrap",
-                                    filter === cat 
-                                        ? 'bg-black text-white' 
-                                        : 'bg-white text-black hover:bg-neutral-100'
-                                )}
-                                whileHover={{ scale: 1.02 }}
-                                whileTap={{ scale: 0.98 }}
-                            >
-                                {cat}
-                            </motion.button>
-                        ))}
+                        {categories.map((cat) => {
+                            const isSelected = selectedCategories.includes(cat!)
+                            return (
+                                <motion.button
+                                    key={cat}
+                                    onClick={() => {
+                                        if (isSelected) {
+                                            setSelectedCategories(prev => prev.filter(c => c !== cat))
+                                        } else {
+                                            setSelectedCategories(prev => [...prev, cat!])
+                                        }
+                                    }}
+                                    className={cn(
+                                        "px-4 py-2 text-sm font-bold border transition-all whitespace-nowrap flex items-center gap-2",
+                                        isSelected 
+                                            ? 'bg-swiss-blue text-white border-swiss-blue' 
+                                            : 'bg-white text-black border-black hover:bg-neutral-100'
+                                    )}
+                                    whileHover={{ scale: 1.02 }}
+                                    whileTap={{ scale: 0.98 }}
+                                >
+                                    {cat}
+                                    {isSelected && <X className="h-3 w-3" />}
+                                </motion.button>
+                            )
+                        })}
                     </div>
                 </motion.div>
 
