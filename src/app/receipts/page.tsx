@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
@@ -21,7 +21,8 @@ import {
   Save,
   Bookmark,
   Download,
-  FileText
+  FileText,
+  RefreshCw
 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { cn } from '@/lib/utils'
@@ -98,6 +99,14 @@ export default function ReceiptsPage() {
     const [showSavedFilters, setShowSavedFilters] = useState(false)
     const [newFilterName, setNewFilterName] = useState('')
     const [showSaveDialog, setShowSaveDialog] = useState(false)
+    
+    // Pull-to-refresh state
+    const [isRefreshing, setIsRefreshing] = useState(false)
+    const [pullDistance, setPullDistance] = useState(0)
+    const containerRef = useRef<HTMLDivElement>(null)
+    const touchStartY = useRef(0)
+    const isPulling = useRef(false)
+    const PULL_THRESHOLD = 80
 
     // Load saved filters from localStorage
     useEffect(() => {
@@ -210,39 +219,74 @@ export default function ReceiptsPage() {
         URL.revokeObjectURL(url)
     }, [])
 
-    useEffect(() => {
-        const fetchReceipts = async () => {
-            const { data: { session } } = await supabase.auth.getSession()
-            if (!session) {
-                router.push('/login')
-                return
-            }
-
-            const { data } = await supabase
-                .from('receipts')
-                .select(`
-                    id,
-                    store_name,
-                    purchase_date,
-                    total_amount,
-                    image_url,
-                    notes,
-                    created_at,
-                    categories(name)
-                `)
-                .order('created_at', { ascending: false })
-
-            if (data) {
-                const formattedData = data.map((r: any) => ({
-                    ...r,
-                    category_name: r.categories?.name || null
-                }))
-                setReceipts(formattedData)
-            }
-            setLoading(false)
+    const fetchReceipts = useCallback(async (showLoadingState = true) => {
+        if (showLoadingState) setLoading(true)
+        const { data: { session } } = await supabase.auth.getSession()
+        if (!session) {
+            router.push('/login')
+            return
         }
-        fetchReceipts()
+
+        const { data } = await supabase
+            .from('receipts')
+            .select(`
+                id,
+                store_name,
+                purchase_date,
+                total_amount,
+                image_url,
+                notes,
+                created_at,
+                categories(name)
+            `)
+            .order('created_at', { ascending: false })
+
+        if (data) {
+            const formattedData = data.map((r: any) => ({
+                ...r,
+                category_name: r.categories?.name || null
+            }))
+            setReceipts(formattedData)
+        }
+        setLoading(false)
     }, [router, supabase])
+
+    useEffect(() => {
+        fetchReceipts()
+    }, [fetchReceipts])
+
+    // Pull-to-refresh handlers
+    const handleTouchStart = useCallback((e: React.TouchEvent) => {
+        const container = containerRef.current
+        if (container && container.scrollTop === 0) {
+            touchStartY.current = e.touches[0].clientY
+            isPulling.current = true
+        }
+    }, [])
+
+    const handleTouchMove = useCallback((e: React.TouchEvent) => {
+        if (!isPulling.current || isRefreshing) return
+        
+        const currentY = e.touches[0].clientY
+        const diff = currentY - touchStartY.current
+        
+        if (diff > 0) {
+            const distance = Math.min(diff * 0.5, PULL_THRESHOLD * 1.5)
+            setPullDistance(distance)
+        }
+    }, [isRefreshing])
+
+    const handleTouchEnd = useCallback(async () => {
+        if (!isPulling.current) return
+        isPulling.current = false
+        
+        if (pullDistance >= PULL_THRESHOLD) {
+            setIsRefreshing(true)
+            await fetchReceipts(false)
+            setIsRefreshing(false)
+        }
+        setPullDistance(0)
+    }, [pullDistance, fetchReceipts])
 
     const getImageUrl = (path: string) => {
         const { data } = supabase.storage.from('receipts').getPublicUrl(path)
@@ -810,7 +854,42 @@ export default function ReceiptsPage() {
                 {/* Main Content - Split View */}
                 <div className="grid grid-cols-1 lg:grid-cols-3 min-h-[calc(100vh-300px)]">
                     {/* Left: Receipt Grid */}
-                    <div className="lg:col-span-2 bg-white p-6 overflow-y-auto">
+                    <div 
+                        ref={containerRef}
+                        onTouchStart={handleTouchStart}
+                        onTouchMove={handleTouchMove}
+                        onTouchEnd={handleTouchEnd}
+                        className="lg:col-span-2 bg-white p-6 overflow-y-auto relative"
+                        style={{ touchAction: 'pan-y' }}
+                    >
+                        {/* Pull to Refresh Indicator */}
+                        <AnimatePresence>
+                            {(pullDistance > 0 || isRefreshing) && (
+                                <motion.div
+                                    initial={{ opacity: 0, y: -40 }}
+                                    animate={{ 
+                                        opacity: pullDistance >= PULL_THRESHOLD || isRefreshing ? 1 : pullDistance / PULL_THRESHOLD,
+                                        y: isRefreshing ? 0 : Math.min(pullDistance, PULL_THRESHOLD) - 40
+                                    }}
+                                    exit={{ opacity: 0, y: -40 }}
+                                    className="absolute top-0 left-0 right-0 flex justify-center z-10"
+                                >
+                                    <div className={cn(
+                                        "flex items-center gap-2 px-4 py-2 bg-white border-2 border-black shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]",
+                                        isRefreshing && "animate-pulse"
+                                    )}>
+                                        <RefreshCw className={cn(
+                                            "w-4 h-4",
+                                            isRefreshing && "animate-spin"
+                                        )} />
+                                        <span className="text-sm font-bold">
+                                            {isRefreshing ? 'Refreshing...' : pullDistance >= PULL_THRESHOLD ? 'Release to refresh' : 'Pull to refresh'}
+                                        </span>
+                                    </div>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
+                        
                         {loading ? (
                             <ReceiptsGridSkeleton count={6} />
                         ) : filteredReceipts.length === 0 ? (
