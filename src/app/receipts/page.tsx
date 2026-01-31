@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
@@ -17,7 +17,9 @@ import {
   Filter,
   Receipt,
   Search,
-  ArrowUpRight
+  ArrowUpRight,
+  Save,
+  Bookmark
 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { cn } from '@/lib/utils'
@@ -66,6 +68,18 @@ type AmountRange = {
     max: number | null
 }
 
+type SavedFilter = {
+    id: string
+    name: string
+    searchQuery: string
+    datePreset: string
+    amountMin: number | null
+    amountMax: number | null
+    categories: string[]
+}
+
+const SAVED_FILTERS_KEY = 'daticket-saved-filters'
+
 export default function ReceiptsPage() {
     const router = useRouter()
     const supabase = createClient()
@@ -78,6 +92,93 @@ export default function ReceiptsPage() {
     const [showDatePicker, setShowDatePicker] = useState(false)
     const [amountRange, setAmountRange] = useState<AmountRange>({ min: null, max: null })
     const [showAmountPicker, setShowAmountPicker] = useState(false)
+    const [savedFilters, setSavedFilters] = useState<SavedFilter[]>([])
+    const [showSavedFilters, setShowSavedFilters] = useState(false)
+    const [newFilterName, setNewFilterName] = useState('')
+    const [showSaveDialog, setShowSaveDialog] = useState(false)
+
+    // Load saved filters from localStorage
+    useEffect(() => {
+        const stored = localStorage.getItem(SAVED_FILTERS_KEY)
+        if (stored) {
+            try {
+                setSavedFilters(JSON.parse(stored))
+            } catch {
+                // Ignore parse errors
+            }
+        }
+    }, [])
+
+    const saveCurrentFilter = useCallback(() => {
+        if (!newFilterName.trim()) return
+        
+        const newFilter: SavedFilter = {
+            id: Date.now().toString(),
+            name: newFilterName.trim(),
+            searchQuery,
+            datePreset: dateRange.preset,
+            amountMin: amountRange.min,
+            amountMax: amountRange.max,
+            categories: selectedCategories,
+        }
+        
+        const updated = [...savedFilters, newFilter]
+        setSavedFilters(updated)
+        localStorage.setItem(SAVED_FILTERS_KEY, JSON.stringify(updated))
+        setNewFilterName('')
+        setShowSaveDialog(false)
+    }, [newFilterName, searchQuery, dateRange.preset, amountRange, selectedCategories, savedFilters])
+
+    const applyFilter = useCallback((filter: SavedFilter) => {
+        setSearchQuery(filter.searchQuery)
+        // Apply date preset
+        if (filter.datePreset !== 'all' && filter.datePreset !== 'custom') {
+            // Trigger the preset logic
+            const today = new Date()
+            today.setHours(23, 59, 59, 999)
+            let start: Date | null = null
+            const end: Date | null = today
+            
+            switch (filter.datePreset) {
+                case 'today':
+                    start = new Date(today)
+                    start.setHours(0, 0, 0, 0)
+                    break
+                case 'week':
+                    start = new Date(today)
+                    start.setDate(start.getDate() - 7)
+                    start.setHours(0, 0, 0, 0)
+                    break
+                case 'month':
+                    start = new Date(today)
+                    start.setMonth(start.getMonth() - 1)
+                    start.setHours(0, 0, 0, 0)
+                    break
+                case 'quarter':
+                    start = new Date(today)
+                    start.setMonth(start.getMonth() - 3)
+                    start.setHours(0, 0, 0, 0)
+                    break
+                case 'year':
+                    start = new Date(today)
+                    start.setFullYear(start.getFullYear() - 1)
+                    start.setHours(0, 0, 0, 0)
+                    break
+            }
+            setDateRange({ start, end, preset: filter.datePreset })
+        } else {
+            setDateRange({ start: null, end: null, preset: 'all' })
+        }
+        setAmountRange({ min: filter.amountMin, max: filter.amountMax })
+        setSelectedCategories(filter.categories)
+        setShowSavedFilters(false)
+    }, [])
+
+    const deleteFilter = useCallback((id: string) => {
+        const updated = savedFilters.filter(f => f.id !== id)
+        setSavedFilters(updated)
+        localStorage.setItem(SAVED_FILTERS_KEY, JSON.stringify(updated))
+    }, [savedFilters])
 
     useEffect(() => {
         const fetchReceipts = async () => {
@@ -496,6 +597,102 @@ export default function ReceiptsPage() {
                                             className="w-full mt-2 px-3 py-2 bg-black text-white text-sm font-bold"
                                         >
                                             Apply
+                                        </button>
+                                    </div>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
+                    </div>
+
+                    {/* Saved Filters */}
+                    <div className="relative flex items-center gap-2">
+                        <motion.button
+                            onClick={() => setShowSavedFilters(!showSavedFilters)}
+                            className={cn(
+                                "flex items-center gap-2 px-4 py-2 text-sm font-bold border border-black transition-all",
+                                savedFilters.length > 0 
+                                    ? 'bg-white text-black hover:bg-neutral-100' 
+                                    : 'bg-neutral-50 text-neutral-400'
+                            )}
+                            whileHover={{ scale: 1.02 }}
+                            whileTap={{ scale: 0.98 }}
+                        >
+                            <Bookmark className="h-4 w-4" />
+                            Saved ({savedFilters.length})
+                        </motion.button>
+
+                        <motion.button
+                            onClick={() => setShowSaveDialog(true)}
+                            className="flex items-center gap-2 px-3 py-2 text-sm font-bold border border-black bg-white text-black hover:bg-neutral-100 transition-all"
+                            whileHover={{ scale: 1.02 }}
+                            whileTap={{ scale: 0.98 }}
+                            title="Save current filter"
+                        >
+                            <Save className="h-4 w-4" />
+                        </motion.button>
+                        
+                        <AnimatePresence>
+                            {showSavedFilters && savedFilters.length > 0 && (
+                                <motion.div
+                                    initial={{ opacity: 0, y: -10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, y: -10 }}
+                                    className="absolute top-full left-0 mt-2 z-50 bg-white border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] p-3 min-w-[200px]"
+                                >
+                                    <p className="text-xs font-bold uppercase tracking-wider text-neutral-500 mb-2">Saved Filters</p>
+                                    <div className="space-y-1">
+                                        {savedFilters.map((f) => (
+                                            <div key={f.id} className="flex items-center justify-between gap-2">
+                                                <button
+                                                    onClick={() => applyFilter(f)}
+                                                    className="flex-1 text-left px-3 py-2 text-sm font-medium hover:bg-neutral-100 transition-colors"
+                                                >
+                                                    {f.name}
+                                                </button>
+                                                <button
+                                                    onClick={() => deleteFilter(f.id)}
+                                                    className="p-1 text-neutral-400 hover:text-red-500 transition-colors"
+                                                >
+                                                    <Trash2 className="h-3 w-3" />
+                                                </button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
+
+                        <AnimatePresence>
+                            {showSaveDialog && (
+                                <motion.div
+                                    initial={{ opacity: 0, y: -10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, y: -10 }}
+                                    className="absolute top-full right-0 mt-2 z-50 bg-white border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] p-4 min-w-[250px]"
+                                >
+                                    <p className="text-xs font-bold uppercase tracking-wider text-neutral-500 mb-2">Save Current Filter</p>
+                                    <input
+                                        type="text"
+                                        placeholder="Filter name..."
+                                        value={newFilterName}
+                                        onChange={(e) => setNewFilterName(e.target.value)}
+                                        onKeyDown={(e) => e.key === 'Enter' && saveCurrentFilter()}
+                                        className="w-full px-3 py-2 text-sm border border-black mb-2"
+                                        autoFocus
+                                    />
+                                    <div className="flex gap-2">
+                                        <button
+                                            onClick={() => setShowSaveDialog(false)}
+                                            className="flex-1 px-3 py-2 text-sm font-bold border border-black hover:bg-neutral-100"
+                                        >
+                                            Cancel
+                                        </button>
+                                        <button
+                                            onClick={saveCurrentFilter}
+                                            disabled={!newFilterName.trim()}
+                                            className="flex-1 px-3 py-2 text-sm font-bold bg-black text-white disabled:bg-neutral-300 disabled:text-neutral-500"
+                                        >
+                                            Save
                                         </button>
                                     </div>
                                 </motion.div>
