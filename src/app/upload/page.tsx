@@ -5,8 +5,43 @@ import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import DashboardShell from '@/components/layout/DashboardShell'
 import ReceiptUpload from '@/components/receipts/ReceiptUpload'
-import { ArrowLeft, Upload, FileText } from 'lucide-react'
+import { ArrowLeft, Upload, FileText, Sparkles, Camera, Image } from 'lucide-react'
 import Link from 'next/link'
+import { motion } from 'framer-motion'
+
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1
+    }
+  }
+}
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { 
+    opacity: 1, 
+    y: 0,
+    transition: {
+      duration: 0.5,
+      ease: [0.22, 1, 0.36, 1] as const
+    }
+  }
+}
+
+const cardVariants = {
+  hidden: { opacity: 0, scale: 0.95 },
+  visible: { 
+    opacity: 1, 
+    scale: 1,
+    transition: {
+      duration: 0.4,
+      ease: [0.22, 1, 0.36, 1] as const
+    }
+  }
+}
 
 export default function UploadPage() {
     const router = useRouter()
@@ -24,70 +59,153 @@ export default function UploadPage() {
 
     return (
         <DashboardShell>
-            {/* Header */}
-            <div className="flex items-center gap-4 p-6 border-b border-black bg-white">
-                <Link href="/dashboard" className="p-2 hover:bg-neutral-100 border border-black">
-                    <ArrowLeft className="h-5 w-5" />
-                </Link>
-                <div>
-                    <h1 className="text-2xl font-bold tracking-tighter">Upload Receipt</h1>
-                    <p className="text-sm text-neutral-500 mt-1">Add a new expense to your records</p>
-                </div>
-            </div>
+            <motion.div
+                initial="hidden"
+                animate="visible"
+                variants={containerVariants}
+            >
+                {/* Header */}
+                <motion.div 
+                    className="flex items-center gap-4 p-6 border-b border-black bg-white"
+                    variants={itemVariants}
+                >
+                    <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                        <Link 
+                            href="/dashboard" 
+                            className="p-2 hover:bg-neutral-100 border border-black transition-colors inline-flex"
+                        >
+                            <ArrowLeft className="h-5 w-5" />
+                        </Link>
+                    </motion.div>
+                    <div>
+                        <h1 className="text-2xl font-bold tracking-tighter">Upload Receipt</h1>
+                        <p className="text-sm text-neutral-500 mt-1">Add a new expense to your records</p>
+                    </div>
+                </motion.div>
 
-            {/* Main Content */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 min-h-[calc(100vh-180px)]">
-                {/* Left: Upload Area */}
-                <div className="bg-white p-8 flex flex-col">
-                    <div className="flex-1 border-2 border-dashed border-black bg-neutral-50 flex flex-col items-center justify-center p-8 text-center">
-                        <div className="h-20 w-20 bg-black flex items-center justify-center mb-6">
-                            <Upload className="h-10 w-10 text-white" />
-                        </div>
-                        <h3 className="text-xl font-bold mb-2">Drop your receipt here</h3>
-                        <p className="text-neutral-500 mb-6 max-w-sm">
-                            Upload an image of your receipt. We'll extract the details automatically.
-                        </p>
+                {/* Main Content */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 min-h-[calc(100vh-180px)]">
+                    {/* Left: Upload Area */}
+                    <motion.div 
+                        className="bg-white p-8 flex flex-col"
+                        variants={itemVariants}
+                    >
                         <ReceiptUpload />
-                    </div>
+                    </motion.div>
+
+                    {/* Right: Instructions */}
+                    <motion.div 
+                        className="bg-neutral-50 border-l border-black p-8"
+                        variants={itemVariants}
+                    >
+                        <motion.div 
+                            className="flex items-center gap-2 mb-6"
+                            initial={{ opacity: 0, x: -20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ delay: 0.3 }}
+                        >
+                            <div className="h-10 w-10 bg-black flex items-center justify-center">
+                                <FileText className="h-5 w-5 text-white" />
+                            </div>
+                            <h3 className="text-lg font-bold">How it works</h3>
+                        </motion.div>
+
+                        <div className="space-y-6">
+                            {[
+                                {
+                                    step: "1",
+                                    icon: Camera,
+                                    title: "Upload Image",
+                                    description: "Take a photo or select an existing image of your receipt. Make sure the text is clearly visible.",
+                                    delay: 0.4
+                                },
+                                {
+                                    step: "2",
+                                    icon: Sparkles,
+                                    title: "AI Extraction",
+                                    description: "Our AI automatically reads the receipt and extracts the store name, date, and total amount.",
+                                    delay: 0.5
+                                },
+                                {
+                                    step: "3",
+                                    icon: FileText,
+                                    title: "Add Details",
+                                    description: "Review the extracted information and add a category. Make any corrections if needed.",
+                                    delay: 0.6
+                                }
+                            ].map((item) => (
+                                <motion.div 
+                                    key={item.step}
+                                    className="flex gap-4 group"
+                                    initial={{ opacity: 0, x: -20 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    transition={{ delay: item.delay }}
+                                    whileHover={{ x: 5 }}
+                                >
+                                    <motion.div 
+                                        className="h-10 w-10 bg-black text-white flex items-center justify-center font-bold text-sm flex-shrink-0 group-hover:bg-swiss-blue transition-colors"
+                                        whileHover={{ scale: 1.1 }}
+                                        whileTap={{ scale: 0.9 }}
+                                    >
+                                        <item.icon className="h-4 w-4" />
+                                    </motion.div>
+                                    <div>
+                                        <h4 className="font-bold group-hover:text-swiss-blue transition-colors">{item.title}</h4>
+                                        <p className="text-sm text-neutral-600 leading-relaxed">{item.description}</p>
+                                    </div>
+                                </motion.div>
+                            ))}
+                        </div>
+
+                        {/* Tips Card */}
+                        <motion.div 
+                            className="mt-8 p-6 border border-black bg-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
+                            variants={cardVariants}
+                            whileHover={{ 
+                                y: -4, 
+                                boxShadow: "6px 6px 0px 0px rgba(0,0,0,1)" 
+                            }}
+                        >
+                            <div className="flex items-center gap-2 mb-4">
+                                <div className="h-8 w-8 bg-swiss-green flex items-center justify-center">
+                                    <Image className="h-4 w-4 text-white" />
+                                </div>
+                                <p className="font-bold">Pro Tips</p>
+                            </div>
+                            <ul className="space-y-2 text-sm text-neutral-600">
+                                <li className="flex items-start gap-2">
+                                    <span className="text-swiss-green font-bold">•</span>
+                                    Ensure good lighting when taking photos
+                                </li>
+                                <li className="flex items-start gap-2">
+                                    <span className="text-swiss-green font-bold">•</span>
+                                    Keep the receipt flat and unwrinkled
+                                </li>
+                                <li className="flex items-start gap-2">
+                                    <span className="text-swiss-green font-bold">•</span>
+                                    All text should be clearly readable
+                                </li>
+                                <li className="flex items-start gap-2">
+                                    <span className="text-swiss-green font-bold">•</span>
+                                    Supported: JPG, PNG, PDF (max 10MB)
+                                </li>
+                            </ul>
+                        </motion.div>
+
+                        {/* Security Note */}
+                        <motion.div 
+                            className="mt-6 p-4 border border-black/20 bg-white/50"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            transition={{ delay: 0.8 }}
+                        >
+                            <p className="text-xs text-neutral-500 leading-relaxed">
+                                <span className="font-bold text-black">🔒 Secure Storage:</span> Your receipts are encrypted and stored securely. Only you can access them.
+                            </p>
+                        </motion.div>
+                    </motion.div>
                 </div>
-
-                {/* Right: Instructions */}
-                <div className="bg-neutral-50 border-l border-black p-8">
-                    <h3 className="text-lg font-bold mb-6 flex items-center gap-2">
-                        <FileText className="h-5 w-5" />
-                        How it works
-                    </h3>
-
-                    <div className="space-y-6">
-                        <div className="flex gap-4">
-                            <div className="h-8 w-8 bg-black text-white flex items-center justify-center font-bold text-sm flex-shrink-0">1</div>
-                            <div>
-                                <h4 className="font-bold">Upload Image</h4>
-                                <p className="text-sm text-neutral-600">Take a photo or select an existing image of your receipt.</p>
-                            </div>
-                        </div>
-                        <div className="flex gap-4">
-                            <div className="h-8 w-8 bg-black text-white flex items-center justify-center font-bold text-sm flex-shrink-0">2</div>
-                            <div>
-                                <h4 className="font-bold">Add Details</h4>
-                                <p className="text-sm text-neutral-600">Enter the store name, amount, and select a category.</p>
-                            </div>
-                        </div>
-                        <div className="flex gap-4">
-                            <div className="h-8 w-8 bg-black text-white flex items-center justify-center font-bold text-sm flex-shrink-0">3</div>
-                            <div>
-                                <h4 className="font-bold">Save & Track</h4>
-                                <p className="text-sm text-neutral-600">Your receipt is stored securely and added to your expense reports.</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="mt-8 p-4 border border-black bg-white">
-                        <p className="text-xs font-bold uppercase tracking-wider text-neutral-500 mb-2">Supported Formats</p>
-                        <p className="font-mono text-sm">JPG, PNG, PDF (max 10MB)</p>
-                    </div>
-                </div>
-            </div>
+            </motion.div>
         </DashboardShell>
     )
 }
