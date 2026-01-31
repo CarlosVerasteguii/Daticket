@@ -117,11 +117,24 @@ export default function ReceiptsPage() {
         filteredReceipts = filteredReceipts.filter(r => r.category_name === filter)
     }
     if (searchQuery.trim()) {
-        const query = searchQuery.toLowerCase()
-        filteredReceipts = filteredReceipts.filter(r => 
-            r.store_name?.toLowerCase().includes(query) ||
-            r.category_name?.toLowerCase().includes(query)
-        )
+        const query = searchQuery.toLowerCase().trim()
+        filteredReceipts = filteredReceipts.filter(r => {
+            // Search store name
+            if (r.store_name?.toLowerCase().includes(query)) return true
+            // Search category
+            if (r.category_name?.toLowerCase().includes(query)) return true
+            // Search notes
+            if (r.notes?.toLowerCase().includes(query)) return true
+            // Search amount (exact or partial match)
+            const amount = r.total_amount?.toString() || ''
+            if (amount.includes(query)) return true
+            // Search formatted amount (e.g., "25.99")
+            const formattedAmount = r.total_amount ? `$${Number(r.total_amount).toFixed(2)}` : ''
+            if (formattedAmount.toLowerCase().includes(query)) return true
+            // Search date
+            if (r.purchase_date?.includes(query)) return true
+            return false
+        })
     }
 
     // Calculate stats
@@ -192,11 +205,19 @@ export default function ReceiptsPage() {
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-400" />
                         <input
                             type="text"
-                            placeholder="Search receipts..."
+                            placeholder="Search stores, categories, notes, amounts..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                             className="w-full pl-10 pr-4 py-2 border border-black font-medium focus:outline-none focus:ring-2 focus:ring-swiss-blue text-sm"
                         />
+                        {searchQuery && (
+                            <button
+                                onClick={() => setSearchQuery('')}
+                                className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-400 hover:text-neutral-600"
+                            >
+                                <X className="h-4 w-4" />
+                            </button>
+                        )}
                     </div>
 
                     {/* Category Filters */}
