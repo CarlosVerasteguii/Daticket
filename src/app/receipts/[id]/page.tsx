@@ -5,7 +5,10 @@ import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import DashboardShell from '@/components/layout/DashboardShell'
-import { ArrowLeft, Trash2, Calendar, Store, DollarSign, Loader2, Save, Tag } from 'lucide-react'
+import { ArrowLeft, Trash2, Calendar, Store, DollarSign, Loader2, Save, Tag, Check, AlertCircle } from 'lucide-react'
+import { motion, AnimatePresence } from 'framer-motion'
+
+type ToastType = 'success' | 'error' | null
 
 export default function ReceiptDetailPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = use(params)
@@ -16,12 +19,18 @@ export default function ReceiptDetailPage({ params }: { params: Promise<{ id: st
     const [deleting, setDeleting] = useState(false)
     const [saving, setSaving] = useState(false)
     const [imageUrl, setImageUrl] = useState<string | null>(null)
+    const [toast, setToast] = useState<{ type: ToastType; message: string }>({ type: null, message: '' })
 
     // Editable fields
     const [storeName, setStoreName] = useState('')
     const [totalAmount, setTotalAmount] = useState('')
     const [purchaseDate, setPurchaseDate] = useState('')
     const [notes, setNotes] = useState('')
+
+    const showToast = (type: 'success' | 'error', message: string) => {
+        setToast({ type, message })
+        setTimeout(() => setToast({ type: null, message: '' }), 3000)
+    }
 
     useEffect(() => {
         async function fetchReceipt() {
@@ -57,7 +66,14 @@ export default function ReceiptDetailPage({ params }: { params: Promise<{ id: st
     }, [id, router, supabase])
 
     const handleSave = async () => {
+        // Optimistic update: Show success immediately
+        showToast('success', 'Changes saved!')
         setSaving(true)
+        
+        // Navigate immediately (optimistic)
+        router.push('/receipts')
+        
+        // Background save
         try {
             const { error } = await supabase
                 .from('receipts')
@@ -68,9 +84,15 @@ export default function ReceiptDetailPage({ params }: { params: Promise<{ id: st
                     notes: notes || null
                 })
                 .eq('id', id)
-            router.push('/receipts')
-        } catch (error: any) {
-            alert('Error saving: ' + error.message)
+            
+            if (error) {
+                // Revert: Go back and show error
+                router.back()
+                showToast('error', 'Failed to save. Please try again.')
+            }
+        } catch {
+            router.back()
+            showToast('error', 'Network error. Please try again.')
         }
         setSaving(false)
     }
@@ -78,24 +100,30 @@ export default function ReceiptDetailPage({ params }: { params: Promise<{ id: st
     const handleDelete = async () => {
         if (!confirm('Are you sure you want to delete this receipt? This cannot be undone.')) return
 
+        // Optimistic update: Navigate immediately
         setDeleting(true)
+        showToast('success', 'Receipt deleted')
+        router.push('/receipts')
+        
+        // Background delete
         try {
             const { error: dbError } = await supabase
                 .from('receipts')
                 .delete()
                 .eq('id', id)
 
-            if (dbError) throw dbError
+            if (dbError) {
+                showToast('error', 'Failed to delete. Please try again.')
+                return
+            }
 
             if (receipt.image_url) {
                 await supabase.storage.from('receipts').remove([receipt.image_url])
             }
 
-            router.push('/receipts')
             router.refresh()
-        } catch (error: any) {
-            alert('Error deleting receipt: ' + error.message)
-            setDeleting(false)
+        } catch {
+            showToast('error', 'Network error during delete.')
         }
     }
 
@@ -243,6 +271,27 @@ export default function ReceiptDetailPage({ params }: { params: Promise<{ id: st
                     </div>
                 </div>
             </div>
+
+            {/* Toast Notifications */}
+            <AnimatePresence>
+                {toast.type && (
+                    <motion.div
+                        initial={{ opacity: 0, y: 50, x: '-50%' }}
+                        animate={{ opacity: 1, y: 0, x: '-50%' }}
+                        exit={{ opacity: 0, y: 50, x: '-50%' }}
+                        className={`fixed bottom-6 left-1/2 px-6 py-3 font-bold border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] flex items-center gap-2 z-50 ${
+                            toast.type === 'success' ? 'bg-green-400 text-black' : 'bg-red-400 text-black'
+                        }`}
+                    >
+                        {toast.type === 'success' ? (
+                            <Check className="w-5 h-5" />
+                        ) : (
+                            <AlertCircle className="w-5 h-5" />
+                        )}
+                        {toast.message}
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </DashboardShell>
     )
 }
