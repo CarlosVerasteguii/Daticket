@@ -22,6 +22,7 @@ import {
   ChevronDown
 } from 'lucide-react'
 import CategoryBreakdownChart from '@/components/analytics/CategoryBreakdownChart'
+import SpendingTrendsChart from '@/components/analytics/SpendingTrendsChart'
 import { motion, AnimatePresence } from 'framer-motion'
 import { cn } from '@/lib/utils'
 
@@ -341,6 +342,18 @@ export default function DashboardPage() {
                         alert={receiptCount > 0 && new Set(currentPeriodReceipts.map(r => r.category_name).filter(Boolean)).size === 0}
                     />
                 </div>
+
+                {/* Spending Trends Chart - Full Width */}
+                <motion.div 
+                    className="border-t border-black bg-neutral-50 p-8"
+                    variants={itemVariants}
+                >
+                    <SpendingTrendsChart 
+                        receipts={currentPeriodReceipts}
+                        period={selectedPeriod}
+                        className="shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
+                    />
+                </motion.div>
 
                 {/* Main Workspace - Split View */}
                 <div className="grid grid-cols-1 lg:grid-cols-3 min-h-[600px]">
