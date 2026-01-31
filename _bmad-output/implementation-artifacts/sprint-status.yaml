@@ -58,22 +58,25 @@ development_status:
   # ===========================================================================
   feature-ai-ocr:
     title: "AI Receipt Scanning with Groq"
-    status: in-progress
+    status: done
     priority: high
   
   ai-1-groq-integration:
     title: "Groq API Integration & OCR Logic"
-    status: in-progress
+    status: done
+    completed: "2026-01-31T00:05:00-06:00"
     description: "Create Groq client, Vision API calls, receipt parsing"
   
   ai-2-receipt-scanning-ui:
     title: "Receipt Scanning UI Flow"
-    status: ready-for-dev
+    status: done
+    completed: "2026-01-31T00:10:00-06:00"
     description: "Camera capture, preview, AI extraction feedback, field population"
 
   ai-3-ocr-error-handling:
     title: "OCR Error Handling & Fallbacks"
-    status: backlog
+    status: done
+    completed: "2026-01-31T00:35:00-06:00"
     description: "Handle API failures, partial matches, manual override"
 
   # ===========================================================================
@@ -86,12 +89,14 @@ development_status:
 
   4-1-dashboard-overview:
     title: "Dashboard Overview Metrics"
-    status: ready-for-dev
+    status: done
+    completed: "2026-01-31T00:20:00-06:00"
     description: "Total spending, receipt count, average, period comparison cards"
   
   4-2-category-breakdown:
     title: "Category Breakdown Chart"
-    status: backlog
+    status: done
+    completed: "2026-01-31T00:45:00-06:00"
     description: "Pie/donut chart of spending by category with legend"
 
   4-3-spending-trends:
@@ -297,11 +302,11 @@ development_status:
 # =============================================================================
 metrics:
   total_stories: 42
-  done: 12
-  in_progress: 1
-  ready_for_dev: 2
-  backlog: 27
-  completion_percentage: 28.6
+  done: 17
+  in_progress: 0
+  ready_for_dev: 0
+  backlog: 25
+  completion_percentage: 40.5
 
 # =============================================================================
 # QUICK QUEUE (PRIORITY ORDER FOR ORCHESTRATOR)

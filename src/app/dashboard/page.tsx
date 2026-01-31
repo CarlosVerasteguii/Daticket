@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
@@ -19,8 +19,9 @@ import {
   Calendar,
   DollarSign,
   Tag,
-  Sparkles
+  ChevronDown
 } from 'lucide-react'
+import CategoryBreakdownChart from '@/components/analytics/CategoryBreakdownChart'
 import { motion, AnimatePresence } from 'framer-motion'
 import { cn } from '@/lib/utils'
 
@@ -33,6 +34,58 @@ interface Receipt {
     notes: string | null
     created_at: string
     category_name: string | null
+}
+
+type TimePeriod = 'week' | 'month' | 'quarter' | 'year'
+
+const periodLabels: Record<TimePeriod, string> = {
+    week: 'This Week',
+    month: 'This Month',
+    quarter: 'This Quarter',
+    year: 'This Year'
+}
+
+// Helper to get date range for a period
+function getDateRange(period: TimePeriod): { start: Date; end: Date; prevStart: Date; prevEnd: Date } {
+    const now = new Date()
+    const end = new Date(now)
+    let start: Date
+    let prevStart: Date
+    let prevEnd: Date
+
+    switch (period) {
+        case 'week':
+            const dayOfWeek = now.getDay()
+            start = new Date(now)
+            start.setDate(now.getDate() - dayOfWeek)
+            start.setHours(0, 0, 0, 0)
+            prevStart = new Date(start)
+            prevStart.setDate(prevStart.getDate() - 7)
+            prevEnd = new Date(start)
+            prevEnd.setMilliseconds(-1)
+            break
+        case 'month':
+            start = new Date(now.getFullYear(), now.getMonth(), 1)
+            prevStart = new Date(now.getFullYear(), now.getMonth() - 1, 1)
+            prevEnd = new Date(start)
+            prevEnd.setMilliseconds(-1)
+            break
+        case 'quarter':
+            const currentQuarter = Math.floor(now.getMonth() / 3)
+            start = new Date(now.getFullYear(), currentQuarter * 3, 1)
+            prevStart = new Date(now.getFullYear(), (currentQuarter - 1) * 3, 1)
+            prevEnd = new Date(start)
+            prevEnd.setMilliseconds(-1)
+            break
+        case 'year':
+            start = new Date(now.getFullYear(), 0, 1)
+            prevStart = new Date(now.getFullYear() - 1, 0, 1)
+            prevEnd = new Date(start)
+            prevEnd.setMilliseconds(-1)
+            break
+    }
+
+    return { start, end, prevStart, prevEnd }
 }
 
 // Animation variants
@@ -62,9 +115,11 @@ export default function DashboardPage() {
     const router = useRouter()
     const supabase = createClient()
     const [user, setUser] = useState<any>(null)
-    const [receipts, setReceipts] = useState<Receipt[]>([])
+    const [allReceipts, setAllReceipts] = useState<Receipt[]>([])
     const [selectedReceipt, setSelectedReceipt] = useState<Receipt | null>(null)
     const [loading, setLoading] = useState(true)
+    const [selectedPeriod, setSelectedPeriod] = useState<TimePeriod>('month')
+    const [periodDropdownOpen, setPeriodDropdownOpen] = useState(false)
 
     useEffect(() => {
         const checkUserAndFetchReceipts = async () => {
@@ -75,7 +130,7 @@ export default function DashboardPage() {
             }
             setUser(session.user)
 
-            // Fetch receipts
+            // Fetch ALL receipts for calculations (we'll filter by period in useMemo)
             const { data, error } = await supabase
                 .from('receipts')
                 .select(`
@@ -89,29 +144,54 @@ export default function DashboardPage() {
                     categories(name)
                 `)
                 .order('created_at', { ascending: false })
-                .limit(10)
 
             if (data) {
                 const formattedData = data.map((r: any) => ({
                     ...r,
                     category_name: r.categories?.name || null
                 }))
-                setReceipts(formattedData)
+                setAllReceipts(formattedData)
             }
             setLoading(false)
         }
         checkUserAndFetchReceipts()
     }, [router, supabase])
 
-    // Calculate totals
-    const totalAmount = receipts.reduce((sum, r) => sum + (Number(r.total_amount) || 0), 0)
-    const receiptCount = receipts.length
+    // Calculate metrics based on selected period
+    const { currentPeriodReceipts, previousPeriodReceipts, receipts } = useMemo(() => {
+        const { start, end, prevStart, prevEnd } = getDateRange(selectedPeriod)
+        
+        const current = allReceipts.filter(r => {
+            if (!r.purchase_date) return false
+            const date = new Date(r.purchase_date)
+            return date >= start && date <= end
+        })
+
+        const previous = allReceipts.filter(r => {
+            if (!r.purchase_date) return false
+            const date = new Date(r.purchase_date)
+            return date >= prevStart && date <= prevEnd
+        })
+
+        // For the table, show recent 10
+        const recentReceipts = allReceipts.slice(0, 10)
+
+        return { 
+            currentPeriodReceipts: current, 
+            previousPeriodReceipts: previous,
+            receipts: recentReceipts
+        }
+    }, [allReceipts, selectedPeriod])
+
+    // Calculate metrics
+    const totalAmount = currentPeriodReceipts.reduce((sum, r) => sum + (Number(r.total_amount) || 0), 0)
+    const receiptCount = currentPeriodReceipts.length
+    const previousTotal = previousPeriodReceipts.reduce((sum, r) => sum + (Number(r.total_amount) || 0), 0)
     
-    // Calculate month-over-month trend (mock calculation for demo)
-    const currentMonthTotal = receipts
-        .filter(r => r.purchase_date && new Date(r.purchase_date).getMonth() === new Date().getMonth())
-        .reduce((sum, r) => sum + (Number(r.total_amount) || 0), 0)
-    const trend = currentMonthTotal > 0 ? 12 : 0 // Mock trend
+    // Calculate trend percentage
+    const trend = previousTotal > 0 
+        ? Math.round(((totalAmount - previousTotal) / previousTotal) * 100)
+        : totalAmount > 0 ? 100 : 0
 
     // Get public URL for image
     const getImageUrl = (path: string) => {
@@ -191,20 +271,61 @@ export default function DashboardPage() {
                 animate="visible"
                 variants={containerVariants}
             >
+                {/* Period Selector Header */}
+                <div className="flex items-center justify-between px-6 py-4 border-b border-black bg-neutral-50">
+                    <h2 className="text-lg font-bold tracking-tight">Dashboard Overview</h2>
+                    <div className="relative">
+                        <button
+                            onClick={() => setPeriodDropdownOpen(!periodDropdownOpen)}
+                            className="flex items-center gap-2 px-4 py-2 bg-white border border-black font-bold text-sm hover:bg-neutral-100 transition-colors shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"
+                        >
+                            <Calendar className="h-4 w-4" />
+                            {periodLabels[selectedPeriod]}
+                            <ChevronDown className={cn("h-4 w-4 transition-transform", periodDropdownOpen && "rotate-180")} />
+                        </button>
+                        <AnimatePresence>
+                            {periodDropdownOpen && (
+                                <motion.div
+                                    initial={{ opacity: 0, y: -10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, y: -10 }}
+                                    className="absolute right-0 mt-1 w-40 bg-white border border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] z-50"
+                                >
+                                    {(Object.keys(periodLabels) as TimePeriod[]).map((period) => (
+                                        <button
+                                            key={period}
+                                            onClick={() => {
+                                                setSelectedPeriod(period)
+                                                setPeriodDropdownOpen(false)
+                                            }}
+                                            className={cn(
+                                                "w-full px-4 py-2 text-left text-sm font-medium hover:bg-neutral-100 transition-colors",
+                                                selectedPeriod === period && "bg-swiss-blue text-white hover:bg-swiss-blue"
+                                            )}
+                                        >
+                                            {periodLabels[period]}
+                                        </button>
+                                    ))}
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
+                    </div>
+                </div>
+
                 {/* Top Metrics Grid - Rigid Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 border-b border-black">
                     <MetricCard
-                        label="Total Expenses"
+                        label={`${periodLabels[selectedPeriod]} Expenses`}
                         value={`$${totalAmount.toFixed(2)}`}
-                        subtext={`${receiptCount} Receipts Processed`}
+                        subtext={`${receiptCount} receipts`}
                         icon={DollarSign}
                         trend={trend}
                     />
                     <MetricCard
-                        label="Pending Review"
-                        value="0"
-                        subtext="All caught up"
-                        icon={CheckCircle}
+                        label="Previous Period"
+                        value={`$${previousTotal.toFixed(2)}`}
+                        subtext={`${previousPeriodReceipts.length} receipts`}
+                        icon={Calendar}
                     />
                     <MetricCard
                         label="Avg. Receipt"
@@ -213,11 +334,11 @@ export default function DashboardPage() {
                         icon={Receipt}
                     />
                     <MetricCard
-                        label="Categories"
-                        value={new Set(receipts.map(r => r.category_name).filter(Boolean)).size.toString()}
-                        subtext="Active categories"
+                        label="Categories Used"
+                        value={new Set(currentPeriodReceipts.map(r => r.category_name).filter(Boolean)).size.toString()}
+                        subtext="This period"
                         icon={Tag}
-                        alert={receiptCount > 0 && new Set(receipts.map(r => r.category_name).filter(Boolean)).size === 0}
+                        alert={receiptCount > 0 && new Set(currentPeriodReceipts.map(r => r.category_name).filter(Boolean)).size === 0}
                     />
                 </div>
 
@@ -407,7 +528,7 @@ export default function DashboardPage() {
                                                 if (confirm('Delete this receipt?')) {
                                                     supabase.from('receipts').delete().eq('id', selectedReceipt.id).then(() => {
                                                         setSelectedReceipt(null)
-                                                        setReceipts(receipts.filter(r => r.id !== selectedReceipt.id))
+                                                        setAllReceipts(allReceipts.filter(r => r.id !== selectedReceipt.id))
                                                     })
                                                 }
                                             }}
@@ -454,22 +575,11 @@ export default function DashboardPage() {
                                         </Link>
                                     </motion.div>
 
-                                    <motion.div 
-                                        className="border border-black bg-white p-6 flex-1 flex flex-col items-center justify-center text-center"
-                                        initial={{ opacity: 0, y: 10 }}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        transition={{ delay: 0.2 }}
-                                    >
-                                        <div className="h-16 w-16 bg-neutral-100 border border-black flex items-center justify-center mb-4">
-                                            <ImageIcon className="h-8 w-8 text-neutral-300" />
-                                        </div>
-                                        <p className="text-neutral-500 text-sm mb-2">
-                                            Select a receipt from the table
-                                        </p>
-                                        <p className="text-neutral-400 text-xs">
-                                            Preview and manage your expenses
-                                        </p>
-                                    </motion.div>
+                                    {/* Category Breakdown Chart */}
+                                    <CategoryBreakdownChart 
+                                        receipts={currentPeriodReceipts}
+                                        className="shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
+                                    />
                                 </motion.div>
                             )}
                         </AnimatePresence>
