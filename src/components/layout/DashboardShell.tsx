@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
@@ -14,14 +14,32 @@ import {
     X,
     Bell,
     Search,
-    ChevronRight
+    ChevronRight,
+    WifiOff
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { motion, AnimatePresence } from 'framer-motion'
 
 export default function DashboardShell({ children }: { children: React.ReactNode }) {
     const [isSidebarOpen, setIsSidebarOpen] = useState(false)
+    const [isOnline, setIsOnline] = useState(true)
     const pathname = usePathname()
+
+    // Network status detection
+    useEffect(() => {
+        setIsOnline(navigator.onLine)
+        
+        const handleOnline = () => setIsOnline(true)
+        const handleOffline = () => setIsOnline(false)
+        
+        window.addEventListener('online', handleOnline)
+        window.addEventListener('offline', handleOffline)
+        
+        return () => {
+            window.removeEventListener('online', handleOnline)
+            window.removeEventListener('offline', handleOffline)
+        }
+    }, [])
 
     const navigation = [
         { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
@@ -178,16 +196,34 @@ export default function DashboardShell({ children }: { children: React.ReactNode
                             <kbd className="ml-2 text-xs text-neutral-400 border border-black/20 px-1.5 py-0.5">⌘K</kbd>
                         </motion.button>
 
-                        {/* Status Badge */}
-                        <motion.div 
-                            className="hidden md:flex items-center gap-2 border border-swiss-green bg-green-50 px-3 py-1.5"
-                            initial={{ opacity: 0, scale: 0.9 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            transition={{ delay: 0.2 }}
-                        >
-                            <span className="h-2 w-2 bg-swiss-green rounded-full animate-pulse" />
-                            <span className="text-xs font-mono text-swiss-green font-bold">ONLINE</span>
-                        </motion.div>
+                        {/* Status Badge - Dynamic Online/Offline */}
+                        <AnimatePresence mode="wait">
+                            <motion.div 
+                                key={isOnline ? 'online' : 'offline'}
+                                className={cn(
+                                    "hidden md:flex items-center gap-2 px-3 py-1.5 border transition-colors",
+                                    isOnline 
+                                        ? "border-swiss-green bg-green-50" 
+                                        : "border-red-500 bg-red-50"
+                                )}
+                                initial={{ opacity: 0, scale: 0.9 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                exit={{ opacity: 0, scale: 0.9 }}
+                                transition={{ duration: 0.2 }}
+                            >
+                                {isOnline ? (
+                                    <>
+                                        <span className="h-2 w-2 bg-swiss-green rounded-full animate-pulse" />
+                                        <span className="text-xs font-mono text-swiss-green font-bold">ONLINE</span>
+                                    </>
+                                ) : (
+                                    <>
+                                        <WifiOff className="h-3 w-3 text-red-600" />
+                                        <span className="text-xs font-mono text-red-600 font-bold">OFFLINE</span>
+                                    </>
+                                )}
+                            </motion.div>
+                        </AnimatePresence>
 
                         {/* Notifications */}
                         <motion.button 
