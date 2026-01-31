@@ -7,6 +7,7 @@ import DashboardShell from '@/components/layout/DashboardShell'
 import { Wallet, Target, Plus, Trash2, Edit2, Check, X, TrendingUp, AlertTriangle } from 'lucide-react'
 import { useBudget } from '@/lib/budget'
 import { useCurrency } from '@/lib/currency'
+import { useNotifications } from '@/lib/notifications'
 import { cn } from '@/lib/utils'
 import { motion, AnimatePresence } from 'framer-motion'
 
@@ -31,6 +32,7 @@ export default function BudgetPage() {
     const supabase = createClient()
     const { currentMonthBudget, setTotalBudget, setCategoryBudget, removeCategoryBudget } = useBudget()
     const { formatAmount } = useCurrency()
+    const { checkBudgetAlert } = useNotifications()
     
     const [spending, setSpending] = useState<SpendingData>({ total: 0, byCategory: {} })
     const [loading, setLoading] = useState(true)
@@ -82,6 +84,20 @@ export default function BudgetPage() {
         }
         fetchSpending()
     }, [supabase])
+
+    // Check for budget alerts when spending data changes
+    useEffect(() => {
+        if (loading || !currentMonthBudget?.totalBudget) return
+
+        // Check total budget alert
+        checkBudgetAlert(spending.total, currentMonthBudget.totalBudget)
+
+        // Check category budget alerts
+        currentMonthBudget.categoryBudgets.forEach(cat => {
+            const spent = spending.byCategory[cat.category] || 0
+            checkBudgetAlert(spent, cat.amount, cat.category)
+        })
+    }, [spending, currentMonthBudget, loading, checkBudgetAlert])
 
     const handleSaveTotal = () => {
         const amount = parseFloat(totalInput)
