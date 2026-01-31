@@ -6,20 +6,20 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import DashboardShell from '@/components/layout/DashboardShell'
 import { DashboardSkeleton } from '@/components/ui/Skeleton'
-import { 
-  ArrowUpRight, 
-  TrendingUp, 
-  TrendingDown,
-  CheckCircle, 
-  FileText, 
-  Upload, 
-  X, 
-  Image as ImageIcon,
-  Receipt,
-  Calendar,
-  DollarSign,
-  Tag,
-  ChevronDown
+import {
+    ArrowUpRight,
+    TrendingUp,
+    TrendingDown,
+    CheckCircle,
+    FileText,
+    Upload,
+    X,
+    Image as ImageIcon,
+    Receipt,
+    Calendar,
+    DollarSign,
+    Tag,
+    ChevronDown
 } from 'lucide-react'
 import CategoryBreakdownChart from '@/components/analytics/CategoryBreakdownChart'
 import SpendingTrendsChart from '@/components/analytics/SpendingTrendsChart'
@@ -93,26 +93,85 @@ function getDateRange(period: TimePeriod): { start: Date; end: Date; prevStart: 
 
 // Animation variants
 const containerVariants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.1
+    hidden: { opacity: 0 },
+    visible: {
+        opacity: 1,
+        transition: {
+            staggerChildren: 0.1
+        }
     }
-  }
 }
 
 const itemVariants = {
-  hidden: { opacity: 0, y: 20 },
-  visible: { 
-    opacity: 1, 
-    y: 0,
-    transition: {
-      duration: 0.4,
-      ease: [0.22, 1, 0.36, 1] as const
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+        opacity: 1,
+        y: 0,
+        transition: {
+            duration: 0.4,
+            ease: [0.22, 1, 0.36, 1] as const
+        }
     }
-  }
 }
+
+// Swiss Style Metric Card with animations - MOVED OUTSIDE COMPONENT TO FIX ANTI-PATTERN
+interface MetricCardProps {
+    label: string
+    value: string
+    subtext: string
+    alert?: boolean
+    trend?: number
+    icon?: React.ComponentType<{ className?: string }>
+}
+
+const MetricCard = ({
+    label,
+    value,
+    subtext,
+    alert,
+    trend,
+    icon: Icon
+}: MetricCardProps) => (
+    <motion.div
+        className="group bg-white border text-black p-6 flex flex-col justify-between h-48 border-black hover:bg-neutral-50 transition-all duration-300 cursor-default"
+        whileHover={{
+            y: -4,
+            boxShadow: "6px 6px 0px 0px rgba(0,0,0,1)"
+        }}
+        transition={{ duration: 0.2 }}
+    >
+        <div className="flex justify-between items-start">
+            <div className="flex items-center gap-2">
+                {Icon && <Icon className="h-4 w-4 text-neutral-400" />}
+                <span className="text-xs font-bold uppercase tracking-widest text-neutral-500">{label}</span>
+            </div>
+            {alert && (
+                <motion.div
+                    className="h-3 w-3 bg-swiss-orange rounded-full"
+                    animate={{ scale: [1, 1.2, 1] }}
+                    transition={{ duration: 2, repeat: Infinity }}
+                />
+            )}
+        </div>
+        <div>
+            <div className="flex items-baseline gap-3">
+                <h3 className="text-4xl md:text-5xl font-bold tracking-tighter mb-2 group-hover:translate-x-1 transition-transform duration-300">
+                    {value}
+                </h3>
+                {trend !== undefined && trend !== 0 && (
+                    <span className={cn(
+                        "text-xs font-bold flex items-center gap-1",
+                        trend > 0 ? "text-swiss-green" : "text-swiss-orange"
+                    )}>
+                        {trend > 0 ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
+                        {Math.abs(trend)}%
+                    </span>
+                )}
+            </div>
+            <p className="text-sm font-mono text-neutral-600 border-l-2 border-swiss-blue pl-2">{subtext}</p>
+        </div>
+    </motion.div>
+)
 
 export default function DashboardPage() {
     const router = useRouter()
@@ -163,7 +222,7 @@ export default function DashboardPage() {
     // Calculate metrics based on selected period
     const { currentPeriodReceipts, previousPeriodReceipts, receipts } = useMemo(() => {
         const { start, end, prevStart, prevEnd } = getDateRange(selectedPeriod)
-        
+
         const current = allReceipts.filter(r => {
             if (!r.purchase_date) return false
             const date = new Date(r.purchase_date)
@@ -179,8 +238,8 @@ export default function DashboardPage() {
         // For the table, show recent 10
         const recentReceipts = allReceipts.slice(0, 10)
 
-        return { 
-            currentPeriodReceipts: current, 
+        return {
+            currentPeriodReceipts: current,
             previousPeriodReceipts: previous,
             receipts: recentReceipts
         }
@@ -190,9 +249,9 @@ export default function DashboardPage() {
     const totalAmount = currentPeriodReceipts.reduce((sum, r) => sum + (Number(r.total_amount) || 0), 0)
     const receiptCount = currentPeriodReceipts.length
     const previousTotal = previousPeriodReceipts.reduce((sum, r) => sum + (Number(r.total_amount) || 0), 0)
-    
+
     // Calculate trend percentage
-    const trend = previousTotal > 0 
+    const trend = previousTotal > 0
         ? Math.round(((totalAmount - previousTotal) / previousTotal) * 100)
         : totalAmount > 0 ? 100 : 0
 
@@ -208,56 +267,6 @@ export default function DashboardPage() {
         const date = new Date(dateStr)
         return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
     }
-
-    // Swiss Style Metric Card with animations
-    const MetricCard = ({ 
-        label, 
-        value, 
-        subtext, 
-        alert,
-        trend,
-        icon: Icon
-    }: any) => (
-        <motion.div 
-            className="group bg-white border text-black p-6 flex flex-col justify-between h-48 border-black hover:bg-neutral-50 transition-all duration-300 cursor-default"
-            whileHover={{ 
-                y: -4, 
-                boxShadow: "6px 6px 0px 0px rgba(0,0,0,1)" 
-            }}
-            transition={{ duration: 0.2 }}
-        >
-            <div className="flex justify-between items-start">
-                <div className="flex items-center gap-2">
-                    {Icon && <Icon className="h-4 w-4 text-neutral-400" />}
-                    <span className="text-xs font-bold uppercase tracking-widest text-neutral-500">{label}</span>
-                </div>
-                {alert && (
-                    <motion.div 
-                        className="h-3 w-3 bg-swiss-orange rounded-full"
-                        animate={{ scale: [1, 1.2, 1] }}
-                        transition={{ duration: 2, repeat: Infinity }}
-                    />
-                )}
-            </div>
-            <div>
-                <div className="flex items-baseline gap-3">
-                    <h3 className="text-4xl md:text-5xl font-bold tracking-tighter mb-2 group-hover:translate-x-1 transition-transform duration-300">
-                        {value}
-                    </h3>
-                    {trend !== undefined && trend !== 0 && (
-                        <span className={cn(
-                            "text-xs font-bold flex items-center gap-1",
-                            trend > 0 ? "text-swiss-green" : "text-swiss-orange"
-                        )}>
-                            {trend > 0 ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
-                            {Math.abs(trend)}%
-                        </span>
-                    )}
-                </div>
-                <p className="text-sm font-mono text-neutral-600 border-l-2 border-swiss-blue pl-2">{subtext}</p>
-            </div>
-        </motion.div>
-    )
 
     if (loading) {
         return (
@@ -346,17 +355,17 @@ export default function DashboardPage() {
                 </div>
 
                 {/* Analytics Charts Row */}
-                <motion.div 
+                <motion.div
                     className="border-t border-black bg-neutral-50 p-8"
                     variants={itemVariants}
                 >
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                        <SpendingTrendsChart 
+                        <SpendingTrendsChart
                             receipts={currentPeriodReceipts}
                             period={selectedPeriod}
                             className="shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
                         />
-                        <StoreAnalysisChart 
+                        <StoreAnalysisChart
                             receipts={currentPeriodReceipts}
                             className="shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
                         />
@@ -364,7 +373,7 @@ export default function DashboardPage() {
                 </motion.div>
 
                 {/* Quick Stats Cards */}
-                <motion.div 
+                <motion.div
                     className="border-t border-black bg-white p-8"
                     variants={itemVariants}
                 >
@@ -376,7 +385,7 @@ export default function DashboardPage() {
                 <div className="grid grid-cols-1 lg:grid-cols-3 min-h-[600px]">
 
                     {/* Left: Recent Receipts Table */}
-                    <motion.div 
+                    <motion.div
                         className="lg:col-span-2 bg-white p-8"
                         variants={itemVariants}
                     >
@@ -385,8 +394,8 @@ export default function DashboardPage() {
                                 <h3 className="text-xl font-bold tracking-tight">Recent Receipts</h3>
                                 <p className="text-sm text-neutral-500 mt-1">Your latest transactions</p>
                             </div>
-                            <Link 
-                                href="/receipts" 
+                            <Link
+                                href="/receipts"
                                 className="group inline-flex items-center gap-1 text-sm font-bold underline decoration-2 underline-offset-4 hover:text-swiss-blue transition-colors"
                             >
                                 View All
@@ -408,7 +417,7 @@ export default function DashboardPage() {
                                     {receipts.length === 0 ? (
                                         <tr>
                                             <td colSpan={4} className="p-8">
-                                                <motion.div 
+                                                <motion.div
                                                     className="flex flex-col items-center justify-center text-center"
                                                     initial={{ opacity: 0, scale: 0.95 }}
                                                     animate={{ opacity: 1, scale: 1 }}
@@ -418,7 +427,7 @@ export default function DashboardPage() {
                                                     </div>
                                                     <p className="text-neutral-600 font-sans font-medium mb-2">No receipts yet</p>
                                                     <p className="text-sm text-neutral-400 font-sans mb-4">Upload your first receipt to get started</p>
-                                                    <Link 
+                                                    <Link
                                                         href="/upload"
                                                         className="inline-flex items-center gap-2 px-4 py-2 bg-black text-white text-sm font-bold hover:bg-neutral-800 transition-colors"
                                                     >
@@ -437,8 +446,8 @@ export default function DashboardPage() {
                                                 transition={{ delay: index * 0.05 }}
                                                 className={cn(
                                                     "cursor-pointer transition-all duration-200",
-                                                    selectedReceipt?.id === receipt.id 
-                                                        ? "bg-swiss-blue/5 border-l-4 border-l-swiss-blue" 
+                                                    selectedReceipt?.id === receipt.id
+                                                        ? "bg-swiss-blue/5 border-l-4 border-l-swiss-blue"
                                                         : "hover:bg-neutral-50 border-l-4 border-l-transparent"
                                                 )}
                                                 onClick={() => setSelectedReceipt(receipt)}
@@ -477,13 +486,13 @@ export default function DashboardPage() {
                     </motion.div>
 
                     {/* Right: Receipt Preview / Actions */}
-                    <motion.div 
+                    <motion.div
                         className="lg:col-span-1 bg-neutral-50 border-l border-black p-8 flex flex-col gap-6"
                         variants={itemVariants}
                     >
                         <AnimatePresence mode="wait">
                             {selectedReceipt ? (
-                                <motion.div 
+                                <motion.div
                                     key="detail"
                                     className="border border-black bg-white flex flex-col h-full"
                                     initial={{ opacity: 0, x: 20 }}
@@ -536,8 +545,8 @@ export default function DashboardPage() {
                                             <span className="font-bold uppercase text-xs text-neutral-500">Category</span>
                                             <span className={cn(
                                                 "px-2 py-1 text-xs font-bold uppercase",
-                                                selectedReceipt.category_name 
-                                                    ? "bg-swiss-green/10 text-swiss-green" 
+                                                selectedReceipt.category_name
+                                                    ? "bg-swiss-green/10 text-swiss-green"
                                                     : "bg-neutral-100 text-neutral-500"
                                             )}>
                                                 {selectedReceipt.category_name || 'Uncategorized'}
@@ -571,18 +580,18 @@ export default function DashboardPage() {
                                     </div>
                                 </motion.div>
                             ) : (
-                                <motion.div 
+                                <motion.div
                                     key="empty"
                                     className="flex flex-col gap-6"
                                     initial={{ opacity: 0 }}
                                     animate={{ opacity: 1 }}
                                     exit={{ opacity: 0 }}
                                 >
-                                    <motion.div 
+                                    <motion.div
                                         className="border border-black bg-white p-6 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
-                                        whileHover={{ 
-                                            y: -2, 
-                                            boxShadow: "6px 6px 0px 0px rgba(0,0,0,1)" 
+                                        whileHover={{
+                                            y: -2,
+                                            boxShadow: "6px 6px 0px 0px rgba(0,0,0,1)"
                                         }}
                                     >
                                         <div className="flex items-center gap-3 mb-4">
@@ -592,13 +601,13 @@ export default function DashboardPage() {
                                             <h4 className="font-bold text-lg">New Receipt</h4>
                                         </div>
                                         <p className="text-sm text-neutral-600 mb-6">
-                                            {receipts.length === 0 
+                                            {receipts.length === 0
                                                 ? "Get started by uploading your first receipt. We'll extract the details automatically."
                                                 : "Click a receipt from the list to preview, or upload a new one."
                                             }
                                         </p>
-                                        <Link 
-                                            href="/upload" 
+                                        <Link
+                                            href="/upload"
                                             className="block w-full py-3 bg-swiss-blue text-white font-bold hover:bg-blue-700 transition-all border border-black text-center shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] hover:shadow-[5px_5px_0px_0px_rgba(0,0,0,1)] hover:-translate-x-0.5 hover:-translate-y-0.5"
                                         >
                                             {receipts.length === 0 ? "Upload First Receipt" : "Upload Receipt"}
@@ -606,7 +615,7 @@ export default function DashboardPage() {
                                     </motion.div>
 
                                     {/* Category Breakdown Chart */}
-                                    <CategoryBreakdownChart 
+                                    <CategoryBreakdownChart
                                         receipts={currentPeriodReceipts}
                                         className="shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
                                     />
