@@ -1,10 +1,10 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import DashboardShell from '@/components/layout/DashboardShell'
-import { Settings as SettingsIcon, Bell, Moon, Sun, Monitor, Globe, Database, Shield, ChevronRight, Check, DollarSign, Mail, TrendingUp, Calendar, AlertTriangle } from 'lucide-react'
+import { Settings as SettingsIcon, Bell, Moon, Sun, Monitor, Globe, Database, Shield, ChevronRight, Check, DollarSign, Mail, TrendingUp, Calendar, AlertTriangle, Download, Upload } from 'lucide-react'
 import { useTheme } from '@/lib/theme'
 import { useCurrency, CURRENCIES } from '@/lib/currency'
 import { useNotifications, NotificationPreferences } from '@/lib/notifications'
@@ -20,6 +20,9 @@ export default function SettingsPage() {
     const [showThemeMenu, setShowThemeMenu] = useState(false)
     const [showCurrencyMenu, setShowCurrencyMenu] = useState(false)
     const [showNotificationMenu, setShowNotificationMenu] = useState(false)
+    const [exportStatus, setExportStatus] = useState<'idle' | 'exporting' | 'done'>('idle')
+    const [importStatus, setImportStatus] = useState<'idle' | 'importing' | 'done' | 'error'>('idle')
+    const fileInputRef = useRef<HTMLInputElement>(null)
 
     useEffect(() => {
         const checkAuth = async () => {
@@ -30,6 +33,133 @@ export default function SettingsPage() {
         }
         checkAuth()
     }, [router, supabase])
+
+    // Export user data as JSON
+    const handleExport = async () => {
+        setExportStatus('exporting')
+        try {
+            const { data: { session } } = await supabase.auth.getSession()
+            if (!session) return
+
+            // Fetch all user receipts
+            const { data: receipts } = await supabase
+                .from('receipts')
+                .select('*')
+                .eq('user_id', session.user.id)
+                .order('created_at', { ascending: false })
+
+            // Fetch user categories
+            const { data: categories } = await supabase
+                .from('categories')
+                .select('*')
+                .eq('user_id', session.user.id)
+
+            const exportData = {
+                version: '1.0.0',
+                exportedAt: new Date().toISOString(),
+                user: {
+                    email: session.user.email,
+                    id: session.user.id
+                },
+                receipts: receipts || [],
+                categories: categories || [],
+                preferences: {
+                    theme,
+                    currency: currency.code,
+                    notifications: preferences
+                }
+            }
+
+            const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' })
+            const url = URL.createObjectURL(blob)
+            const a = document.createElement('a')
+            a.href = url
+            a.download = `daticket-backup-${new Date().toISOString().split('T')[0]}.json`
+            document.body.appendChild(a)
+            a.click()
+            document.body.removeChild(a)
+            URL.revokeObjectURL(url)
+
+            setExportStatus('done')
+            setTimeout(() => setExportStatus('idle'), 2000)
+        } catch (error) {
+            console.error('Export failed:', error)
+            setExportStatus('idle')
+        }
+    }
+
+    // Import user data from JSON
+    const handleImport = async (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0]
+        if (!file) return
+
+        setImportStatus('importing')
+        try {
+            const text = await file.text()
+            const data = JSON.parse(text)
+
+            // Validate structure
+            if (!data.version || !data.receipts) {
+                throw new Error('Invalid backup file format')
+            }
+
+            const { data: { session } } = await supabase.auth.getSession()
+            if (!session) return
+
+            // Import receipts (skip if they already exist by matching store+amount+date)
+            if (data.receipts?.length > 0) {
+                for (const receipt of data.receipts) {
+                    // Check if receipt exists
+                    const { data: existing } = await supabase
+                        .from('receipts')
+                        .select('id')
+                        .eq('user_id', session.user.id)
+                        .eq('store_name', receipt.store_name)
+                        .eq('amount', receipt.amount)
+                        .eq('receipt_date', receipt.receipt_date)
+                        .single()
+
+                    if (!existing) {
+                        await supabase.from('receipts').insert({
+                            user_id: session.user.id,
+                            store_name: receipt.store_name,
+                            amount: receipt.amount,
+                            receipt_date: receipt.receipt_date,
+                            category: receipt.category,
+                            notes: receipt.notes,
+                            image_url: receipt.image_url
+                        })
+                    }
+                }
+            }
+
+            // Import preferences
+            if (data.preferences) {
+                if (data.preferences.theme) setTheme(data.preferences.theme)
+                if (data.preferences.currency) setCurrency(data.preferences.currency)
+                if (data.preferences.notifications) {
+                    Object.entries(data.preferences.notifications).forEach(([key, value]) => {
+                        updatePreference(key as keyof NotificationPreferences, value as boolean)
+                    })
+                }
+            }
+
+            setImportStatus('done')
+            setTimeout(() => {
+                setImportStatus('idle')
+                router.refresh()
+            }, 2000)
+        } catch (error) {
+            console.error('Import failed:', error)
+            setImportStatus('error')
+            setTimeout(() => setImportStatus('idle'), 3000)
+        }
+
+        // Reset file input
+        if (fileInputRef.current) {
+            fileInputRef.current.value = ''
+        }
+    }
 
     const themeOptions = [
         { value: 'light' as const, label: 'Light', icon: Sun },
@@ -262,12 +392,68 @@ export default function SettingsPage() {
                         <h2 className="font-bold uppercase text-sm tracking-wider">Data & Storage</h2>
                     </div>
 
-                    <SettingRow
-                        icon={Database}
-                        title="Export Data"
-                        description="Download all your receipts as CSV"
-                        action={<button className="px-3 py-1 border border-black dark:border-neutral-600 text-xs font-bold hover:bg-neutral-100 dark:hover:bg-neutral-700">Export</button>}
-                    />
+                    <div className="flex items-center justify-between p-4 border-b border-black dark:border-neutral-700 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors">
+                        <div className="flex items-center gap-4">
+                            <div className="h-10 w-10 bg-neutral-100 dark:bg-neutral-800 border border-black dark:border-neutral-700 flex items-center justify-center">
+                                <Download className="h-5 w-5" />
+                            </div>
+                            <div>
+                                <p className="font-bold">Export Data</p>
+                                <p className="text-sm text-neutral-500 dark:text-neutral-400">Download all receipts as JSON backup</p>
+                            </div>
+                        </div>
+                        <button 
+                            onClick={handleExport}
+                            disabled={exportStatus !== 'idle'}
+                            className={cn(
+                                "px-4 py-2 border border-black dark:border-neutral-600 text-xs font-bold transition-colors",
+                                exportStatus === 'idle' && "hover:bg-neutral-100 dark:hover:bg-neutral-700",
+                                exportStatus === 'exporting' && "bg-neutral-100 dark:bg-neutral-700 cursor-wait",
+                                exportStatus === 'done' && "bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300"
+                            )}
+                        >
+                            {exportStatus === 'idle' && 'Export JSON'}
+                            {exportStatus === 'exporting' && 'Exporting...'}
+                            {exportStatus === 'done' && '✓ Downloaded'}
+                        </button>
+                    </div>
+
+                    <div className="flex items-center justify-between p-4 border-b border-black dark:border-neutral-700 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors">
+                        <div className="flex items-center gap-4">
+                            <div className="h-10 w-10 bg-neutral-100 dark:bg-neutral-800 border border-black dark:border-neutral-700 flex items-center justify-center">
+                                <Upload className="h-5 w-5" />
+                            </div>
+                            <div>
+                                <p className="font-bold">Import Data</p>
+                                <p className="text-sm text-neutral-500 dark:text-neutral-400">Restore from JSON backup file</p>
+                            </div>
+                        </div>
+                        <div>
+                            <input
+                                ref={fileInputRef}
+                                type="file"
+                                accept=".json"
+                                onChange={handleImport}
+                                className="hidden"
+                                id="import-file"
+                            />
+                            <label 
+                                htmlFor="import-file"
+                                className={cn(
+                                    "px-4 py-2 border border-black dark:border-neutral-600 text-xs font-bold transition-colors cursor-pointer inline-block",
+                                    importStatus === 'idle' && "hover:bg-neutral-100 dark:hover:bg-neutral-700",
+                                    importStatus === 'importing' && "bg-neutral-100 dark:bg-neutral-700 cursor-wait",
+                                    importStatus === 'done' && "bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300",
+                                    importStatus === 'error' && "bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300"
+                                )}
+                            >
+                                {importStatus === 'idle' && 'Import JSON'}
+                                {importStatus === 'importing' && 'Importing...'}
+                                {importStatus === 'done' && '✓ Imported'}
+                                {importStatus === 'error' && '✗ Failed'}
+                            </label>
+                        </div>
+                    </div>
                     <SettingRow
                         icon={Shield}
                         title="Privacy"
