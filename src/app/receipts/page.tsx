@@ -55,6 +55,12 @@ const itemVariants = {
   }
 }
 
+type DateRange = {
+    start: Date | null
+    end: Date | null
+    preset: string
+}
+
 export default function ReceiptsPage() {
     const router = useRouter()
     const supabase = createClient()
@@ -63,6 +69,8 @@ export default function ReceiptsPage() {
     const [loading, setLoading] = useState(true)
     const [filter, setFilter] = useState('all')
     const [searchQuery, setSearchQuery] = useState('')
+    const [dateRange, setDateRange] = useState<DateRange>({ start: null, end: null, preset: 'all' })
+    const [showDatePicker, setShowDatePicker] = useState(false)
 
     useEffect(() => {
         const fetchReceipts = async () => {
@@ -111,8 +119,63 @@ export default function ReceiptsPage() {
 
     const categories = [...new Set(receipts.map(r => r.category_name).filter(Boolean))]
     
+    // Date range presets
+    const applyDatePreset = (preset: string) => {
+        const today = new Date()
+        today.setHours(23, 59, 59, 999)
+        let start: Date | null = null
+        let end: Date | null = today
+        
+        switch (preset) {
+            case 'today':
+                start = new Date(today)
+                start.setHours(0, 0, 0, 0)
+                break
+            case 'week':
+                start = new Date(today)
+                start.setDate(start.getDate() - 7)
+                start.setHours(0, 0, 0, 0)
+                break
+            case 'month':
+                start = new Date(today)
+                start.setMonth(start.getMonth() - 1)
+                start.setHours(0, 0, 0, 0)
+                break
+            case 'quarter':
+                start = new Date(today)
+                start.setMonth(start.getMonth() - 3)
+                start.setHours(0, 0, 0, 0)
+                break
+            case 'year':
+                start = new Date(today)
+                start.setFullYear(start.getFullYear() - 1)
+                start.setHours(0, 0, 0, 0)
+                break
+            case 'all':
+            default:
+                start = null
+                end = null
+                break
+        }
+        
+        setDateRange({ start, end, preset })
+        setShowDatePicker(false)
+    }
+
     // Filter and search receipts
     let filteredReceipts = receipts
+    
+    // Date range filter
+    if (dateRange.start || dateRange.end) {
+        filteredReceipts = filteredReceipts.filter(r => {
+            if (!r.purchase_date) return false
+            const receiptDate = new Date(r.purchase_date)
+            if (dateRange.start && receiptDate < dateRange.start) return false
+            if (dateRange.end && receiptDate > dateRange.end) return false
+            return true
+        })
+    }
+    
     if (filter !== 'all') {
         filteredReceipts = filteredReceipts.filter(r => r.category_name === filter)
     }
@@ -218,6 +281,103 @@ export default function ReceiptsPage() {
                                 <X className="h-4 w-4" />
                             </button>
                         )}
+                    </div>
+
+                    {/* Date Range Picker */}
+                    <div className="relative">
+                        <motion.button
+                            onClick={() => setShowDatePicker(!showDatePicker)}
+                            className={cn(
+                                "flex items-center gap-2 px-4 py-2 text-sm font-bold border border-black transition-all",
+                                dateRange.preset !== 'all' 
+                                    ? 'bg-swiss-blue text-white border-swiss-blue' 
+                                    : 'bg-white text-black hover:bg-neutral-100'
+                            )}
+                            whileHover={{ scale: 1.02 }}
+                            whileTap={{ scale: 0.98 }}
+                        >
+                            <Calendar className="h-4 w-4" />
+                            {dateRange.preset === 'all' && 'All Time'}
+                            {dateRange.preset === 'today' && 'Today'}
+                            {dateRange.preset === 'week' && 'Last 7 Days'}
+                            {dateRange.preset === 'month' && 'Last 30 Days'}
+                            {dateRange.preset === 'quarter' && 'Last 3 Months'}
+                            {dateRange.preset === 'year' && 'Last Year'}
+                            {dateRange.preset === 'custom' && 'Custom Range'}
+                        </motion.button>
+                        
+                        <AnimatePresence>
+                            {showDatePicker && (
+                                <motion.div
+                                    initial={{ opacity: 0, y: -10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, y: -10 }}
+                                    className="absolute top-full left-0 mt-2 z-50 bg-white border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] p-4 min-w-[280px]"
+                                >
+                                    <div className="space-y-2">
+                                        <p className="text-xs font-bold uppercase tracking-wider text-neutral-500 mb-3">Date Presets</p>
+                                        {[
+                                            { key: 'all', label: 'All Time' },
+                                            { key: 'today', label: 'Today' },
+                                            { key: 'week', label: 'Last 7 Days' },
+                                            { key: 'month', label: 'Last 30 Days' },
+                                            { key: 'quarter', label: 'Last 3 Months' },
+                                            { key: 'year', label: 'Last Year' },
+                                        ].map(({ key, label }) => (
+                                            <button
+                                                key={key}
+                                                onClick={() => applyDatePreset(key)}
+                                                className={cn(
+                                                    "block w-full text-left px-3 py-2 text-sm font-medium transition-colors",
+                                                    dateRange.preset === key 
+                                                        ? 'bg-black text-white' 
+                                                        : 'hover:bg-neutral-100'
+                                                )}
+                                            >
+                                                {label}
+                                            </button>
+                                        ))}
+                                        
+                                        <div className="border-t border-neutral-200 pt-3 mt-3">
+                                            <p className="text-xs font-bold uppercase tracking-wider text-neutral-500 mb-2">Custom Range</p>
+                                            <div className="grid grid-cols-2 gap-2">
+                                                <div>
+                                                    <label className="text-xs text-neutral-500">From</label>
+                                                    <input
+                                                        type="date"
+                                                        value={dateRange.start ? dateRange.start.toISOString().split('T')[0] : ''}
+                                                        onChange={(e) => {
+                                                            const start = e.target.value ? new Date(e.target.value) : null
+                                                            setDateRange(prev => ({ ...prev, start, preset: 'custom' }))
+                                                        }}
+                                                        className="w-full px-2 py-1 text-sm border border-black"
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <label className="text-xs text-neutral-500">To</label>
+                                                    <input
+                                                        type="date"
+                                                        value={dateRange.end ? dateRange.end.toISOString().split('T')[0] : ''}
+                                                        onChange={(e) => {
+                                                            const end = e.target.value ? new Date(e.target.value) : null
+                                                            if (end) end.setHours(23, 59, 59, 999)
+                                                            setDateRange(prev => ({ ...prev, end, preset: 'custom' }))
+                                                        }}
+                                                        className="w-full px-2 py-1 text-sm border border-black"
+                                                    />
+                                                </div>
+                                            </div>
+                                            <button
+                                                onClick={() => setShowDatePicker(false)}
+                                                className="w-full mt-2 px-3 py-2 bg-black text-white text-sm font-bold"
+                                            >
+                                                Apply
+                                            </button>
+                                        </div>
+                                    </div>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
                     </div>
 
                     {/* Category Filters */}

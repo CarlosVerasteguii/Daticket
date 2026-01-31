@@ -137,7 +137,8 @@ development_status:
 
   5-2-date-range-filter:
     title: "Date Range Picker Filter"
-    status: backlog
+    status: done
+    completed: "2026-01-31T01:35:00-06:00"
     description: "Filter receipts by custom date ranges, presets (this week, month)"
 
   5-3-amount-range-filter:
@@ -310,11 +311,11 @@ development_status:
 # =============================================================================
 metrics:
   total_stories: 42
-  done: 21
+  done: 22
   in_progress: 0
   ready_for_dev: 0
-  backlog: 21
-  completion_percentage: 50.0
+  backlog: 20
+  completion_percentage: 52.4
 
 # =============================================================================
 # QUICK QUEUE (PRIORITY ORDER FOR ORCHESTRATOR)
