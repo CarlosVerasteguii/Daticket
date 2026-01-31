@@ -242,12 +242,13 @@ development_status:
   # ===========================================================================
   epic-8:
     title: "Settings & User Preferences"
-    status: backlog
+    status: in-progress
     priority: low
 
   8-1-dark-mode:
     title: "Dark Mode Toggle"
-    status: backlog
+    status: done
+    completed: "2026-01-31T03:15:00-06:00"
     description: "System preference detection, manual toggle, persist"
 
   8-2-currency-format:
@@ -331,11 +332,11 @@ development_status:
 # =============================================================================
 metrics:
   total_stories: 42
-  done: 33
+  done: 34
   in_progress: 0
   ready_for_dev: 0
-  backlog: 9
-  completion_percentage: 78.6
+  backlog: 8
+  completion_percentage: 81.0
 
 # =============================================================================
 # QUICK QUEUE (PRIORITY ORDER FOR ORCHESTRATOR)

@@ -3,6 +3,8 @@
 @source "../lib";
 @source ".";
 
+@variant dark (&:where(.dark, .dark *));
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -20,12 +22,16 @@
   --foreground: #000000;
 }
 
-/* Force Light Mode everywhere */
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #FFFFFF;
-    --foreground: #000000;
-  }
+/* Dark Mode */
+.dark {
+  --background: #0a0a0a;
+  --foreground: #ededed;
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 /* ============================================
@@ -280,6 +286,10 @@ tr {
   background: #f1f1f1;
 }
 
+.dark ::-webkit-scrollbar-track {
+  background: #1a1a1a;
+}
+
 ::-webkit-scrollbar-thumb {
   background: #888;
   border-radius: 4px;
@@ -287,6 +297,14 @@ tr {
 
 ::-webkit-scrollbar-thumb:hover {
   background: #555;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: #555;
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: #777;
 }
 
 /* Hide scrollbar but keep functionality */
