@@ -1,0 +1,67 @@
+{
+  "subagent": "code-quality-auditor",
+  "status": "complete",
+  "timestamp": "2026-01-31T17:19:00Z",
+  "checks": {
+    "typescript": {
+      "passed": true,
+      "errors": [],
+      "warnings": []
+    },
+    "eslint": {
+      "passed": false,
+      "errors": [
+        {
+          "file": ".agents/skills/typescript-expert/references/utility-types.ts",
+          "issues": ["Multiple @typescript-eslint/no-explicit-any errors (lines 71, 178, 183, 190, 242, 251, 311)"]
+        },
+        {
+          "file": "src/app/budget/page.tsx",
+          "issues": ["Unescaped quotes at line 434"]
+        },
+        {
+          "file": "src/app/dashboard/page.tsx",
+          "issues": [
+            "Unused imports: CheckCircle, ImageIcon",
+            "Unused variable: user (line 120), error (line 137)",
+            "no-explicit-any errors (lines 120, 152, 220)",
+            "CRITICAL: Component created during render at line 320 (MetricCard)"
+          ]
+        }
+      ],
+      "warnings": [
+        {"file": "src/app/api/sessions/route.ts", "issues": ["Unused variables: request (line 51), currentSessionId (line 92)"]}
+      ]
+    },
+    "consoleLogs": {
+      "count": 19,
+      "locations": [
+        "src/actions/scan-receipt.ts:89,93,125,185",
+        "src/app/api/audit/route.ts:37,87",
+        "src/app/settings/page.tsx:92,159,202",
+        "src/components/settings/AuditLog.tsx:41",
+        "src/components/receipts/ReceiptUpload.tsx:76",
+        "src/app/api/sessions/route.ts:100,138,183,218,271",
+        "src/components/settings/SessionsList.tsx:111,162,207"
+      ]
+    },
+    "deadCode": {
+      "found": [
+        "src/app/dashboard/page.tsx: CheckCircle, ImageIcon imports unused",
+        "src/app/dashboard/page.tsx: user variable assigned but never used",
+        "src/app/api/sessions/route.ts: currentSessionId assigned but never used"
+      ]
+    },
+    "importOrder": {
+      "issues": []
+    },
+    "namingConventions": {
+      "issues": []
+    }
+  },
+  "summary": {
+    "total_issues": 28,
+    "critical": 1,
+    "warnings": 27
+  }
+}

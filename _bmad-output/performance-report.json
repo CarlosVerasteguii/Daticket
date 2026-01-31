@@ -1,0 +1,85 @@
+{
+  "subagent": "performance-auditor",
+  "status": "PASS",
+  "timestamp": "2026-01-31T11:25:00Z",
+  "metrics": {
+    "lcp": {
+      "value_ms": 816,
+      "rating": "Good",
+      "breakdown": {
+        "ttfb_ms": 541,
+        "ttfb_percent": 66.3,
+        "render_delay_ms": 275,
+        "render_delay_percent": 33.7
+      },
+      "lcp_element": "H1.text-3xl.font-bold.tracking-tighter"
+    },
+    "cls": {
+      "value": 0.00,
+      "rating": "Excellent"
+    },
+    "dom_stats": {
+      "total_elements": 304,
+      "dom_depth": 13,
+      "max_children": 15,
+      "rating": "Good"
+    }
+  },
+  "build_analysis": {
+    "build_time_seconds": 13.1,
+    "static_pages_generated": 17,
+    "static_generation_time_ms": 1581.2,
+    "framework": "Next.js 16.1.3 (Turbopack)",
+    "routes": {
+      "static": 15,
+      "dynamic": 2,
+      "api": 2
+    }
+  },
+  "next_image_usage": {
+    "components_using_next_image": [
+      "src/components/receipts/ReceiptList.tsx",
+      "src/components/receipts/ReceiptUpload.tsx"
+    ],
+    "raw_img_tags": 0,
+    "rating": "Good"
+  },
+  "render_blocking": {
+    "count": 1,
+    "requests": [
+      {
+        "url": "/_next/static/chunks/[root-of-the-server]__0f0ba101._.css",
+        "download_time_ms": 4,
+        "processing_time_ms": 130,
+        "total_duration_ms": 142
+      }
+    ],
+    "estimated_savings_lcp_ms": 0,
+    "rating": "Acceptable"
+  },
+  "issues": [
+    {
+      "severity": "info",
+      "category": "Deprecation",
+      "description": "Next.js middleware file convention is deprecated - should migrate to 'proxy' pattern"
+    },
+    {
+      "severity": "low",
+      "category": "Performance",
+      "description": "TTFB is 541ms (66% of LCP) - consider server-side optimization or edge caching"
+    }
+  ],
+  "recommendations": [
+    "Migrate from 'middleware.ts' to 'proxy' convention as per Next.js 16 guidelines",
+    "Consider edge caching or CDN to reduce TTFB",
+    "DOM size (304 elements) is reasonable - no action needed",
+    "next/image usage is correct in receipt components"
+  ],
+  "summary": {
+    "overall_score": 85,
+    "lcp_rating": "Good",
+    "cls_rating": "Excellent",
+    "build_healthy": true,
+    "issues_count": 2
+  }
+}
