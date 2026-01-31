@@ -4,7 +4,7 @@ import { useEffect, useState, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import DashboardShell from '@/components/layout/DashboardShell'
-import { Settings as SettingsIcon, Bell, Moon, Sun, Monitor, Globe, Database, Shield, ChevronRight, Check, DollarSign, Mail, TrendingUp, Calendar, AlertTriangle, Download, Upload } from 'lucide-react'
+import { Settings as SettingsIcon, Bell, Moon, Sun, Monitor, Globe, Database, Shield, ChevronRight, Check, DollarSign, Mail, TrendingUp, Calendar, AlertTriangle, Download, Upload, Trash2, AlertCircle } from 'lucide-react'
 import { useTheme } from '@/lib/theme'
 import { useCurrency, CURRENCIES } from '@/lib/currency'
 import { useNotifications, NotificationPreferences } from '@/lib/notifications'
@@ -22,6 +22,9 @@ export default function SettingsPage() {
     const [showNotificationMenu, setShowNotificationMenu] = useState(false)
     const [exportStatus, setExportStatus] = useState<'idle' | 'exporting' | 'done'>('idle')
     const [importStatus, setImportStatus] = useState<'idle' | 'importing' | 'done' | 'error'>('idle')
+    const [showDeleteModal, setShowDeleteModal] = useState(false)
+    const [deleteConfirmation, setDeleteConfirmation] = useState('')
+    const [deleteStatus, setDeleteStatus] = useState<'idle' | 'deleting' | 'error'>('idle')
     const fileInputRef = useRef<HTMLInputElement>(null)
 
     useEffect(() => {
@@ -158,6 +161,44 @@ export default function SettingsPage() {
         // Reset file input
         if (fileInputRef.current) {
             fileInputRef.current.value = ''
+        }
+    }
+
+    // Delete account and all data
+    const handleDeleteAccount = async () => {
+        if (deleteConfirmation !== 'DELETE') return
+        
+        setDeleteStatus('deleting')
+        try {
+            const { data: { session } } = await supabase.auth.getSession()
+            if (!session) return
+
+            // Delete all user receipts
+            await supabase
+                .from('receipts')
+                .delete()
+                .eq('user_id', session.user.id)
+
+            // Delete all user categories
+            await supabase
+                .from('categories')
+                .delete()
+                .eq('user_id', session.user.id)
+
+            // Clear local storage
+            localStorage.removeItem('daticket-theme')
+            localStorage.removeItem('daticket-currency')
+            localStorage.removeItem('daticket-notifications')
+
+            // Sign out (account deletion requires admin API in production)
+            await supabase.auth.signOut()
+
+            // Redirect to home
+            router.push('/')
+        } catch (error) {
+            console.error('Delete failed:', error)
+            setDeleteStatus('error')
+            setTimeout(() => setDeleteStatus('idle'), 3000)
         }
     }
 
@@ -454,12 +495,32 @@ export default function SettingsPage() {
                             </label>
                         </div>
                     </div>
-                    <SettingRow
-                        icon={Shield}
-                        title="Privacy"
-                        description="Manage your data and privacy settings"
-                        action={null}
-                    />
+                </div>
+
+                {/* Danger Zone */}
+                <div className="border border-red-500 dark:border-red-700 bg-white dark:bg-neutral-900">
+                    <div className="p-4 border-b border-red-500 dark:border-red-700 bg-red-50 dark:bg-red-900/20 flex items-center gap-3">
+                        <AlertCircle className="h-5 w-5 text-red-600 dark:text-red-400" />
+                        <h2 className="font-bold uppercase text-sm tracking-wider text-red-600 dark:text-red-400">Danger Zone</h2>
+                    </div>
+
+                    <div className="flex items-center justify-between p-4">
+                        <div className="flex items-center gap-4">
+                            <div className="h-10 w-10 bg-red-100 dark:bg-red-900/30 border border-red-500 dark:border-red-700 flex items-center justify-center">
+                                <Trash2 className="h-5 w-5 text-red-600 dark:text-red-400" />
+                            </div>
+                            <div>
+                                <p className="font-bold text-red-600 dark:text-red-400">Delete Account</p>
+                                <p className="text-sm text-red-500/70 dark:text-red-400/70">Permanently delete your account and all data</p>
+                            </div>
+                        </div>
+                        <button 
+                            onClick={() => setShowDeleteModal(true)}
+                            className="px-4 py-2 bg-red-600 text-white text-xs font-bold hover:bg-red-700 transition-colors"
+                        >
+                            Delete Account
+                        </button>
+                    </div>
                 </div>
 
                 {/* Info */}
@@ -469,6 +530,90 @@ export default function SettingsPage() {
                     <p className="text-xs text-neutral-400 mt-2">Swiss International Edition</p>
                 </div>
             </div>
+
+            {/* Delete Confirmation Modal */}
+            <AnimatePresence>
+                {showDeleteModal && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+                        onClick={() => setShowDeleteModal(false)}
+                    >
+                        <motion.div
+                            initial={{ scale: 0.95, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            exit={{ scale: 0.95, opacity: 0 }}
+                            onClick={(e) => e.stopPropagation()}
+                            className="bg-white dark:bg-neutral-900 border border-black dark:border-neutral-700 p-6 max-w-md w-full"
+                        >
+                            <div className="flex items-center gap-3 mb-4">
+                                <div className="h-12 w-12 bg-red-100 dark:bg-red-900/30 border border-red-500 flex items-center justify-center">
+                                    <AlertCircle className="h-6 w-6 text-red-600" />
+                                </div>
+                                <div>
+                                    <h3 className="font-bold text-lg">Delete Account</h3>
+                                    <p className="text-sm text-neutral-500">This action cannot be undone</p>
+                                </div>
+                            </div>
+
+                            <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 p-4 mb-4">
+                                <p className="text-sm text-red-700 dark:text-red-300">
+                                    <strong>Warning:</strong> This will permanently delete:
+                                </p>
+                                <ul className="text-sm text-red-600 dark:text-red-400 mt-2 space-y-1 list-disc list-inside">
+                                    <li>All your receipts and images</li>
+                                    <li>All your categories</li>
+                                    <li>All your preferences and settings</li>
+                                    <li>Your account and login credentials</li>
+                                </ul>
+                            </div>
+
+                            <div className="mb-4">
+                                <label className="block text-sm font-medium mb-2">
+                                    Type <span className="font-mono font-bold">DELETE</span> to confirm:
+                                </label>
+                                <input
+                                    type="text"
+                                    value={deleteConfirmation}
+                                    onChange={(e) => setDeleteConfirmation(e.target.value)}
+                                    placeholder="DELETE"
+                                    className="w-full px-4 py-2 border border-black dark:border-neutral-700 bg-white dark:bg-neutral-800 font-mono"
+                                />
+                            </div>
+
+                            <div className="flex gap-3">
+                                <button
+                                    onClick={() => {
+                                        setShowDeleteModal(false)
+                                        setDeleteConfirmation('')
+                                        setDeleteStatus('idle')
+                                    }}
+                                    className="flex-1 px-4 py-2 border border-black dark:border-neutral-700 font-bold hover:bg-neutral-100 dark:hover:bg-neutral-800"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={handleDeleteAccount}
+                                    disabled={deleteConfirmation !== 'DELETE' || deleteStatus === 'deleting'}
+                                    className={cn(
+                                        "flex-1 px-4 py-2 font-bold text-white transition-colors",
+                                        deleteConfirmation === 'DELETE' 
+                                            ? "bg-red-600 hover:bg-red-700" 
+                                            : "bg-neutral-300 dark:bg-neutral-700 cursor-not-allowed",
+                                        deleteStatus === 'deleting' && "cursor-wait"
+                                    )}
+                                >
+                                    {deleteStatus === 'idle' && 'Delete Forever'}
+                                    {deleteStatus === 'deleting' && 'Deleting...'}
+                                    {deleteStatus === 'error' && 'Error - Try Again'}
+                                </button>
+                            </div>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </DashboardShell>
     )
 }
