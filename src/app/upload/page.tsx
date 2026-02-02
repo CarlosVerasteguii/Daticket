@@ -26,7 +26,7 @@ export default function UploadPage() {
                 <div className="max-w-xl mx-auto">
                     <div className="text-center mb-8">
                         <h1 className="text-3xl font-bold tracking-tight mb-2">Subir Recibo</h1>
-                        <p className="text-neutral-500">Agrega un nuevo gasto a tus registros</p>
+                        <p className="text-foreground/60">Agrega un nuevo gasto a tus registros</p>
                     </div>
                     <ReceiptUpload />
                 </div>

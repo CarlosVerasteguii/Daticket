@@ -61,19 +61,19 @@ export default function CategoryBreakdownChart({ receipts, className }: Category
 
     if (receipts.length === 0 || total === 0) {
         return (
-            <div className={cn("border border-black bg-white p-6", className)}>
+            <div className={cn("border border-foreground/20 bg-background p-6", className)}>
                 <div className="flex items-center gap-2 mb-4">
-                    <PieChart className="h-4 w-4 text-neutral-400" />
-                    <h3 className="font-bold text-sm uppercase tracking-wider text-neutral-500">
+                    <PieChart className="h-4 w-4 text-foreground/40" />
+                    <h3 className="font-bold text-sm uppercase tracking-wider text-foreground/60">
                         Category Breakdown
                     </h3>
                 </div>
                 <div className="flex flex-col items-center justify-center py-12 text-center">
-                    <div className="h-16 w-16 bg-neutral-100 border border-black flex items-center justify-center mb-4">
-                        <PieChart className="h-8 w-8 text-neutral-300" />
+                    <div className="h-16 w-16 bg-black/5 dark:bg-transparent border border-foreground/20 flex items-center justify-center mb-4">
+                        <PieChart className="h-8 w-8 text-foreground/30" />
                     </div>
-                    <p className="text-neutral-500 text-sm">No spending data</p>
-                    <p className="text-neutral-400 text-xs mt-1">Upload receipts to see breakdown</p>
+                    <p className="text-foreground/60 text-sm">No spending data</p>
+                    <p className="text-foreground/40 text-xs mt-1">Upload receipts to see breakdown</p>
                 </div>
             </div>
         )
@@ -116,10 +116,10 @@ export default function CategoryBreakdownChart({ receipts, className }: Category
     }
 
     return (
-        <div className={cn("border border-black bg-white", className)}>
-            <div className="flex items-center gap-2 p-4 border-b border-black bg-neutral-100">
-                <PieChart className="h-4 w-4" />
-                <h3 className="font-bold text-sm uppercase tracking-wider">Category Breakdown</h3>
+        <div className={cn("border border-foreground/20 bg-background", className)}>
+            <div className="flex items-center gap-2 p-4 border-b border-foreground/20 bg-foreground/5">
+                <PieChart className="h-4 w-4 text-foreground" />
+                <h3 className="font-bold text-sm uppercase tracking-wider text-foreground">Category Breakdown</h3>
             </div>
             
             <div className="p-6">
@@ -142,8 +142,8 @@ export default function CategoryBreakdownChart({ receipts, className }: Category
                         </svg>
                         {/* Center text */}
                         <div className="absolute inset-0 flex flex-col items-center justify-center">
-                            <span className="text-2xl font-bold">${total.toFixed(0)}</span>
-                            <span className="text-xs text-neutral-500 uppercase tracking-wider">Total</span>
+                            <span className="text-2xl font-bold text-foreground">${total.toFixed(0)}</span>
+                            <span className="text-xs text-foreground/60 uppercase tracking-wider">Total</span>
                         </div>
                     </div>
 
@@ -152,23 +152,23 @@ export default function CategoryBreakdownChart({ receipts, className }: Category
                         {segments.map((segment, index) => (
                             <motion.div
                                 key={segment.name}
-                                className="flex items-center justify-between gap-3 py-1.5 px-2 hover:bg-neutral-50 transition-colors"
+                                className="flex items-center justify-between gap-3 py-1.5 px-2 hover:bg-foreground/5 transition-colors"
                                 initial={{ opacity: 0, x: 10 }}
                                 animate={{ opacity: 1, x: 0 }}
                                 transition={{ delay: index * 0.05 }}
                             >
                                 <div className="flex items-center gap-2 min-w-0">
                                     <div 
-                                        className="h-3 w-3 flex-shrink-0 border border-black/20" 
+                                        className="h-3 w-3 flex-shrink-0 border border-foreground/20" 
                                         style={{ backgroundColor: segment.color }}
                                     />
-                                    <span className="text-sm font-medium truncate">{segment.name}</span>
+                                    <span className="text-sm font-medium truncate text-foreground">{segment.name}</span>
                                 </div>
                                 <div className="flex items-center gap-3 flex-shrink-0">
-                                    <span className="text-sm font-mono font-bold">
+                                    <span className="text-sm font-mono font-bold text-foreground">
                                         ${segment.amount.toFixed(2)}
                                     </span>
-                                    <span className="text-xs text-neutral-400 w-10 text-right">
+                                    <span className="text-xs text-foreground/40 w-10 text-right">
                                         {segment.percentage.toFixed(0)}%
                                     </span>
                                 </div>
@@ -178,9 +178,9 @@ export default function CategoryBreakdownChart({ receipts, className }: Category
                 </div>
 
                 {/* Category count summary */}
-                <div className="mt-4 pt-4 border-t border-neutral-200 flex justify-between text-sm">
-                    <span className="text-neutral-500">{segments.length} categories</span>
-                    <span className="text-neutral-500">{receipts.length} receipts</span>
+                <div className="mt-4 pt-4 border-t border-foreground/20 flex justify-between text-sm">
+                    <span className="text-foreground/60">{segments.length} categories</span>
+                    <span className="text-foreground/60">{receipts.length} receipts</span>
                 </div>
             </div>
         </div>

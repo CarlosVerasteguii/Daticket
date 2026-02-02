@@ -122,7 +122,7 @@ export default function QuickStatsCards({ receipts, className }: QuickStatsCards
             {stats.map((stat, index) => (
                 <motion.div
                     key={stat.label}
-                    className="border border-black bg-white p-4 shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]"
+                    className="border border-foreground/20 bg-background p-4 shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] dark:shadow-[3px_3px_0px_0px_rgba(255,255,255,0.3)]"
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: index * 0.1 }}
@@ -140,13 +140,13 @@ export default function QuickStatsCards({ receipts, className }: QuickStatsCards
                         </div>
                     </div>
                     
-                    <p className="text-xs font-bold uppercase tracking-wider text-neutral-500 mb-1">
+                    <p className="text-xs font-bold uppercase tracking-wider text-foreground/60 mb-1">
                         {stat.label}
                     </p>
-                    <p className="font-bold text-lg truncate" title={stat.value}>
+                    <p className="font-bold text-lg truncate text-foreground" title={stat.value}>
                         {stat.value}
                     </p>
-                    <p className="text-xs text-neutral-500 truncate mt-1" title={stat.subtext}>
+                    <p className="text-xs text-foreground/60 truncate mt-1" title={stat.subtext}>
                         {stat.subtext}
                     </p>
                 </motion.div>

@@ -434,12 +434,12 @@ export default function ReceiptsPage() {
             >
                 {/* Header */}
                 <motion.div 
-                    className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 p-6 border-b border-black bg-white"
+                    className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 p-6 border-b border-foreground/20 bg-background"
                     variants={itemVariants}
                 >
                     <div>
-                        <h1 className="text-3xl font-bold tracking-tighter">All Receipts</h1>
-                        <p className="text-sm text-neutral-500 font-mono mt-1">
+                        <h1 className="text-3xl font-bold tracking-tighter text-foreground">All Receipts</h1>
+                        <p className="text-sm text-foreground/60 font-mono mt-1">
                             {filteredReceipts.length} of {receipts.length} records
                             {selectedCategories.length > 0 && ` in ${selectedCategories.join(', ')}`}
                         </p>
@@ -450,8 +450,8 @@ export default function ReceiptsPage() {
                             <Link
                                 href={`/receipts/report${dateRange.start ? `?start=${dateRange.start.toISOString().split('T')[0]}&end=${dateRange.end?.toISOString().split('T')[0] || new Date().toISOString().split('T')[0]}` : ''}`}
                                 className={cn(
-                                    "inline-flex items-center px-4 py-3 font-bold transition-all border-2 border-black shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] hover:shadow-[5px_5px_0px_0px_rgba(0,0,0,1)] hover:-translate-x-0.5 hover:-translate-y-0.5",
-                                    "bg-white text-black hover:bg-neutral-100"
+                                    "inline-flex items-center px-4 py-3 font-bold transition-all border-2 border-foreground shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] dark:shadow-[3px_3px_0px_0px_rgba(255,255,255,0.3)] hover:shadow-[5px_5px_0px_0px_rgba(0,0,0,1)] dark:hover:shadow-[5px_5px_0px_0px_rgba(255,255,255,0.3)] hover:-translate-x-0.5 hover:-translate-y-0.5",
+                                    "bg-background text-foreground hover:bg-foreground/10"
                                 )}
                             >
                                 <FileText className="w-5 h-5 mr-2" />
@@ -465,10 +465,10 @@ export default function ReceiptsPage() {
                             onClick={() => exportToCSV(filteredReceipts)}
                             disabled={filteredReceipts.length === 0}
                             className={cn(
-                                "inline-flex items-center px-4 py-3 font-bold transition-all border-2 border-black shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] hover:shadow-[5px_5px_0px_0px_rgba(0,0,0,1)] hover:-translate-x-0.5 hover:-translate-y-0.5",
+                                "inline-flex items-center px-4 py-3 font-bold transition-all border-2 border-foreground shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] dark:shadow-[3px_3px_0px_0px_rgba(255,255,255,0.3)] hover:shadow-[5px_5px_0px_0px_rgba(0,0,0,1)] dark:hover:shadow-[5px_5px_0px_0px_rgba(255,255,255,0.3)] hover:-translate-x-0.5 hover:-translate-y-0.5",
                                 filteredReceipts.length > 0
-                                    ? "bg-white text-black hover:bg-neutral-100"
-                                    : "bg-neutral-200 text-neutral-400 cursor-not-allowed shadow-none"
+                                    ? "bg-background text-foreground hover:bg-foreground/10"
+                                    : "bg-foreground/10 text-foreground/40 cursor-not-allowed shadow-none"
                             )}
                         >
                             <Download className="w-5 h-5 mr-2" />
@@ -478,7 +478,7 @@ export default function ReceiptsPage() {
                         <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
                             <Link
                                 href="/upload"
-                                className="inline-flex items-center px-6 py-3 bg-black text-white font-bold hover:bg-neutral-800 transition-all border-2 border-black shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] hover:shadow-[5px_5px_0px_0px_rgba(0,0,0,1)] hover:-translate-x-0.5 hover:-translate-y-0.5"
+                                className="inline-flex items-center px-6 py-3 bg-foreground text-background font-bold hover:bg-foreground/90 transition-all border-2 border-foreground shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] dark:shadow-[3px_3px_0px_0px_rgba(255,255,255,0.3)] hover:shadow-[5px_5px_0px_0px_rgba(0,0,0,1)] dark:hover:shadow-[5px_5px_0px_0px_rgba(255,255,255,0.3)] hover:-translate-x-0.5 hover:-translate-y-0.5"
                             >
                                 <Plus className="w-5 h-5 mr-2" />
                                 New Receipt
@@ -489,24 +489,24 @@ export default function ReceiptsPage() {
 
                 {/* Stats Bar */}
                 <motion.div 
-                    className="grid grid-cols-2 md:grid-cols-4 border-b border-black bg-neutral-50"
+                    className="grid grid-cols-2 md:grid-cols-4 border-b border-foreground/20 bg-background"
                     variants={itemVariants}
                 >
-                    <div className="p-4 border-r border-black/10">
-                        <p className="text-xs font-bold uppercase tracking-wider text-neutral-500">Total</p>
-                        <p className="text-2xl font-bold tracking-tighter">${totalAmount.toFixed(2)}</p>
+                    <div className="p-4 border-r border-foreground/10">
+                        <p className="text-xs font-bold uppercase tracking-wider text-foreground/60">Total</p>
+                        <p className="text-2xl font-bold tracking-tighter text-foreground">${totalAmount.toFixed(2)}</p>
                     </div>
-                    <div className="p-4 border-r border-black/10">
-                        <p className="text-xs font-bold uppercase tracking-wider text-neutral-500">Receipts</p>
-                        <p className="text-2xl font-bold tracking-tighter">{filteredReceipts.length}</p>
+                    <div className="p-4 border-r border-foreground/10">
+                        <p className="text-xs font-bold uppercase tracking-wider text-foreground/60">Receipts</p>
+                        <p className="text-2xl font-bold tracking-tighter text-foreground">{filteredReceipts.length}</p>
                     </div>
-                    <div className="p-4 border-r border-black/10 hidden md:block">
-                        <p className="text-xs font-bold uppercase tracking-wider text-neutral-500">Categories</p>
-                        <p className="text-2xl font-bold tracking-tighter">{categories.length}</p>
+                    <div className="p-4 border-r border-foreground/10 hidden md:block">
+                        <p className="text-xs font-bold uppercase tracking-wider text-foreground/60">Categories</p>
+                        <p className="text-2xl font-bold tracking-tighter text-foreground">{categories.length}</p>
                     </div>
                     <div className="p-4 hidden md:block">
-                        <p className="text-xs font-bold uppercase tracking-wider text-neutral-500">Avg</p>
-                        <p className="text-2xl font-bold tracking-tighter">
+                        <p className="text-xs font-bold uppercase tracking-wider text-foreground/60">Avg</p>
+                        <p className="text-2xl font-bold tracking-tighter text-foreground">
                             ${filteredReceipts.length > 0 ? (totalAmount / filteredReceipts.length).toFixed(2) : '0.00'}
                         </p>
                     </div>
@@ -514,23 +514,23 @@ export default function ReceiptsPage() {
 
                 {/* Filters & Search */}
                 <motion.div 
-                    className="flex flex-col md:flex-row gap-4 p-4 border-b border-black bg-white"
+                    className="flex flex-col md:flex-row gap-4 p-4 border-b border-foreground/20 bg-background"
                     variants={itemVariants}
                 >
                     {/* Search */}
                     <div className="relative flex-1 max-w-md">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-400" />
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-foreground/40" />
                         <input
                             type="text"
                             placeholder="Search stores, categories, notes, amounts..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className="w-full pl-10 pr-4 py-2 border border-black font-medium focus:outline-none focus:ring-2 focus:ring-swiss-blue text-sm"
+                            className="w-full pl-10 pr-4 py-2 border border-foreground bg-background text-foreground font-medium focus:outline-none focus:ring-2 focus:ring-swiss-blue text-sm"
                         />
                         {searchQuery && (
                             <button
                                 onClick={() => setSearchQuery('')}
-                                className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-400 hover:text-neutral-600"
+                                className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-foreground/40 hover:text-foreground/60"
                             >
                                 <X className="h-4 w-4" />
                             </button>
@@ -542,10 +542,10 @@ export default function ReceiptsPage() {
                         <motion.button
                             onClick={() => setShowDatePicker(!showDatePicker)}
                             className={cn(
-                                "flex items-center gap-2 px-4 py-2 text-sm font-bold border border-black transition-all",
+                                "flex items-center gap-2 px-4 py-2 text-sm font-bold border border-foreground transition-all",
                                 dateRange.preset !== 'all' 
                                     ? 'bg-swiss-blue text-white border-swiss-blue' 
-                                    : 'bg-white text-black hover:bg-neutral-100'
+                                    : 'bg-background text-foreground hover:bg-foreground/10'
                             )}
                             whileHover={{ scale: 1.02 }}
                             whileTap={{ scale: 0.98 }}
@@ -566,10 +566,10 @@ export default function ReceiptsPage() {
                                     initial={{ opacity: 0, y: -10 }}
                                     animate={{ opacity: 1, y: 0 }}
                                     exit={{ opacity: 0, y: -10 }}
-                                    className="absolute top-full left-0 mt-2 z-50 bg-white border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] p-4 min-w-[280px]"
+                                    className="absolute top-full left-0 mt-2 z-50 bg-background border-2 border-foreground shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.3)] p-4 min-w-[280px]"
                                 >
                                     <div className="space-y-2">
-                                        <p className="text-xs font-bold uppercase tracking-wider text-neutral-500 mb-3">Date Presets</p>
+                                        <p className="text-xs font-bold uppercase tracking-wider text-foreground/60 mb-3">Date Presets</p>
                                         {[
                                             { key: 'all', label: 'All Time' },
                                             { key: 'today', label: 'Today' },
@@ -584,19 +584,19 @@ export default function ReceiptsPage() {
                                                 className={cn(
                                                     "block w-full text-left px-3 py-2 text-sm font-medium transition-colors",
                                                     dateRange.preset === key 
-                                                        ? 'bg-black text-white' 
-                                                        : 'hover:bg-neutral-100'
+                                                        ? 'bg-foreground text-background' 
+                                                        : 'text-foreground hover:bg-foreground/10'
                                                 )}
                                             >
                                                 {label}
                                             </button>
                                         ))}
                                         
-                                        <div className="border-t border-neutral-200 pt-3 mt-3">
-                                            <p className="text-xs font-bold uppercase tracking-wider text-neutral-500 mb-2">Custom Range</p>
+                                        <div className="border-t border-foreground/20 pt-3 mt-3">
+                                            <p className="text-xs font-bold uppercase tracking-wider text-foreground/60 mb-2">Custom Range</p>
                                             <div className="grid grid-cols-2 gap-2">
                                                 <div>
-                                                    <label className="text-xs text-neutral-500">From</label>
+                                                    <label className="text-xs text-foreground/60">From</label>
                                                     <input
                                                         type="date"
                                                         value={dateRange.start ? dateRange.start.toISOString().split('T')[0] : ''}
@@ -604,11 +604,11 @@ export default function ReceiptsPage() {
                                                             const start = e.target.value ? new Date(e.target.value) : null
                                                             setDateRange(prev => ({ ...prev, start, preset: 'custom' }))
                                                         }}
-                                                        className="w-full px-2 py-1 text-sm border border-black"
+                                                        className="w-full px-2 py-1 text-sm border border-foreground bg-background text-foreground"
                                                     />
                                                 </div>
                                                 <div>
-                                                    <label className="text-xs text-neutral-500">To</label>
+                                                    <label className="text-xs text-foreground/60">To</label>
                                                     <input
                                                         type="date"
                                                         value={dateRange.end ? dateRange.end.toISOString().split('T')[0] : ''}
@@ -617,13 +617,13 @@ export default function ReceiptsPage() {
                                                             if (end) end.setHours(23, 59, 59, 999)
                                                             setDateRange(prev => ({ ...prev, end, preset: 'custom' }))
                                                         }}
-                                                        className="w-full px-2 py-1 text-sm border border-black"
+                                                        className="w-full px-2 py-1 text-sm border border-foreground bg-background text-foreground"
                                                     />
                                                 </div>
                                             </div>
                                             <button
                                                 onClick={() => setShowDatePicker(false)}
-                                                className="w-full mt-2 px-3 py-2 bg-black text-white text-sm font-bold"
+                                                className="w-full mt-2 px-3 py-2 bg-foreground text-background text-sm font-bold"
                                             >
                                                 Apply
                                             </button>
@@ -639,10 +639,10 @@ export default function ReceiptsPage() {
                         <motion.button
                             onClick={() => setShowAmountPicker(!showAmountPicker)}
                             className={cn(
-                                "flex items-center gap-2 px-4 py-2 text-sm font-bold border border-black transition-all",
+                                "flex items-center gap-2 px-4 py-2 text-sm font-bold border border-foreground transition-all",
                                 (amountRange.min !== null || amountRange.max !== null)
                                     ? 'bg-swiss-blue text-white border-swiss-blue' 
-                                    : 'bg-white text-black hover:bg-neutral-100'
+                                    : 'bg-background text-foreground hover:bg-foreground/10'
                             )}
                             whileHover={{ scale: 1.02 }}
                             whileTap={{ scale: 0.98 }}
@@ -660,9 +660,9 @@ export default function ReceiptsPage() {
                                     initial={{ opacity: 0, y: -10 }}
                                     animate={{ opacity: 1, y: 0 }}
                                     exit={{ opacity: 0, y: -10 }}
-                                    className="absolute top-full left-0 mt-2 z-50 bg-white border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] p-4 min-w-[240px]"
+                                    className="absolute top-full left-0 mt-2 z-50 bg-background border-2 border-foreground shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.3)] p-4 min-w-[240px]"
                                 >
-                                    <p className="text-xs font-bold uppercase tracking-wider text-neutral-500 mb-3">Amount Range</p>
+                                    <p className="text-xs font-bold uppercase tracking-wider text-foreground/60 mb-3">Amount Range</p>
                                     
                                     {/* Quick Presets */}
                                     <div className="space-y-1 mb-4">
@@ -682,8 +682,8 @@ export default function ReceiptsPage() {
                                                 className={cn(
                                                     "block w-full text-left px-3 py-2 text-sm font-medium transition-colors",
                                                     amountRange.min === min && amountRange.max === max
-                                                        ? 'bg-black text-white' 
-                                                        : 'hover:bg-neutral-100'
+                                                        ? 'bg-foreground text-background' 
+                                                        : 'text-foreground hover:bg-foreground/10'
                                                 )}
                                             >
                                                 {label}
@@ -691,11 +691,11 @@ export default function ReceiptsPage() {
                                         ))}
                                     </div>
                                     
-                                    <div className="border-t border-neutral-200 pt-3">
-                                        <p className="text-xs font-bold uppercase tracking-wider text-neutral-500 mb-2">Custom Range</p>
+                                    <div className="border-t border-foreground/20 pt-3">
+                                        <p className="text-xs font-bold uppercase tracking-wider text-foreground/60 mb-2">Custom Range</p>
                                         <div className="grid grid-cols-2 gap-2">
                                             <div>
-                                                <label className="text-xs text-neutral-500">Min ($)</label>
+                                                <label className="text-xs text-foreground/60">Min ($)</label>
                                                 <input
                                                     type="number"
                                                     min="0"
@@ -706,11 +706,11 @@ export default function ReceiptsPage() {
                                                         ...prev, 
                                                         min: e.target.value ? parseFloat(e.target.value) : null 
                                                     }))}
-                                                    className="w-full px-2 py-1 text-sm border border-black"
+                                                    className="w-full px-2 py-1 text-sm border border-foreground bg-background text-foreground"
                                                 />
                                             </div>
                                             <div>
-                                                <label className="text-xs text-neutral-500">Max ($)</label>
+                                                <label className="text-xs text-foreground/60">Max ($)</label>
                                                 <input
                                                     type="number"
                                                     min="0"
@@ -721,13 +721,13 @@ export default function ReceiptsPage() {
                                                         ...prev, 
                                                         max: e.target.value ? parseFloat(e.target.value) : null 
                                                     }))}
-                                                    className="w-full px-2 py-1 text-sm border border-black"
+                                                    className="w-full px-2 py-1 text-sm border border-foreground bg-background text-foreground"
                                                 />
                                             </div>
                                         </div>
                                         <button
                                             onClick={() => setShowAmountPicker(false)}
-                                            className="w-full mt-2 px-3 py-2 bg-black text-white text-sm font-bold"
+                                            className="w-full mt-2 px-3 py-2 bg-foreground text-background text-sm font-bold"
                                         >
                                             Apply
                                         </button>
@@ -742,10 +742,10 @@ export default function ReceiptsPage() {
                         <motion.button
                             onClick={() => setShowSavedFilters(!showSavedFilters)}
                             className={cn(
-                                "flex items-center gap-2 px-4 py-2 text-sm font-bold border border-black transition-all",
+                                "flex items-center gap-2 px-4 py-2 text-sm font-bold border border-foreground transition-all",
                                 savedFilters.length > 0 
-                                    ? 'bg-white text-black hover:bg-neutral-100' 
-                                    : 'bg-neutral-50 text-neutral-400'
+                                    ? 'bg-background text-foreground hover:bg-foreground/10' 
+                                    : 'bg-foreground/5 text-foreground/40'
                             )}
                             whileHover={{ scale: 1.02 }}
                             whileTap={{ scale: 0.98 }}
@@ -756,7 +756,7 @@ export default function ReceiptsPage() {
 
                         <motion.button
                             onClick={() => setShowSaveDialog(true)}
-                            className="flex items-center gap-2 px-3 py-2 text-sm font-bold border border-black bg-white text-black hover:bg-neutral-100 transition-all"
+                            className="flex items-center gap-2 px-3 py-2 text-sm font-bold border border-foreground bg-background text-foreground hover:bg-foreground/10 transition-all"
                             whileHover={{ scale: 1.02 }}
                             whileTap={{ scale: 0.98 }}
                             title="Save current filter"
@@ -770,21 +770,21 @@ export default function ReceiptsPage() {
                                     initial={{ opacity: 0, y: -10 }}
                                     animate={{ opacity: 1, y: 0 }}
                                     exit={{ opacity: 0, y: -10 }}
-                                    className="absolute top-full left-0 mt-2 z-50 bg-white border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] p-3 min-w-[200px]"
+                                    className="absolute top-full left-0 mt-2 z-50 bg-background border-2 border-foreground shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.3)] p-3 min-w-[200px]"
                                 >
-                                    <p className="text-xs font-bold uppercase tracking-wider text-neutral-500 mb-2">Saved Filters</p>
+                                    <p className="text-xs font-bold uppercase tracking-wider text-foreground/60 mb-2">Saved Filters</p>
                                     <div className="space-y-1">
                                         {savedFilters.map((f) => (
                                             <div key={f.id} className="flex items-center justify-between gap-2">
                                                 <button
                                                     onClick={() => applyFilter(f)}
-                                                    className="flex-1 text-left px-3 py-2 text-sm font-medium hover:bg-neutral-100 transition-colors"
+                                                    className="flex-1 text-left px-3 py-2 text-sm font-medium text-foreground hover:bg-foreground/10 transition-colors"
                                                 >
                                                     {f.name}
                                                 </button>
                                                 <button
                                                     onClick={() => deleteFilter(f.id)}
-                                                    className="p-1 text-neutral-400 hover:text-red-500 transition-colors"
+                                                    className="p-1 text-foreground/40 hover:text-red-500 transition-colors"
                                                 >
                                                     <Trash2 className="h-3 w-3" />
                                                 </button>
@@ -801,29 +801,29 @@ export default function ReceiptsPage() {
                                     initial={{ opacity: 0, y: -10 }}
                                     animate={{ opacity: 1, y: 0 }}
                                     exit={{ opacity: 0, y: -10 }}
-                                    className="absolute top-full right-0 mt-2 z-50 bg-white border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] p-4 min-w-[250px]"
+                                    className="absolute top-full right-0 mt-2 z-50 bg-background border-2 border-foreground shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.3)] p-4 min-w-[250px]"
                                 >
-                                    <p className="text-xs font-bold uppercase tracking-wider text-neutral-500 mb-2">Save Current Filter</p>
+                                    <p className="text-xs font-bold uppercase tracking-wider text-foreground/60 mb-2">Save Current Filter</p>
                                     <input
                                         type="text"
                                         placeholder="Filter name..."
                                         value={newFilterName}
                                         onChange={(e) => setNewFilterName(e.target.value)}
                                         onKeyDown={(e) => e.key === 'Enter' && saveCurrentFilter()}
-                                        className="w-full px-3 py-2 text-sm border border-black mb-2"
+                                        className="w-full px-3 py-2 text-sm border border-foreground bg-background text-foreground mb-2"
                                         autoFocus
                                     />
                                     <div className="flex gap-2">
                                         <button
                                             onClick={() => setShowSaveDialog(false)}
-                                            className="flex-1 px-3 py-2 text-sm font-bold border border-black hover:bg-neutral-100"
+                                            className="flex-1 px-3 py-2 text-sm font-bold border border-foreground text-foreground hover:bg-foreground/10"
                                         >
                                             Cancel
                                         </button>
                                         <button
                                             onClick={saveCurrentFilter}
                                             disabled={!newFilterName.trim()}
-                                            className="flex-1 px-3 py-2 text-sm font-bold bg-black text-white disabled:bg-neutral-300 disabled:text-neutral-500"
+                                            className="flex-1 px-3 py-2 text-sm font-bold bg-foreground text-background disabled:bg-foreground/30 disabled:text-foreground/50"
                                         >
                                             Save
                                         </button>
@@ -835,14 +835,14 @@ export default function ReceiptsPage() {
 
                     {/* Multi-Category Filters */}
                     <div className="flex items-center gap-2 overflow-x-auto pb-2 md:pb-0 scrollbar-hide">
-                        <Filter className="h-4 w-4 text-neutral-400 flex-shrink-0" />
+                        <Filter className="h-4 w-4 text-foreground/40 flex-shrink-0" />
                         <motion.button
                             onClick={() => setSelectedCategories([])}
                             className={cn(
-                                "px-4 py-2 text-sm font-bold border border-black transition-all whitespace-nowrap",
+                                "px-4 py-2 text-sm font-bold border transition-all whitespace-nowrap",
                                 selectedCategories.length === 0 
-                                    ? 'bg-black text-white' 
-                                    : 'bg-white text-black hover:bg-neutral-100'
+                                    ? 'bg-swiss-blue text-white border-swiss-blue' 
+                                    : 'bg-background text-foreground border-foreground hover:bg-foreground/10'
                             )}
                             whileHover={{ scale: 1.02 }}
                             whileTap={{ scale: 0.98 }}
@@ -865,7 +865,7 @@ export default function ReceiptsPage() {
                                         "px-4 py-2 text-sm font-bold border transition-all whitespace-nowrap flex items-center gap-2",
                                         isSelected 
                                             ? 'bg-swiss-blue text-white border-swiss-blue' 
-                                            : 'bg-white text-black border-black hover:bg-neutral-100'
+                                            : 'bg-background text-foreground border-foreground hover:bg-foreground/10'
                                     )}
                                     whileHover={{ scale: 1.02 }}
                                     whileTap={{ scale: 0.98 }}
@@ -886,7 +886,7 @@ export default function ReceiptsPage() {
                         onTouchStart={handleTouchStart}
                         onTouchMove={handleTouchMove}
                         onTouchEnd={handleTouchEnd}
-                        className="lg:col-span-2 bg-white p-6 overflow-y-auto relative"
+                        className="lg:col-span-2 bg-background p-6 overflow-y-auto relative"
                         style={{ touchAction: 'pan-y' }}
                     >
                         {/* Pull to Refresh Indicator */}
@@ -902,7 +902,7 @@ export default function ReceiptsPage() {
                                     className="absolute top-0 left-0 right-0 flex justify-center z-10"
                                 >
                                     <div className={cn(
-                                        "flex items-center gap-2 px-4 py-2 bg-white border-2 border-black shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]",
+                                        "flex items-center gap-2 px-4 py-2 bg-background text-foreground border-2 border-foreground shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] dark:shadow-[3px_3px_0px_0px_rgba(255,255,255,0.3)]",
                                         isRefreshing && "animate-pulse"
                                     )}>
                                         <RefreshCw className={cn(
@@ -925,19 +925,19 @@ export default function ReceiptsPage() {
                                 initial={{ opacity: 0, scale: 0.95 }}
                                 animate={{ opacity: 1, scale: 1 }}
                             >
-                                <div className="h-16 w-16 bg-neutral-100 border border-black flex items-center justify-center mb-4">
-                                    <Receipt className="h-8 w-8 text-neutral-400" />
+                                <div className="h-16 w-16 bg-foreground/10 border border-foreground flex items-center justify-center mb-4">
+                                    <Receipt className="h-8 w-8 text-foreground/40" />
                                 </div>
-                                <p className="text-lg font-medium text-neutral-600 mb-2">
+                                <p className="text-lg font-medium text-foreground/70 mb-2">
                                     {searchQuery ? "No receipts match your search" : "No receipts found"}
                                 </p>
-                                <p className="text-sm text-neutral-400 mb-4">
+                                <p className="text-sm text-foreground/40 mb-4">
                                     {searchQuery ? "Try a different search term" : "Upload your first receipt to get started"}
                                 </p>
                                 {!searchQuery && (
                                     <Link 
                                         href="/upload" 
-                                        className="inline-flex items-center gap-2 px-4 py-2 bg-black text-white text-sm font-bold hover:bg-neutral-800 transition-colors"
+                                        className="inline-flex items-center gap-2 px-4 py-2 bg-foreground text-background text-sm font-bold hover:bg-foreground/90 transition-colors"
                                     >
                                         <Plus className="h-4 w-4" />
                                         Upload Receipt
@@ -962,14 +962,14 @@ export default function ReceiptsPage() {
                                             transition={{ delay: Math.min(index * 0.05, 0.5) }}
                                             onClick={() => setSelectedReceipt(receipt)}
                                             className={cn(
-                                                "group border border-black bg-white cursor-pointer transition-all duration-300",
+                                                "group border border-foreground bg-background cursor-pointer transition-all duration-300",
                                                 selectedReceipt?.id === receipt.id 
-                                                    ? 'shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] ring-2 ring-swiss-blue ring-offset-2' 
-                                                    : 'hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:-translate-x-[3px] hover:-translate-y-[3px]'
+                                                    ? 'shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] dark:shadow-[6px_6px_0px_0px_rgba(255,255,255,0.3)] ring-2 ring-swiss-blue ring-offset-2 ring-offset-background' 
+                                                    : 'hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] dark:hover:shadow-[6px_6px_0px_0px_rgba(255,255,255,0.3)] hover:-translate-x-[3px] hover:-translate-y-[3px]'
                                             )}
                                         >
                                             {/* Thumbnail with Lazy Loading */}
-                                            <div className="h-32 bg-neutral-100 overflow-hidden relative">
+                                            <div className="h-32 bg-foreground/10 overflow-hidden relative">
                                                 <motion.img
                                                     src={getImageUrl(receipt.image_url)}
                                                     alt="Receipt"
@@ -992,24 +992,24 @@ export default function ReceiptsPage() {
                                                     transition={{ duration: 0.4 }}
                                                 />
                                                 {/* Blur placeholder */}
-                                                <div className="absolute inset-0 bg-gradient-to-br from-neutral-200 to-neutral-100 -z-10" />
+                                                <div className="absolute inset-0 bg-gradient-to-br from-foreground/20 to-foreground/10 -z-10" />
                                                 {receipt.category_name && (
-                                                    <div className="absolute top-2 left-2 px-2 py-1 bg-white/90 border border-black text-xs font-bold uppercase">
+                                                    <div className="absolute top-2 left-2 px-2 py-1 bg-background/90 border border-foreground text-xs font-bold uppercase text-foreground">
                                                         {receipt.category_name}
                                                     </div>
                                                 )}
                                             </div>
                                             {/* Info */}
-                                            <div className="p-4 border-t border-black">
-                                                <p className="font-bold text-sm truncate group-hover:text-swiss-blue transition-colors">
+                                            <div className="p-4 border-t border-foreground">
+                                                <p className="font-bold text-sm truncate text-foreground group-hover:text-swiss-blue transition-colors">
                                                     {receipt.store_name || 'Unknown Store'}
                                                 </p>
-                                                <div className="flex justify-between items-center mt-2 text-xs text-neutral-600 font-mono">
+                                                <div className="flex justify-between items-center mt-2 text-xs text-foreground/60 font-mono">
                                                     <span className="flex items-center gap-1">
                                                         <Calendar className="h-3 w-3" />
                                                         {formatDate(receipt.purchase_date)}
                                                     </span>
-                                                    <span className="font-bold text-black text-sm">
+                                                    <span className="font-bold text-foreground text-sm">
                                                         {receipt.total_amount ? `$${Number(receipt.total_amount).toFixed(2)}` : '-'}
                                                     </span>
                                                 </div>
@@ -1024,7 +1024,7 @@ export default function ReceiptsPage() {
                                         ref={loadMoreRef}
                                         className="col-span-full flex justify-center py-8"
                                     >
-                                        <div className="flex items-center gap-2 text-neutral-400 text-sm">
+                                        <div className="flex items-center gap-2 text-foreground/40 text-sm">
                                             <RefreshCw className="w-4 h-4 animate-spin" />
                                             Loading more...
                                         </div>
@@ -1035,7 +1035,7 @@ export default function ReceiptsPage() {
                     </div>
 
                     {/* Right: Detail Panel */}
-                    <div className="lg:col-span-1 bg-neutral-50 border-l border-black">
+                    <div className="lg:col-span-1 bg-foreground/5 border-l border-foreground/20">
                         <AnimatePresence mode="wait">
                             {selectedReceipt ? (
                                 <motion.div 
@@ -1045,14 +1045,14 @@ export default function ReceiptsPage() {
                                     animate={{ opacity: 1, x: 0 }}
                                     exit={{ opacity: 0, x: 20 }}
                                 >
-                                    <div className="flex items-center justify-between p-4 border-b border-black bg-white">
-                                        <div className="flex items-center gap-2">
+                                    <div className="flex items-center justify-between p-4 border-b border-foreground/20 bg-background">
+                                        <div className="flex items-center gap-2 text-foreground">
                                             <Receipt className="h-4 w-4" />
                                             <h4 className="font-bold text-sm uppercase tracking-wider">Receipt Details</h4>
                                         </div>
                                         <motion.button 
                                             onClick={() => setSelectedReceipt(null)} 
-                                            className="p-1 hover:bg-neutral-100 transition-colors"
+                                            className="p-1 hover:bg-foreground/10 transition-colors text-foreground"
                                             whileHover={{ scale: 1.1 }}
                                             whileTap={{ scale: 0.9 }}
                                         >
@@ -1061,7 +1061,7 @@ export default function ReceiptsPage() {
                                     </div>
 
                                     {/* Image */}
-                                    <div className="flex-1 bg-neutral-200 overflow-hidden relative group">
+                                    <div className="flex-1 bg-foreground/20 overflow-hidden relative group">
                                         <motion.img
                                             src={getImageUrl(selectedReceipt.image_url)}
                                             alt="Receipt"
@@ -1072,32 +1072,32 @@ export default function ReceiptsPage() {
                                     </div>
 
                                     {/* Details */}
-                                    <div className="p-4 border-t border-black bg-white space-y-4">
+                                    <div className="p-4 border-t border-foreground/20 bg-background space-y-4">
                                         <div className="flex items-center gap-3">
-                                            <div className="h-10 w-10 bg-neutral-100 border border-black flex items-center justify-center">
-                                                <Tag className="h-4 w-4 text-neutral-600" />
+                                            <div className="h-10 w-10 bg-foreground/10 border border-foreground flex items-center justify-center">
+                                                <Tag className="h-4 w-4 text-foreground/60" />
                                             </div>
                                             <div>
-                                                <p className="text-xs text-neutral-500 uppercase font-bold">Store</p>
-                                                <p className="font-medium">{selectedReceipt.store_name || 'Unknown'}</p>
+                                                <p className="text-xs text-foreground/60 uppercase font-bold">Store</p>
+                                                <p className="font-medium text-foreground">{selectedReceipt.store_name || 'Unknown'}</p>
                                             </div>
                                         </div>
                                         <div className="flex items-center gap-3">
-                                            <div className="h-10 w-10 bg-neutral-100 border border-black flex items-center justify-center">
-                                                <Calendar className="h-4 w-4 text-neutral-600" />
+                                            <div className="h-10 w-10 bg-foreground/10 border border-foreground flex items-center justify-center">
+                                                <Calendar className="h-4 w-4 text-foreground/60" />
                                             </div>
                                             <div>
-                                                <p className="text-xs text-neutral-500 uppercase font-bold">Date</p>
-                                                <p className="font-mono">{formatDate(selectedReceipt.purchase_date)}</p>
+                                                <p className="text-xs text-foreground/60 uppercase font-bold">Date</p>
+                                                <p className="font-mono text-foreground">{formatDate(selectedReceipt.purchase_date)}</p>
                                             </div>
                                         </div>
                                         <div className="flex items-center gap-3">
-                                            <div className="h-10 w-10 bg-neutral-100 border border-black flex items-center justify-center">
-                                                <DollarSign className="h-4 w-4 text-neutral-600" />
+                                            <div className="h-10 w-10 bg-foreground/10 border border-foreground flex items-center justify-center">
+                                                <DollarSign className="h-4 w-4 text-foreground/60" />
                                             </div>
                                             <div>
-                                                <p className="text-xs text-neutral-500 uppercase font-bold">Amount</p>
-                                                <p className="font-bold text-2xl">{selectedReceipt.total_amount ? `$${Number(selectedReceipt.total_amount).toFixed(2)}` : '-'}</p>
+                                                <p className="text-xs text-foreground/60 uppercase font-bold">Amount</p>
+                                                <p className="font-bold text-2xl text-foreground">{selectedReceipt.total_amount ? `$${Number(selectedReceipt.total_amount).toFixed(2)}` : '-'}</p>
                                             </div>
                                         </div>
                                         {selectedReceipt.category_name && (
@@ -1106,7 +1106,7 @@ export default function ReceiptsPage() {
                                                     <span className="h-2 w-2 bg-swiss-green rounded-full" />
                                                 </div>
                                                 <div>
-                                                    <p className="text-xs text-neutral-500 uppercase font-bold">Category</p>
+                                                    <p className="text-xs text-foreground/60 uppercase font-bold">Category</p>
                                                     <p className="font-medium text-swiss-green">{selectedReceipt.category_name}</p>
                                                 </div>
                                             </div>
@@ -1114,15 +1114,15 @@ export default function ReceiptsPage() {
                                     </div>
 
                                     {/* Actions */}
-                                    <div className="p-4 border-t border-black bg-white flex gap-2">
+                                    <div className="p-4 border-t border-foreground/20 bg-background flex gap-2">
                                         <Link 
                                             href={`/receipts/${selectedReceipt.id}`} 
-                                            className="flex-1 py-3 bg-swiss-blue text-white font-bold text-center hover:bg-blue-700 border border-black transition-all shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] hover:shadow-[5px_5px_0px_0px_rgba(0,0,0,1)] hover:-translate-x-0.5 hover:-translate-y-0.5"
+                                            className="flex-1 py-3 bg-swiss-blue text-white font-bold text-center hover:bg-blue-700 border border-foreground transition-all shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] dark:shadow-[3px_3px_0px_0px_rgba(255,255,255,0.3)] hover:shadow-[5px_5px_0px_0px_rgba(0,0,0,1)] dark:hover:shadow-[5px_5px_0px_0px_rgba(255,255,255,0.3)] hover:-translate-x-0.5 hover:-translate-y-0.5"
                                         >
                                             Edit
                                         </Link>
                                         <motion.button 
-                                            className="px-4 py-3 bg-white text-swiss-orange font-bold hover:bg-orange-50 border border-black transition-colors"
+                                            className="px-4 py-3 bg-background text-swiss-orange font-bold hover:bg-orange-50 dark:hover:bg-orange-900/20 border border-foreground transition-colors"
                                             whileHover={{ scale: 1.05 }}
                                             whileTap={{ scale: 0.95 }}
                                         >
@@ -1138,14 +1138,14 @@ export default function ReceiptsPage() {
                                     animate={{ opacity: 1 }}
                                 >
                                     <motion.div 
-                                        className="h-20 w-20 bg-white border border-black flex items-center justify-center mb-4 shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)]"
+                                        className="h-20 w-20 bg-background border border-foreground flex items-center justify-center mb-4 shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.1)]"
                                         animate={{ y: [0, -5, 0] }}
                                         transition={{ duration: 3, repeat: Infinity }}
                                     >
-                                        <ImageIcon className="h-10 w-10 text-neutral-300" />
+                                        <ImageIcon className="h-10 w-10 text-foreground/30" />
                                     </motion.div>
-                                    <p className="text-neutral-600 font-medium mb-1">Select a receipt</p>
-                                    <p className="text-sm text-neutral-400">Click on any receipt to view details</p>
+                                    <p className="text-foreground/70 font-medium mb-1">Select a receipt</p>
+                                    <p className="text-sm text-foreground/40">Click on any receipt to view details</p>
                                 </motion.div>
                             )}
                         </AnimatePresence>

@@ -133,7 +133,7 @@ const MetricCard = ({
     icon: Icon
 }: MetricCardProps) => (
     <motion.div
-        className="group bg-white border text-black p-6 flex flex-col justify-between h-48 border-black hover:bg-neutral-50 transition-all duration-300 cursor-default"
+        className="group bg-background border border-foreground/20 text-foreground p-6 flex flex-col justify-between h-48 hover:bg-foreground/5 transition-all duration-300 cursor-default"
         whileHover={{
             y: -4,
             boxShadow: "6px 6px 0px 0px rgba(0,0,0,1)"
@@ -142,8 +142,8 @@ const MetricCard = ({
     >
         <div className="flex justify-between items-start">
             <div className="flex items-center gap-2">
-                {Icon && <Icon className="h-4 w-4 text-neutral-400" />}
-                <span className="text-xs font-bold uppercase tracking-widest text-neutral-500">{label}</span>
+                {Icon && <Icon className="h-4 w-4 text-foreground/40" />}
+                <span className="text-xs font-bold uppercase tracking-widest text-foreground/60">{label}</span>
             </div>
             {alert && (
                 <motion.div
@@ -155,7 +155,7 @@ const MetricCard = ({
         </div>
         <div>
             <div className="flex items-baseline gap-3">
-                <h3 className="text-4xl md:text-5xl font-bold tracking-tighter mb-2 group-hover:translate-x-1 transition-transform duration-300">
+                <h3 className="text-4xl md:text-5xl font-bold tracking-tighter mb-2 text-foreground group-hover:translate-x-1 transition-transform duration-300">
                     {value}
                 </h3>
                 {trend !== undefined && trend !== 0 && (
@@ -168,7 +168,7 @@ const MetricCard = ({
                     </span>
                 )}
             </div>
-            <p className="text-sm font-mono text-neutral-600 border-l-2 border-swiss-blue pl-2">{subtext}</p>
+            <p className="text-sm font-mono text-foreground/60 border-l-2 border-swiss-blue pl-2">{subtext}</p>
         </div>
     </motion.div>
 )
@@ -284,12 +284,12 @@ export default function DashboardPage() {
                 variants={containerVariants}
             >
                 {/* Period Selector Header */}
-                <div className="flex items-center justify-between px-6 py-4 border-b border-black bg-neutral-50">
-                    <h2 className="text-lg font-bold tracking-tight">Dashboard Overview</h2>
+                <div className="flex items-center justify-between px-6 py-4 border-b border-foreground/20 bg-background">
+                    <h2 className="text-lg font-bold tracking-tight text-foreground">Dashboard Overview</h2>
                     <div className="relative">
                         <button
                             onClick={() => setPeriodDropdownOpen(!periodDropdownOpen)}
-                            className="flex items-center gap-2 px-4 py-2 bg-white border border-black font-bold text-sm hover:bg-neutral-100 transition-colors shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"
+                            className="flex items-center gap-2 px-4 py-2 bg-background border border-foreground text-foreground font-bold text-sm hover:bg-foreground/10 transition-colors shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:shadow-[2px_2px_0px_0px_rgba(255,255,255,0.3)]"
                         >
                             <Calendar className="h-4 w-4" />
                             {periodLabels[selectedPeriod]}
@@ -301,7 +301,7 @@ export default function DashboardPage() {
                                     initial={{ opacity: 0, y: -10 }}
                                     animate={{ opacity: 1, y: 0 }}
                                     exit={{ opacity: 0, y: -10 }}
-                                    className="absolute right-0 mt-1 w-40 bg-white border border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] z-50"
+                                    className="absolute right-0 mt-1 w-40 bg-background border border-foreground shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.3)] z-50"
                                 >
                                     {(Object.keys(periodLabels) as TimePeriod[]).map((period) => (
                                         <button
@@ -311,7 +311,7 @@ export default function DashboardPage() {
                                                 setPeriodDropdownOpen(false)
                                             }}
                                             className={cn(
-                                                "w-full px-4 py-2 text-left text-sm font-medium hover:bg-neutral-100 transition-colors",
+                                                "w-full px-4 py-2 text-left text-sm font-medium text-foreground hover:bg-foreground/10 transition-colors",
                                                 selectedPeriod === period && "bg-swiss-blue text-white hover:bg-swiss-blue"
                                             )}
                                         >
@@ -325,7 +325,7 @@ export default function DashboardPage() {
                 </div>
 
                 {/* Top Metrics Grid - Rigid Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 border-b border-black">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 border-b border-foreground/20">
                     <MetricCard
                         label={`${periodLabels[selectedPeriod]} Expenses`}
                         value={`$${totalAmount.toFixed(2)}`}
@@ -356,28 +356,28 @@ export default function DashboardPage() {
 
                 {/* Analytics Charts Row */}
                 <motion.div
-                    className="border-t border-black bg-neutral-50 p-8"
+                    className="border-t border-foreground/20 bg-background p-8"
                     variants={itemVariants}
                 >
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                         <SpendingTrendsChart
                             receipts={currentPeriodReceipts}
                             period={selectedPeriod}
-                            className="shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
+                            className="shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.3)]"
                         />
                         <StoreAnalysisChart
                             receipts={currentPeriodReceipts}
-                            className="shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
+                            className="shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.3)]"
                         />
                     </div>
                 </motion.div>
 
                 {/* Quick Stats Cards */}
                 <motion.div
-                    className="border-t border-black bg-white p-8"
+                    className="border-t border-foreground/20 bg-background p-8"
                     variants={itemVariants}
                 >
-                    <h3 className="text-lg font-bold uppercase tracking-wider mb-6">Quick Insights</h3>
+                    <h3 className="text-lg font-bold uppercase tracking-wider mb-6 text-foreground">Quick Insights</h3>
                     <QuickStatsCards receipts={currentPeriodReceipts} />
                 </motion.div>
 
@@ -386,34 +386,34 @@ export default function DashboardPage() {
 
                     {/* Left: Recent Receipts Table */}
                     <motion.div
-                        className="lg:col-span-2 bg-white p-8"
+                        className="lg:col-span-2 bg-background p-8"
                         variants={itemVariants}
                     >
                         <div className="flex items-center justify-between mb-6">
                             <div>
-                                <h3 className="text-xl font-bold tracking-tight">Recent Receipts</h3>
-                                <p className="text-sm text-neutral-500 mt-1">Your latest transactions</p>
+                                <h3 className="text-xl font-bold tracking-tight text-foreground">Recent Receipts</h3>
+                                <p className="text-sm text-foreground/60 mt-1">Your latest transactions</p>
                             </div>
                             <Link
                                 href="/receipts"
-                                className="group inline-flex items-center gap-1 text-sm font-bold underline decoration-2 underline-offset-4 hover:text-swiss-blue transition-colors"
+                                className="group inline-flex items-center gap-1 text-sm font-bold text-foreground underline decoration-2 underline-offset-4 hover:text-swiss-blue transition-colors"
                             >
                                 View All
                                 <ArrowUpRight className="h-4 w-4 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
                             </Link>
                         </div>
 
-                        <div className="overflow-hidden border border-black">
+                        <div className="overflow-hidden border border-foreground">
                             <table className="w-full text-left text-sm">
-                                <thead className="bg-neutral-100 border-b border-black">
+                                <thead className="bg-foreground/10 border-b border-foreground">
                                     <tr>
-                                        <th className="p-3 font-bold uppercase text-xs tracking-wider border-r border-black/10">Date</th>
-                                        <th className="p-3 font-bold uppercase text-xs tracking-wider border-r border-black/10">Store</th>
-                                        <th className="p-3 font-bold uppercase text-xs tracking-wider border-r border-black/10">Amount</th>
-                                        <th className="p-3 font-bold uppercase text-xs tracking-wider">Category</th>
+                                        <th className="p-3 font-bold uppercase text-xs tracking-wider text-foreground border-r border-foreground/10">Date</th>
+                                        <th className="p-3 font-bold uppercase text-xs tracking-wider text-foreground border-r border-foreground/10">Store</th>
+                                        <th className="p-3 font-bold uppercase text-xs tracking-wider text-foreground border-r border-foreground/10">Amount</th>
+                                        <th className="p-3 font-bold uppercase text-xs tracking-wider text-foreground">Category</th>
                                     </tr>
                                 </thead>
-                                <tbody className="divide-y divide-black/10 font-mono">
+                                <tbody className="divide-y divide-foreground/10 font-mono">
                                     {receipts.length === 0 ? (
                                         <tr>
                                             <td colSpan={4} className="p-8">
@@ -422,14 +422,14 @@ export default function DashboardPage() {
                                                     initial={{ opacity: 0, scale: 0.95 }}
                                                     animate={{ opacity: 1, scale: 1 }}
                                                 >
-                                                    <div className="h-16 w-16 bg-neutral-100 border border-black flex items-center justify-center mb-4">
-                                                        <Receipt className="h-8 w-8 text-neutral-400" />
+                                                    <div className="h-16 w-16 bg-foreground/10 border border-foreground flex items-center justify-center mb-4">
+                                                        <Receipt className="h-8 w-8 text-foreground/40" />
                                                     </div>
-                                                    <p className="text-neutral-600 font-sans font-medium mb-2">No receipts yet</p>
-                                                    <p className="text-sm text-neutral-400 font-sans mb-4">Upload your first receipt to get started</p>
+                                                    <p className="text-foreground/70 font-sans font-medium mb-2">No receipts yet</p>
+                                                    <p className="text-sm text-foreground/40 font-sans mb-4">Upload your first receipt to get started</p>
                                                     <Link
                                                         href="/upload"
-                                                        className="inline-flex items-center gap-2 px-4 py-2 bg-black text-white text-sm font-bold hover:bg-neutral-800 transition-colors"
+                                                        className="inline-flex items-center gap-2 px-4 py-2 bg-foreground text-background text-sm font-bold hover:bg-foreground/90 transition-colors"
                                                     >
                                                         <Upload className="h-4 w-4" />
                                                         Upload Receipt
@@ -448,31 +448,31 @@ export default function DashboardPage() {
                                                     "cursor-pointer transition-all duration-200",
                                                     selectedReceipt?.id === receipt.id
                                                         ? "bg-swiss-blue/5 border-l-4 border-l-swiss-blue"
-                                                        : "hover:bg-neutral-50 border-l-4 border-l-transparent"
+                                                        : "hover:bg-foreground/5 border-l-4 border-l-transparent"
                                                 )}
                                                 onClick={() => setSelectedReceipt(receipt)}
                                             >
-                                                <td className="p-3 border-r border-black/10">
+                                                <td className="p-3 border-r border-foreground/10 text-foreground">
                                                     <div className="flex items-center gap-2">
-                                                        <Calendar className="h-3 w-3 text-neutral-400" />
+                                                        <Calendar className="h-3 w-3 text-foreground/40" />
                                                         {formatDate(receipt.purchase_date)}
                                                     </div>
                                                 </td>
-                                                <td className="p-3 border-r border-black/10 font-sans font-medium">
-                                                    {receipt.store_name || <span className="text-neutral-400 italic">Unknown</span>}
+                                                <td className="p-3 border-r border-foreground/10 font-sans font-medium text-foreground">
+                                                    {receipt.store_name || <span className="text-foreground/40 italic">Unknown</span>}
                                                 </td>
-                                                <td className="p-3 border-r border-black/10 font-bold">
-                                                    {receipt.total_amount ? `$${Number(receipt.total_amount).toFixed(2)}` : <span className="text-neutral-400">-</span>}
+                                                <td className="p-3 border-r border-foreground/10 font-bold text-foreground">
+                                                    {receipt.total_amount ? `$${Number(receipt.total_amount).toFixed(2)}` : <span className="text-foreground/40">-</span>}
                                                 </td>
-                                                <td className="p-3">
+                                                <td className="p-3 text-foreground">
                                                     {receipt.category_name ? (
                                                         <span className="inline-flex items-center gap-1.5 text-swiss-green font-sans font-medium">
                                                             <span className="h-2 w-2 bg-swiss-green rounded-full"></span>
                                                             {receipt.category_name}
                                                         </span>
                                                     ) : (
-                                                        <span className="inline-flex items-center gap-1.5 text-neutral-400">
-                                                            <span className="h-2 w-2 bg-neutral-300 rounded-full"></span>
+                                                        <span className="inline-flex items-center gap-1.5 text-foreground/40">
+                                                            <span className="h-2 w-2 bg-foreground/30 rounded-full"></span>
                                                             Uncategorized
                                                         </span>
                                                     )}
@@ -487,27 +487,27 @@ export default function DashboardPage() {
 
                     {/* Right: Receipt Preview / Actions */}
                     <motion.div
-                        className="lg:col-span-1 bg-neutral-50 border-l border-black p-8 flex flex-col gap-6"
+                        className="lg:col-span-1 bg-foreground/5 border-l border-foreground/20 p-8 flex flex-col gap-6"
                         variants={itemVariants}
                     >
                         <AnimatePresence mode="wait">
                             {selectedReceipt ? (
                                 <motion.div
                                     key="detail"
-                                    className="border border-black bg-white flex flex-col h-full"
+                                    className="border border-foreground bg-background flex flex-col h-full"
                                     initial={{ opacity: 0, x: 20 }}
                                     animate={{ opacity: 1, x: 0 }}
                                     exit={{ opacity: 0, x: 20 }}
                                     transition={{ duration: 0.3 }}
                                 >
-                                    <div className="flex items-center justify-between p-4 border-b border-black bg-neutral-100">
-                                        <div className="flex items-center gap-2">
+                                    <div className="flex items-center justify-between p-4 border-b border-foreground/20 bg-foreground/10">
+                                        <div className="flex items-center gap-2 text-foreground">
                                             <FileText className="h-4 w-4" />
                                             <h4 className="font-bold text-sm uppercase tracking-wider">Receipt Preview</h4>
                                         </div>
                                         <motion.button
                                             onClick={() => setSelectedReceipt(null)}
-                                            className="p-1 hover:bg-neutral-200 transition-colors"
+                                            className="p-1 hover:bg-foreground/20 transition-colors text-foreground"
                                             whileHover={{ scale: 1.1 }}
                                             whileTap={{ scale: 0.9 }}
                                         >
@@ -516,7 +516,7 @@ export default function DashboardPage() {
                                     </div>
 
                                     {/* Image Preview */}
-                                    <div className="flex-1 bg-neutral-200 flex items-center justify-center min-h-[300px] relative overflow-hidden group">
+                                    <div className="flex-1 bg-foreground/20 flex items-center justify-center min-h-[300px] relative overflow-hidden group">
                                         <motion.img
                                             src={getImageUrl(selectedReceipt.image_url)}
                                             alt="Receipt"
@@ -528,26 +528,26 @@ export default function DashboardPage() {
                                     </div>
 
                                     {/* Receipt Details */}
-                                    <div className="p-4 border-t border-black space-y-3 text-sm">
+                                    <div className="p-4 border-t border-foreground/20 space-y-3 text-sm">
                                         <div className="flex justify-between items-center">
-                                            <span className="font-bold uppercase text-xs text-neutral-500">Store</span>
-                                            <span className="font-medium">{selectedReceipt.store_name || 'Unknown'}</span>
+                                            <span className="font-bold uppercase text-xs text-foreground/60">Store</span>
+                                            <span className="font-medium text-foreground">{selectedReceipt.store_name || 'Unknown'}</span>
                                         </div>
                                         <div className="flex justify-between items-center">
-                                            <span className="font-bold uppercase text-xs text-neutral-500">Date</span>
-                                            <span className="font-mono">{formatDate(selectedReceipt.purchase_date)}</span>
+                                            <span className="font-bold uppercase text-xs text-foreground/60">Date</span>
+                                            <span className="font-mono text-foreground">{formatDate(selectedReceipt.purchase_date)}</span>
                                         </div>
                                         <div className="flex justify-between items-center">
-                                            <span className="font-bold uppercase text-xs text-neutral-500">Amount</span>
-                                            <span className="font-bold text-xl">{selectedReceipt.total_amount ? `$${Number(selectedReceipt.total_amount).toFixed(2)}` : '-'}</span>
+                                            <span className="font-bold uppercase text-xs text-foreground/60">Amount</span>
+                                            <span className="font-bold text-xl text-foreground">{selectedReceipt.total_amount ? `$${Number(selectedReceipt.total_amount).toFixed(2)}` : '-'}</span>
                                         </div>
                                         <div className="flex justify-between items-center">
-                                            <span className="font-bold uppercase text-xs text-neutral-500">Category</span>
+                                            <span className="font-bold uppercase text-xs text-foreground/60">Category</span>
                                             <span className={cn(
                                                 "px-2 py-1 text-xs font-bold uppercase",
                                                 selectedReceipt.category_name
                                                     ? "bg-swiss-green/10 text-swiss-green"
-                                                    : "bg-neutral-100 text-neutral-500"
+                                                    : "bg-foreground/10 text-foreground/60"
                                             )}>
                                                 {selectedReceipt.category_name || 'Uncategorized'}
                                             </span>
@@ -555,10 +555,10 @@ export default function DashboardPage() {
                                     </div>
 
                                     {/* Actions */}
-                                    <div className="p-4 border-t border-black flex gap-2">
+                                    <div className="p-4 border-t border-foreground/20 flex gap-2">
                                         <Link
                                             href={`/receipts/${selectedReceipt.id}`}
-                                            className="flex-1 py-2 bg-black text-white font-bold text-sm hover:bg-neutral-800 border border-black text-center transition-colors"
+                                            className="flex-1 py-2 bg-foreground text-background font-bold text-sm hover:bg-foreground/90 border border-foreground text-center transition-colors"
                                         >
                                             Edit
                                         </Link>
@@ -571,7 +571,7 @@ export default function DashboardPage() {
                                                     })
                                                 }
                                             }}
-                                            className="flex-1 py-2 bg-white text-swiss-orange font-bold text-sm hover:bg-orange-50 border border-black transition-colors"
+                                            className="flex-1 py-2 bg-background text-swiss-orange font-bold text-sm hover:bg-orange-50 dark:hover:bg-orange-900/20 border border-foreground transition-colors"
                                             whileHover={{ scale: 1.02 }}
                                             whileTap={{ scale: 0.98 }}
                                         >
@@ -588,19 +588,19 @@ export default function DashboardPage() {
                                     exit={{ opacity: 0 }}
                                 >
                                     <motion.div
-                                        className="border border-black bg-white p-6 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
+                                        className="border border-foreground bg-background p-6 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.3)]"
                                         whileHover={{
                                             y: -2,
                                             boxShadow: "6px 6px 0px 0px rgba(0,0,0,1)"
                                         }}
                                     >
                                         <div className="flex items-center gap-3 mb-4">
-                                            <div className="h-10 w-10 bg-black flex items-center justify-center">
+                                            <div className="h-10 w-10 bg-swiss-blue flex items-center justify-center">
                                                 <Upload className="h-5 w-5 text-white" />
                                             </div>
-                                            <h4 className="font-bold text-lg">New Receipt</h4>
+                                            <h4 className="font-bold text-lg text-foreground">New Receipt</h4>
                                         </div>
-                                        <p className="text-sm text-neutral-600 mb-6">
+                                        <p className="text-sm text-foreground/60 mb-6">
                                             {receipts.length === 0
                                                 ? "Get started by uploading your first receipt. We'll extract the details automatically."
                                                 : "Click a receipt from the list to preview, or upload a new one."
@@ -608,7 +608,7 @@ export default function DashboardPage() {
                                         </p>
                                         <Link
                                             href="/upload"
-                                            className="block w-full py-3 bg-swiss-blue text-white font-bold hover:bg-blue-700 transition-all border border-black text-center shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] hover:shadow-[5px_5px_0px_0px_rgba(0,0,0,1)] hover:-translate-x-0.5 hover:-translate-y-0.5"
+                                            className="block w-full py-3 bg-swiss-blue text-white font-bold hover:bg-blue-700 transition-all border border-foreground text-center shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] dark:shadow-[3px_3px_0px_0px_rgba(255,255,255,0.3)] hover:shadow-[5px_5px_0px_0px_rgba(0,0,0,1)] dark:hover:shadow-[5px_5px_0px_0px_rgba(255,255,255,0.3)] hover:-translate-x-0.5 hover:-translate-y-0.5"
                                         >
                                             {receipts.length === 0 ? "Upload First Receipt" : "Upload Receipt"}
                                         </Link>
@@ -617,7 +617,7 @@ export default function DashboardPage() {
                                     {/* Category Breakdown Chart */}
                                     <CategoryBreakdownChart
                                         receipts={currentPeriodReceipts}
-                                        className="shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
+                                        className="shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.3)]"
                                     />
                                 </motion.div>
                             )}
