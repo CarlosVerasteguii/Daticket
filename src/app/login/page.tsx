@@ -12,7 +12,7 @@ import { Loader2 } from 'lucide-react'
 
 const loginSchema = z.object({
     email: z.string().email(),
-    password: z.string().min(1, 'Password is required'),
+    password: z.string().min(1, 'La contraseña es requerida'),
 })
 
 type LoginFormData = z.infer<typeof loginSchema>
@@ -53,7 +53,7 @@ function LoginForm() {
             router.push('/dashboard')
             router.refresh()
         } catch (err: any) {
-            setError(err.message || 'Invalid email or password')
+            setError(err.message || 'Correo o contraseña inválidos')
         } finally {
             setIsLoading(false)
         }
@@ -66,13 +66,13 @@ function LoginForm() {
                     Daticket
                 </h1>
                 <p className="mt-2 text-sm font-bold uppercase tracking-widest text-black">
-                    Sign in to your account
+                    Inicia sesión en tu cuenta
                 </p>
             </div>
 
             {registered && (
                 <div className="border border-swiss-green bg-green-50 p-4 text-sm text-swiss-green text-center font-bold animate-fade-in-up">
-                    ✓ Registration successful! Please sign in.
+                    ✓ ¡Registro exitoso! Por favor inicia sesión.
                 </div>
             )}
 
@@ -86,7 +86,7 @@ function LoginForm() {
                 <div className="space-y-4">
                     <div>
                         <label htmlFor="email" className="block text-xs font-bold uppercase tracking-wider text-black mb-2">
-                            Email address
+                            Correo electrónico
                         </label>
                         <input
                             id="email"
@@ -102,7 +102,7 @@ function LoginForm() {
 
                     <div>
                         <label htmlFor="password" className="block text-xs font-bold uppercase tracking-wider text-black mb-2">
-                            Password
+                            Contraseña
                         </label>
                         <input
                             id="password"
@@ -126,23 +126,23 @@ function LoginForm() {
                         {isLoading ? (
                             <>
                                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                Signing in...
+                                Iniciando sesión...
                             </>
                         ) : (
-                            'Sign in'
+                            'Iniciar sesión'
                         )}
                     </button>
                 </div>
 
                 <div className="text-center text-sm">
                     <Link href="/register" className="font-bold text-black underline decoration-2 underline-offset-4 hover:text-swiss-blue transition-colors">
-                        Don&apos;t have an account? Sign up
+                        ¿No tienes una cuenta? Regístrate
                     </Link>
                 </div>
 
                 <div className="text-center text-sm">
                     <Link href="/forgot-password" className="font-bold text-neutral-600 hover:text-black transition-colors">
-                        Forgot your password?
+                        ¿Olvidaste tu contraseña?
                     </Link>
                 </div>
             </form>
@@ -158,7 +158,7 @@ function LoginForm() {
                         className="flex w-full items-center justify-center gap-2 border border-black bg-white px-4 py-3 text-sm font-bold text-black hover:bg-neutral-100 focus:outline-none focus:ring-2 focus:ring-black transition-all"
                     >
                         <span>🔧</span>
-                        Prefill Credentials (Dev Only)
+                        Autocompletar Credenciales (Solo Dev)
                     </button>
                 </div>
             )}

@@ -24,18 +24,27 @@ import { motion, AnimatePresence } from 'framer-motion'
 export default function DashboardShell({ children }: { children: React.ReactNode }) {
     const [isSidebarOpen, setIsSidebarOpen] = useState(false)
     const [isOnline, setIsOnline] = useState(true)
+    const [isDesktop, setIsDesktop] = useState(false)
     const pathname = usePathname()
+
+    // Desktop detection for sidebar animation
+    useEffect(() => {
+        const checkDesktop = () => setIsDesktop(window.innerWidth >= 1024)
+        checkDesktop()
+        window.addEventListener('resize', checkDesktop)
+        return () => window.removeEventListener('resize', checkDesktop)
+    }, [])
 
     // Network status detection
     useEffect(() => {
         setIsOnline(navigator.onLine)
-        
+
         const handleOnline = () => setIsOnline(true)
         const handleOffline = () => setIsOnline(false)
-        
+
         window.addEventListener('online', handleOnline)
         window.addEventListener('offline', handleOffline)
-        
+
         return () => {
             window.removeEventListener('online', handleOnline)
             window.removeEventListener('offline', handleOffline)
@@ -43,12 +52,12 @@ export default function DashboardShell({ children }: { children: React.ReactNode
     }, [])
 
     const navigation = [
-        { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
-        { name: 'Receipts', href: '/receipts', icon: Receipt },
-        { name: 'Upload', href: '/upload', icon: Upload },
-        { name: 'Budget', href: '/budget', icon: Wallet },
-        { name: 'Profile', href: '/profile', icon: User },
-        { name: 'Settings', href: '/settings', icon: Settings },
+        { name: 'Panel', href: '/dashboard', icon: LayoutDashboard },
+        { name: 'Recibos', href: '/receipts', icon: Receipt },
+        { name: 'Subir', href: '/upload', icon: Upload },
+        { name: 'Presupuesto', href: '/budget', icon: Wallet },
+        { name: 'Perfil', href: '/profile', icon: User },
+        { name: 'Ajustes', href: '/settings', icon: Settings },
     ]
 
     const handleLogout = async () => {
@@ -60,7 +69,7 @@ export default function DashboardShell({ children }: { children: React.ReactNode
     }
 
     return (
-        <div className="min-h-screen bg-white dark:bg-neutral-950 text-black dark:text-white font-sans selection:bg-black selection:text-white dark:selection:bg-white dark:selection:text-black">
+        <div className="min-h-screen bg-white dark:bg-neutral-950 text-black dark:text-white font-sans selection:bg-black selection:text-white dark:selection:bg-white dark:selection:text-black flex">
             {/* Mobile Sidebar Overlay */}
             <AnimatePresence>
                 {isSidebarOpen && (
@@ -78,11 +87,11 @@ export default function DashboardShell({ children }: { children: React.ReactNode
             <motion.aside
                 initial={false}
                 animate={{
-                    x: isSidebarOpen ? 0 : "-100%",
+                    x: isDesktop ? 0 : (isSidebarOpen ? 0 : "-100%"),
                 }}
                 transition={{ type: "spring", stiffness: 300, damping: 30 }}
                 className={cn(
-                    "fixed inset-y-0 left-0 z-50 w-64 bg-white dark:bg-neutral-900 border-r border-black dark:border-neutral-700 lg:translate-x-0 lg:static lg:block"
+                    "fixed inset-y-0 left-0 z-50 w-64 bg-white dark:bg-neutral-900 border-r border-black dark:border-neutral-700 lg:relative lg:flex-shrink-0"
                 )}
             >
                 <div className="flex h-full flex-col">
@@ -149,8 +158,8 @@ export default function DashboardShell({ children }: { children: React.ReactNode
                                 <LogOut className="h-4 w-4" />
                             </div>
                             <div className="flex-1 overflow-hidden">
-                                <p className="truncate text-xs font-bold uppercase tracking-wider">Sign Out</p>
-                                <p className="truncate text-xs text-neutral-500 dark:text-neutral-400">End session</p>
+                                <p className="truncate text-xs font-bold uppercase tracking-wider">Cerrar Sesión</p>
+                                <p className="truncate text-xs text-neutral-500 dark:text-neutral-400">Finalizar sesión</p>
                             </div>
                         </motion.button>
                     </div>
@@ -158,7 +167,7 @@ export default function DashboardShell({ children }: { children: React.ReactNode
             </motion.aside>
 
             {/* Main Content Area */}
-            <div className="lg:ml-0 min-h-screen flex flex-col">
+            <div className="flex-1 min-h-screen flex flex-col">
                 {/* Header - Minimalist Bordered */}
                 <header className="sticky top-0 z-30 flex h-16 items-center justify-between px-6 bg-white dark:bg-neutral-900 border-b border-black dark:border-neutral-700">
                     <div className="flex items-center gap-4">
@@ -173,7 +182,7 @@ export default function DashboardShell({ children }: { children: React.ReactNode
                         </motion.button>
 
                         {/* Breadcrumb / Title Area */}
-                        <motion.div 
+                        <motion.div
                             className="flex items-center gap-2"
                             initial={{ opacity: 0, y: -10 }}
                             animate={{ opacity: 1, y: 0 }}
@@ -181,7 +190,22 @@ export default function DashboardShell({ children }: { children: React.ReactNode
                         >
                             <div className="h-4 w-4 border border-black dark:border-white bg-white dark:bg-neutral-900" />
                             <h2 className="text-sm font-bold uppercase tracking-widest text-neutral-500 dark:text-neutral-400">
-                                {pathname.split('/')[1] || 'Overview'}
+                                {(() => {
+                                    const routeNames: Record<string, string> = {
+                                        'dashboard': 'Panel',
+                                        'receipts': 'Recibos',
+                                        'upload': 'Subir',
+                                        'budget': 'Presupuesto',
+                                        'profile': 'Perfil',
+                                        'settings': 'Ajustes',
+                                        'login': 'Iniciar Sesión',
+                                        'register': 'Registro',
+                                        'forgot-password': 'Recuperar Contraseña',
+                                        'reset-password': 'Restablecer Contraseña'
+                                    };
+                                    const route = pathname.split('/')[1];
+                                    return routeNames[route] || 'Resumen';
+                                })()}
                             </h2>
                         </motion.div>
                     </div>
@@ -194,7 +218,7 @@ export default function DashboardShell({ children }: { children: React.ReactNode
                             whileTap={{ scale: 0.98 }}
                         >
                             <Search className="h-4 w-4 text-neutral-400" />
-                            <span className="text-xs text-neutral-500 dark:text-neutral-400">Search...</span>
+                            <span className="text-xs text-neutral-500 dark:text-neutral-400">Buscar...</span>
                             <kbd className="ml-2 text-xs text-neutral-400 border border-black/20 dark:border-neutral-600 px-1.5 py-0.5">⌘K</kbd>
                         </motion.button>
 
@@ -216,12 +240,12 @@ export default function DashboardShell({ children }: { children: React.ReactNode
                                 {isOnline ? (
                                     <>
                                         <span className="h-2 w-2 bg-swiss-green rounded-full animate-pulse" />
-                                        <span className="text-xs font-mono text-swiss-green font-bold">ONLINE</span>
+                                        <span className="text-xs font-mono text-swiss-green font-bold">EN LÍNEA</span>
                                     </>
                                 ) : (
                                     <>
                                         <WifiOff className="h-3 w-3 text-red-600 dark:text-red-400" />
-                                        <span className="text-xs font-mono text-red-600 dark:text-red-400 font-bold">OFFLINE</span>
+                                        <span className="text-xs font-mono text-red-600 dark:text-red-400 font-bold">SIN CONEXIÓN</span>
                                     </>
                                 )}
                             </motion.div>

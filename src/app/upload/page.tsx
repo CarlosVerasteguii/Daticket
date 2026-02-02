@@ -78,8 +78,8 @@ export default function UploadPage() {
                         </Link>
                     </motion.div>
                     <div>
-                        <h1 className="text-2xl font-bold tracking-tighter">Upload Receipt</h1>
-                        <p className="text-sm text-neutral-500 mt-1">Add a new expense to your records</p>
+                        <h1 className="text-2xl font-bold tracking-tighter">Subir Recibo</h1>
+                        <p className="text-sm text-neutral-500 mt-1">Agrega un nuevo gasto a tus registros</p>
                     </div>
                 </motion.div>
 
@@ -107,7 +107,7 @@ export default function UploadPage() {
                             <div className="h-10 w-10 bg-black flex items-center justify-center">
                                 <FileText className="h-5 w-5 text-white" />
                             </div>
-                            <h3 className="text-lg font-bold">How it works</h3>
+                            <h3 className="text-lg font-bold">Cómo funciona</h3>
                         </motion.div>
 
                         <div className="space-y-6">
@@ -115,22 +115,22 @@ export default function UploadPage() {
                                 {
                                     step: "1",
                                     icon: Camera,
-                                    title: "Upload Image",
-                                    description: "Take a photo or select an existing image of your receipt. Make sure the text is clearly visible.",
+                                    title: "Subir Imagen",
+                                    description: "Toma una foto o selecciona una imagen existente de tu recibo. Asegúrate de que el texto sea claramente visible.",
                                     delay: 0.4
                                 },
                                 {
                                     step: "2",
                                     icon: Sparkles,
-                                    title: "AI Extraction",
-                                    description: "Our AI automatically reads the receipt and extracts the store name, date, and total amount.",
+                                    title: "Extracción IA",
+                                    description: "Nuestra IA lee automáticamente el recibo y extrae el nombre de la tienda, fecha y monto total.",
                                     delay: 0.5
                                 },
                                 {
                                     step: "3",
                                     icon: FileText,
-                                    title: "Add Details",
-                                    description: "Review the extracted information and add a category. Make any corrections if needed.",
+                                    title: "Agregar Detalles",
+                                    description: "Revisa la información extraída y agrega una categoría. Haz correcciones si es necesario.",
                                     delay: 0.6
                                 }
                             ].map((item) => (
@@ -170,24 +170,24 @@ export default function UploadPage() {
                                 <div className="h-8 w-8 bg-swiss-green flex items-center justify-center">
                                     <Image className="h-4 w-4 text-white" />
                                 </div>
-                                <p className="font-bold">Pro Tips</p>
+                                <p className="font-bold">Consejos Pro</p>
                             </div>
                             <ul className="space-y-2 text-sm text-neutral-600">
                                 <li className="flex items-start gap-2">
                                     <span className="text-swiss-green font-bold">•</span>
-                                    Ensure good lighting when taking photos
+                                    Asegúrate de tener buena iluminación al tomar fotos
                                 </li>
                                 <li className="flex items-start gap-2">
                                     <span className="text-swiss-green font-bold">•</span>
-                                    Keep the receipt flat and unwrinkled
+                                    Mantén el recibo plano y sin arrugas
                                 </li>
                                 <li className="flex items-start gap-2">
                                     <span className="text-swiss-green font-bold">•</span>
-                                    All text should be clearly readable
+                                    Todo el texto debe ser claramente legible
                                 </li>
                                 <li className="flex items-start gap-2">
                                     <span className="text-swiss-green font-bold">•</span>
-                                    Supported: JPG, PNG, PDF (max 10MB)
+                                    Soportado: JPG, PNG, PDF (máx 10MB)
                                 </li>
                             </ul>
                         </motion.div>
@@ -200,7 +200,7 @@ export default function UploadPage() {
                             transition={{ delay: 0.8 }}
                         >
                             <p className="text-xs text-neutral-500 leading-relaxed">
-                                <span className="font-bold text-black">🔒 Secure Storage:</span> Your receipts are encrypted and stored securely. Only you can access them.
+                                <span className="font-bold text-black">🔒 Almacenamiento Seguro:</span> Tus recibos están encriptados y almacenados de forma segura. Solo tú puedes acceder a ellos.
                             </p>
                         </motion.div>
                     </motion.div>

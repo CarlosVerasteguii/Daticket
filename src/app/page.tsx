@@ -29,17 +29,17 @@ export default function Home() {
             Daticket
           </Link>
           <div className="flex items-center gap-6">
-            <Link 
-              href="/login" 
+          <Link
+              href="/login"
               className="text-sm font-bold uppercase tracking-wider hover:text-neutral-600 transition-colors"
             >
-              Sign In
+              Iniciar Sesión
             </Link>
-            <Link 
-              href="/register" 
+            <Link
+              href="/register"
               className="px-5 py-2 bg-black text-white text-sm font-bold uppercase tracking-wider hover:bg-neutral-800 transition-all hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,0.2)]"
             >
-              Get Started
+              Empezar
             </Link>
           </div>
         </div>
@@ -61,55 +61,57 @@ export default function Home() {
                 variants={fadeInUp}
               >
                 <Sparkles className="h-4 w-4" />
-                <span className="text-xs font-bold uppercase tracking-wider">Now with AI Receipt Scanning</span>
+                <span className="text-xs font-bold uppercase tracking-wider">Ahora con Escaneo IA de Recibos</span>
               </motion.div>
               
-              <motion.h1 
+              <motion.h1
                 className="text-5xl md:text-7xl font-bold tracking-tighter leading-[0.9]"
                 variants={fadeInUp}
               >
-                Track Every
-                <span className="block text-swiss-blue">Receipt.</span>
+                Rastrea Cada
+                <span className="block text-swiss-blue">Recibo.</span>
               </motion.h1>
               
-              <motion.p 
+              <motion.p
                 className="text-lg md:text-xl text-neutral-600 max-w-md leading-relaxed"
                 variants={fadeInUp}
               >
-                The Swiss-style expense tracker that turns your paper receipts into organized digital records. Simple, fast, beautiful.
+                El rastreador de gastos estilo suizo que convierte tus recibos en papel en registros digitales organizados. Simple, rápido, hermoso.
               </motion.p>
               
               <motion.div 
                 className="flex flex-col sm:flex-row gap-4"
                 variants={fadeInUp}
               >
-                <Link 
+                <Link
                   href="/register"
                   className="group inline-flex items-center justify-center gap-2 px-8 py-4 bg-black text-white font-bold uppercase tracking-wider hover:bg-neutral-800 transition-all hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,0.3)]"
                 >
-                  Start Free
+                  Comenzar Gratis
                   <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
                 </Link>
-                <Link 
+                <Link
                   href="/login"
                   className="inline-flex items-center justify-center gap-2 px-8 py-4 border border-black font-bold uppercase tracking-wider hover:bg-neutral-100 transition-all"
                 >
-                  Sign In
+                  Iniciar Sesión
                 </Link>
               </motion.div>
 
               {/* Trust badges */}
-              <motion.div 
+              <motion.div
                 className="flex items-center gap-6 pt-4"
                 variants={fadeInUp}
               >
                 <div className="flex -space-x-2">
-                  {[1,2,3,4].map((i) => (
-                    <div key={i} className="h-8 w-8 bg-neutral-300 border-2 border-white" />
+                  {['bg-swiss-blue', 'bg-swiss-orange', 'bg-swiss-green', 'bg-black'].map((color, i) => (
+                    <div key={i} className={`h-8 w-8 ${color} border-2 border-white flex items-center justify-center text-white text-xs font-bold`}>
+                      {['JD', 'MK', 'AS', 'LR'][i]}
+                    </div>
                   ))}
                 </div>
                 <p className="text-sm text-neutral-600">
-                  <span className="font-bold text-black">2,000+</span> users tracking expenses
+                  <span className="font-bold text-black">2,000+</span> usuarios rastreando gastos
                 </p>
               </motion.div>
             </div>
@@ -166,7 +168,7 @@ export default function Home() {
                     <BarChart3 className="h-5 w-5 text-white" />
                   </div>
                   <div>
-                    <p className="text-xs font-bold uppercase tracking-wider text-neutral-500">This Month</p>
+                    <p className="text-xs font-bold uppercase tracking-wider text-neutral-500">Este Mes</p>
                     <p className="text-xl font-bold tracking-tighter">$1,240.00</p>
                   </div>
                 </div>
@@ -181,10 +183,10 @@ export default function Home() {
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold tracking-tighter mb-4">
-              Everything You Need
+              Todo lo que Necesitas
             </h2>
             <p className="text-neutral-600 max-w-md mx-auto">
-              Built with Swiss precision. No clutter, no unnecessary features.
+              Construido con precisión suiza. Sin desorden, sin funciones innecesarias.
             </p>
           </div>
 
@@ -192,20 +194,20 @@ export default function Home() {
             {[
               {
                 icon: Scan,
-                title: "AI Scanning",
-                description: "Upload a receipt photo and our AI extracts the store, amount, and date automatically.",
+                title: "Escaneo IA",
+                description: "Sube una foto del recibo y nuestra IA extrae la tienda, monto y fecha automáticamente.",
                 color: "bg-swiss-blue"
               },
               {
                 icon: Receipt,
-                title: "Digital Archive",
-                description: "All your receipts organized in one place. Search, filter, and access anytime.",
+                title: "Archivo Digital",
+                description: "Todos tus recibos organizados en un solo lugar. Busca, filtra y accede en cualquier momento.",
                 color: "bg-black"
               },
               {
                 icon: Shield,
-                title: "Secure Storage",
-                description: "Your data is encrypted and stored securely. Only you can access your receipts.",
+                title: "Almacenamiento Seguro",
+                description: "Tus datos están encriptados y almacenados de forma segura. Solo tú puedes acceder a tus recibos.",
                 color: "bg-swiss-green"
               }
             ].map((feature, index) => (
@@ -232,25 +234,25 @@ export default function Home() {
       <section className="py-20 px-6 border-t border-black">
         <div className="max-w-7xl mx-auto">
           <h2 className="text-3xl md:text-4xl font-bold tracking-tighter mb-12 text-center">
-            How It Works
+            Cómo Funciona
           </h2>
 
           <div className="grid md:grid-cols-3 gap-8">
             {[
               {
                 step: "01",
-                title: "Upload",
-                description: "Take a photo or upload an image of your receipt."
+                title: "Subir",
+                description: "Toma una foto o sube una imagen de tu recibo."
               },
               {
                 step: "02",
-                title: "Scan",
-                description: "AI automatically extracts the important details."
+                title: "Escanear",
+                description: "La IA extrae automáticamente los detalles importantes."
               },
               {
                 step: "03",
-                title: "Track",
-                description: "View reports, track spending, and stay organized."
+                title: "Rastrear",
+                description: "Ve reportes, rastrea gastos y mantente organizado."
               }
             ].map((item, index) => (
               <motion.div 
@@ -279,19 +281,19 @@ export default function Home() {
       <section className="py-20 px-6 border-t border-black bg-black text-white">
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="text-4xl md:text-5xl font-bold tracking-tighter mb-6">
-            Ready to get organized?
+            ¿Listo para organizarte?
           </h2>
           <p className="text-lg text-neutral-400 mb-8 max-w-md mx-auto">
-            Join thousands of users who simplified their expense tracking.
+            Únete a miles de usuarios que simplificaron su seguimiento de gastos.
           </p>
           <Link 
             href="/register"
             className="group inline-flex items-center gap-2 px-8 py-4 bg-white text-black font-bold uppercase tracking-wider hover:bg-neutral-200 transition-all"
           >
-            Get Started Free
+            Comenzar Gratis
             <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
           </Link>
-          <p className="mt-4 text-sm text-neutral-500">No credit card required</p>
+          <p className="mt-4 text-sm text-neutral-500">No se requiere tarjeta de crédito</p>
         </div>
       </section>
 
@@ -302,14 +304,14 @@ export default function Home() {
             Daticket
           </p>
           <p className="text-sm text-neutral-500">
-            Built with Swiss precision
+            Construido con precisión suiza
           </p>
           <div className="flex gap-6">
             <Link href="/login" className="text-sm text-neutral-600 hover:text-black transition-colors">
-              Sign In
+              Iniciar Sesión
             </Link>
             <Link href="/register" className="text-sm text-neutral-600 hover:text-black transition-colors">
-              Sign Up
+              Registrarse
             </Link>
           </div>
         </div>

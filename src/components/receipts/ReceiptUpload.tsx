@@ -104,7 +104,7 @@ export default function ReceiptUpload() {
         if (e.target.files && e.target.files[0]) {
             const selectedFile = e.target.files[0]
             if (selectedFile.size > 10 * 1024 * 1024) {
-                alert('File size must be less than 10MB')
+                alert('El archivo debe ser menor a 10MB')
                 return
             }
             setFile(selectedFile)
@@ -150,7 +150,7 @@ export default function ReceiptUpload() {
             router.push('/receipts')
             router.refresh()
         } catch (error: unknown) {
-            alert('Error uploading receipt: ' + (error instanceof Error ? error.message : 'Unknown error'))
+            alert('Error al subir el recibo: ' + (error instanceof Error ? error.message : 'Error desconocido'))
         } finally {
             setUploading(false)
         }
@@ -161,7 +161,7 @@ export default function ReceiptUpload() {
         const droppedFile = e.dataTransfer.files[0]
         if (droppedFile && droppedFile.type.startsWith('image/')) {
             if (droppedFile.size > 10 * 1024 * 1024) {
-                alert('File size must be less than 10MB')
+                alert('El archivo debe ser menor a 10MB')
                 return
             }
             setFile(droppedFile)
@@ -201,9 +201,9 @@ export default function ReceiptUpload() {
                             >
                                 <Upload className="w-8 h-8 text-white" />
                             </motion.div>
-                            <p className="text-black font-bold text-lg mb-2">Drop your receipt here</p>
-                            <p className="text-sm text-neutral-500 font-mono">or click to browse files</p>
-                            <p className="text-xs text-neutral-400 mt-4">JPG, PNG up to 10MB</p>
+                             <p className="text-black font-bold text-lg mb-2">Arrastra tu recibo aquí</p>
+                             <p className="text-sm text-neutral-500 font-mono">o haz clic para buscar archivos</p>
+                             <p className="text-xs text-neutral-400 mt-4">JPG, PNG hasta 10MB</p>
                             
                             {/* Hover effect */}
                             <motion.div 
@@ -269,7 +269,7 @@ export default function ReceiptUpload() {
                                                     <Sparkles className="w-5 h-5 text-swiss-blue" />
                                                 </motion.div>
                                                 <div>
-                                                    <span className="font-bold text-sm uppercase tracking-wider block">Analyzing via AI...</span>
+                                                    <span className="font-bold text-sm uppercase tracking-wider block">Analizando con IA...</span>
                                                     <div className="w-full h-1 bg-neutral-200 mt-2 overflow-hidden">
                                                         <motion.div 
                                                             className="h-full bg-swiss-blue"
@@ -296,9 +296,9 @@ export default function ReceiptUpload() {
                                             exit={{ opacity: 0 }}
                                         >
                                             <CheckCircle className="w-4 h-4" />
-                                            <span className="text-xs font-bold uppercase">
-                                                {scanConfidence === 'high' ? 'Scanned' : scanConfidence === 'medium' ? 'Partial Scan' : 'Low Confidence'}
-                                            </span>
+                                             <span className="text-xs font-bold uppercase">
+                                                 {scanConfidence === 'high' ? 'Escaneado' : scanConfidence === 'medium' ? 'Escaneo Parcial' : 'Baja Confianza'}
+                                             </span>
                                         </motion.div>
                                     )}
                                 </AnimatePresence>
@@ -313,7 +313,7 @@ export default function ReceiptUpload() {
                                             exit={{ opacity: 0 }}
                                         >
                                             <AlertTriangle className="w-4 h-4" />
-                                            <span className="text-xs font-bold uppercase">Partial Match</span>
+                                             <span className="text-xs font-bold uppercase">Coincidencia Parcial</span>
                                         </motion.div>
                                     )}
                                 </AnimatePresence>
@@ -332,35 +332,35 @@ export default function ReceiptUpload() {
                                                 initial={{ scale: 0.9, y: 20 }}
                                                 animate={{ scale: 1, y: 0 }}
                                             >
-                                                <div className="flex items-center gap-2 mb-3">
-                                                    <AlertTriangle className="w-5 h-5 text-swiss-orange" />
-                                                    <span className="font-bold text-sm uppercase">Scan Failed</span>
-                                                </div>
-                                                <p className="text-sm text-neutral-600 mb-4">
-                                                    {scanError?.message || 'Could not extract receipt data'}
-                                                </p>
+                                                 <div className="flex items-center gap-2 mb-3">
+                                                     <AlertTriangle className="w-5 h-5 text-swiss-orange" />
+                                                     <span className="font-bold text-sm uppercase">Escaneo Fallido</span>
+                                                 </div>
+                                                 <p className="text-sm text-neutral-600 mb-4">
+                                                     {scanError?.message || 'No se pudo extraer los datos del recibo'}
+                                                 </p>
                                                 <div className="flex gap-2">
                                                     {scanError?.retryable && (
-                                                        <motion.button
-                                                            type="button"
-                                                            onClick={handleRetry}
-                                                            className="flex-1 py-2 px-3 bg-black text-white text-xs font-bold uppercase flex items-center justify-center gap-2 hover:bg-neutral-800"
-                                                            whileHover={{ scale: 1.02 }}
-                                                            whileTap={{ scale: 0.98 }}
-                                                        >
-                                                            <RefreshCw className="w-3 h-3" />
-                                                            Retry
-                                                        </motion.button>
+                                                         <motion.button
+                                                             type="button"
+                                                             onClick={handleRetry}
+                                                             className="flex-1 py-2 px-3 bg-black text-white text-xs font-bold uppercase flex items-center justify-center gap-2 hover:bg-neutral-800"
+                                                             whileHover={{ scale: 1.02 }}
+                                                             whileTap={{ scale: 0.98 }}
+                                                         >
+                                                             <RefreshCw className="w-3 h-3" />
+                                                             Reintentar
+                                                         </motion.button>
                                                     )}
-                                                    <motion.button
-                                                        type="button"
-                                                        onClick={handleSkipToManual}
-                                                        className="flex-1 py-2 px-3 border-2 border-black text-xs font-bold uppercase hover:bg-neutral-100"
-                                                        whileHover={{ scale: 1.02 }}
-                                                        whileTap={{ scale: 0.98 }}
-                                                    >
-                                                        Enter Manually
-                                                    </motion.button>
+                                                     <motion.button
+                                                         type="button"
+                                                         onClick={handleSkipToManual}
+                                                         className="flex-1 py-2 px-3 border-2 border-black text-xs font-bold uppercase hover:bg-neutral-100"
+                                                         whileHover={{ scale: 1.02 }}
+                                                         whileTap={{ scale: 0.98 }}
+                                                     >
+                                                         Ingresar Manual
+                                                     </motion.button>
                                                 </div>
                                             </motion.div>
                                         </motion.div>
@@ -376,7 +376,7 @@ export default function ReceiptUpload() {
                                             animate={{ opacity: 1, x: 0 }}
                                             exit={{ opacity: 0 }}
                                         >
-                                            <span className="text-xs font-bold uppercase">Manual Entry</span>
+                                             <span className="text-xs font-bold uppercase">Entrada Manual</span>
                                         </motion.div>
                                     )}
                                 </AnimatePresence>
@@ -397,16 +397,16 @@ export default function ReceiptUpload() {
                             <>
                                 {/* Partial Match Warning */}
                                 {scanState === 'partial' && (
-                                    <motion.div
-                                        className="bg-swiss-yellow/20 border border-swiss-yellow p-3 flex items-start gap-3"
-                                        initial={{ opacity: 0, height: 0 }}
-                                        animate={{ opacity: 1, height: 'auto' }}
-                                    >
-                                        <AlertTriangle className="w-4 h-4 text-swiss-yellow mt-0.5 flex-shrink-0" />
-                                        <p className="text-sm text-neutral-700">
-                                            Some fields couldn&apos;t be extracted. Please review and complete the missing information.
-                                        </p>
-                                    </motion.div>
+                                <motion.div
+                                    className="bg-swiss-yellow/20 border border-swiss-yellow p-3 flex items-start gap-3"
+                                    initial={{ opacity: 0, height: 0 }}
+                                    animate={{ opacity: 1, height: 'auto' }}
+                                >
+                                    <AlertTriangle className="w-4 h-4 text-swiss-yellow mt-0.5 flex-shrink-0" />
+                                    <p className="text-sm text-neutral-700">
+                                        Algunos campos no pudieron ser extraídos. Por favor revisa y completa la información faltante.
+                                    </p>
+                                </motion.div>
                                 )}
 
                                 <motion.div
@@ -414,15 +414,15 @@ export default function ReceiptUpload() {
                                     animate={{ opacity: 1, y: 0 }}
                                     transition={{ delay: 0.1 }}
                                 >
-                                    <label className="block text-xs font-bold uppercase tracking-wider text-neutral-500 mb-2">
-                                        Store Name
+                                <label className="block text-xs font-bold uppercase tracking-wider text-neutral-500 mb-2">
+                                        Nombre de la Tienda
                                     </label>
                                     <input
                                         type="text"
                                         required
                                         value={storeName}
                                         onChange={(e) => setStoreName(e.target.value)}
-                                        placeholder="e.g. Walmart"
+                                        placeholder="ej. Walmart"
                                         disabled={isScanning}
                                         className={cn(
                                             "w-full px-4 py-3 border font-medium focus:outline-none focus:ring-2 focus:ring-swiss-blue disabled:bg-neutral-100 disabled:text-neutral-400 transition-all hover:border-neutral-400",
@@ -439,7 +439,7 @@ export default function ReceiptUpload() {
                                 >
                                     <div>
                                         <label className="block text-xs font-bold uppercase tracking-wider text-neutral-500 mb-2">
-                                            Date
+                                            Fecha
                                         </label>
                                         <input
                                             type="date"
@@ -452,7 +452,7 @@ export default function ReceiptUpload() {
                                     </div>
                                     <div>
                                         <label className="block text-xs font-bold uppercase tracking-wider text-neutral-500 mb-2">
-                                            Total Amount
+                                            Monto Total
                                         </label>
                                         <div className="relative">
                                             <span className="absolute left-4 top-1/2 -translate-y-1/2 text-neutral-500 font-mono">$</span>
@@ -512,17 +512,17 @@ export default function ReceiptUpload() {
                                 {uploading ? (
                                     <>
                                         <Loader2 className="animate-spin h-4 w-4" />
-                                        Uploading...
+                                        Subiendo...
                                     </>
                                 ) : isScanning ? (
                                     <>
                                         <Sparkles className="animate-spin h-4 w-4" />
-                                        Scanning...
+                                        Escaneando...
                                     </>
                                 ) : (
                                     <>
                                         <CheckCircle className="h-4 w-4" />
-                                        Save Receipt
+                                        Guardar Recibo
                                     </>
                                 )}
                             </motion.button>
