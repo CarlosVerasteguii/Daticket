@@ -3,7 +3,7 @@
 import { useRef, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
-import { Loader2, Upload, X, Sparkles, CheckCircle, AlertTriangle, Package, Trash2, ShoppingCart, Calendar, Store, DollarSign, ArrowLeft } from 'lucide-react'
+import { Loader2, Upload, Sparkles, CheckCircle, AlertTriangle, Package, Trash2, ShoppingCart, ArrowLeft } from 'lucide-react'
 import Image from 'next/image'
 import CategoryManager from '@/components/categories/CategoryManager'
 import { scanReceipt, type ScanResult, type ReceiptItem } from '@/actions/scan-receipt'
@@ -191,16 +191,16 @@ export default function ReceiptUpload() {
             {/* Trigger Button */}
             <motion.button
                 onClick={() => setIsOpen(true)}
-                className="w-full py-8 border-2 border-dashed border-neutral-300 hover:border-black bg-white hover:bg-neutral-50 transition-all flex flex-col items-center justify-center gap-4 group"
+                className="w-full py-8 border-2 border-dashed border-foreground/30 hover:border-foreground bg-background hover:bg-foreground/5 transition-all flex flex-col items-center justify-center gap-4 group"
                 whileHover={{ scale: 1.01 }}
                 whileTap={{ scale: 0.99 }}
             >
-                <div className="h-16 w-16 bg-black group-hover:scale-110 transition-transform flex items-center justify-center">
+                <div className="h-16 w-16 bg-swiss-blue group-hover:scale-110 transition-transform flex items-center justify-center">
                     <Upload className="w-8 h-8 text-white" />
                 </div>
                 <div className="text-center">
-                    <p className="font-bold text-xl text-black">Subir Recibo</p>
-                    <p className="text-neutral-500">Arrastra o haz clic</p>
+                    <p className="font-bold text-xl text-foreground">Subir Recibo</p>
+                    <p className="text-foreground/60">Arrastra o haz clic</p>
                 </div>
             </motion.button>
 
@@ -211,246 +211,269 @@ export default function ReceiptUpload() {
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        className="fixed inset-0 z-50 bg-neutral-100"
+                        className="fixed inset-0 z-50 bg-background flex flex-col"
                     >
                         {/* Header */}
-                        <div className="h-14 bg-white border-b border-neutral-200 flex items-center px-6">
+                        <div className="h-14 bg-background border-b border-foreground/20 flex items-center px-6 flex-shrink-0">
                             <button
                                 onClick={handleClose}
-                                className="flex items-center gap-2 text-neutral-600 hover:text-black transition-colors"
+                                className="flex items-center gap-2 text-foreground/60 hover:text-foreground transition-colors"
                             >
                                 <ArrowLeft className="w-5 h-5" />
                                 <span className="font-medium">Cancelar</span>
                             </button>
-                            <h1 className="flex-1 text-center font-bold text-lg">Nuevo Recibo</h1>
+                            <h1 className="flex-1 text-center font-bold text-lg text-foreground">Nuevo Recibo</h1>
                             <div className="w-24" />
                         </div>
 
-                        {/* Content */}
-                        <div className="h-[calc(100vh-3.5rem)] overflow-auto">
+                        {/* Main Content */}
+                        <div className="flex-1 overflow-hidden">
                             {!preview ? (
-                                /* Upload Zone - Centered */
-                                <div className="h-full flex items-center justify-center p-8 bg-neutral-100">
+                                /* Upload Zone */
+                                <div className="h-full flex items-center justify-center p-8">
                                     <motion.div
                                         initial={{ opacity: 0, scale: 0.95 }}
                                         animate={{ opacity: 1, scale: 1 }}
                                         onClick={() => fileInputRef.current?.click()}
                                         onDrop={handleDrop}
                                         onDragOver={(e) => e.preventDefault()}
-                                        className="w-full max-w-lg aspect-square border-2 border-dashed border-neutral-400 hover:border-black bg-white hover:bg-neutral-50 transition-all cursor-pointer flex flex-col items-center justify-center gap-6 rounded-lg"
+                                        className="w-full max-w-lg aspect-square border-2 border-dashed border-foreground/40 hover:border-foreground bg-background hover:bg-foreground/5 transition-all cursor-pointer flex flex-col items-center justify-center gap-6 rounded-lg"
                                     >
-                                        <div className="h-20 w-20 bg-black flex items-center justify-center">
+                                        <div className="h-20 w-20 bg-swiss-blue flex items-center justify-center">
                                             <Upload className="w-10 h-10 text-white" />
                                         </div>
                                         <div className="text-center">
-                                            <p className="text-2xl font-bold text-black mb-2">Arrastra tu recibo aquí</p>
-                                            <p className="text-neutral-500">o haz clic para seleccionar</p>
-                                            <p className="text-sm text-neutral-400 mt-4">JPG, PNG • Máximo 10MB</p>
+                                            <p className="text-2xl font-bold text-foreground mb-2">Arrastra tu recibo aquí</p>
+                                            <p className="text-foreground/60">o haz clic para seleccionar</p>
+                                            <p className="text-sm text-foreground/40 mt-4">JPG, PNG • Máximo 10MB</p>
                                         </div>
                                     </motion.div>
                                 </div>
                             ) : (
-                                /* Split View - Image Left, Form Right */
+                                /* Split View: Image Left | Items Right */
                                 <div className="h-full grid grid-cols-1 lg:grid-cols-2">
-                                    {/* LEFT COLUMN: Image + Items */}
-                                    <div className="flex flex-col bg-neutral-800 h-full">
-                                        {/* Image Area */}
-                                        <div className="flex-1 relative min-h-0 p-4">
-                                            <div className="relative w-full h-full">
-                                                <Image
-                                                    src={preview}
-                                                    alt="Recibo"
-                                                    fill
-                                                    className={cn(
-                                                        "object-contain",
-                                                        isScanning && "opacity-50 blur-sm"
-                                                    )}
-                                                />
+                                    {/* LEFT: Image Only */}
+                                    <div className="bg-neutral-800 relative h-full">
+                                        <Image
+                                            src={preview}
+                                            alt="Recibo"
+                                            fill
+                                            className={cn(
+                                                "object-contain p-6",
+                                                isScanning && "opacity-50 blur-sm"
+                                            )}
+                                        />
 
-                                                {/* Scanning Overlay */}
-                                                {isScanning && (
-                                                    <div className="absolute inset-0 flex items-center justify-center">
-                                                        <div className="bg-white px-8 py-5 shadow-xl">
-                                                            <div className="flex items-center gap-4">
-                                                                <Sparkles className="w-6 h-6 animate-pulse text-black" />
-                                                                <div>
-                                                                    <p className="font-bold text-black">Analizando con IA...</p>
-                                                                    <div className="w-40 h-2 bg-neutral-200 mt-2 rounded-full overflow-hidden">
-                                                                        <motion.div
-                                                                            className="h-full bg-black"
-                                                                            animate={{ width: `${scanProgress}%` }}
-                                                                        />
-                                                                    </div>
-                                                                </div>
+                                        {/* Scanning Overlay */}
+                                        {isScanning && (
+                                            <div className="absolute inset-0 flex items-center justify-center">
+                                                <div className="bg-background px-8 py-5 shadow-xl rounded-lg">
+                                                    <div className="flex items-center gap-4">
+                                                        <Sparkles className="w-6 h-6 animate-pulse text-foreground" />
+                                                        <div>
+                                                            <p className="font-bold text-foreground">Analizando con IA...</p>
+                                                            <div className="w-40 h-2 bg-foreground/20 mt-2 rounded-full overflow-hidden">
+                                                                <motion.div
+                                                                    className="h-full bg-foreground"
+                                                                    animate={{ width: `${scanProgress}%` }}
+                                                                />
                                                             </div>
                                                         </div>
                                                     </div>
-                                                )}
-
-                                                {/* Error Overlay */}
-                                                {scanState === 'error' && !manualMode && (
-                                                    <div className="absolute inset-0 flex items-center justify-center bg-black/80">
-                                                        <div className="bg-white p-6 max-w-sm">
-                                                            <div className="flex items-center gap-2 mb-3">
-                                                                <AlertTriangle className="w-5 h-5 text-red-500" />
-                                                                <span className="font-bold text-black">Error de lectura</span>
-                                                            </div>
-                                                            <p className="text-sm text-neutral-600 mb-4">{scanError?.message}</p>
-                                                            <div className="flex gap-2">
-                                                                <button
-                                                                    onClick={() => file && handleScan(file)}
-                                                                    className="flex-1 py-2 bg-black text-white text-sm font-bold hover:bg-neutral-800"
-                                                                >
-                                                                    Reintentar
-                                                                </button>
-                                                                <button
-                                                                    onClick={() => { setManualMode(true); setScanState('idle') }}
-                                                                    className="flex-1 py-2 border-2 border-black text-black text-sm font-bold hover:bg-neutral-100"
-                                                                >
-                                                                    Manual
-                                                                </button>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                )}
+                                                </div>
                                             </div>
+                                        )}
+
+                                        {/* Error Overlay */}
+                                        {scanState === 'error' && !manualMode && (
+                                            <div className="absolute inset-0 flex items-center justify-center bg-black/80">
+                                                <div className="bg-background p-6 max-w-sm rounded-lg">
+                                                    <div className="flex items-center gap-2 mb-3">
+                                                        <AlertTriangle className="w-5 h-5 text-red-500" />
+                                                        <span className="font-bold text-foreground">Error de lectura</span>
+                                                    </div>
+                                                    <p className="text-sm text-foreground/60 mb-4">{scanError?.message}</p>
+                                                    <div className="flex gap-2">
+                                                        <button
+                                                            onClick={() => file && handleScan(file)}
+                                                            className="flex-1 py-2 bg-foreground text-background text-sm font-bold hover:bg-foreground/80 rounded"
+                                                        >
+                                                            Reintentar
+                                                        </button>
+                                                        <button
+                                                            onClick={() => { setManualMode(true); setScanState('idle') }}
+                                                            className="flex-1 py-2 border-2 border-foreground text-foreground text-sm font-bold hover:bg-foreground/10 rounded"
+                                                        >
+                                                            Manual
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {/* Change Image Button */}
+                                        <button
+                                            onClick={() => {
+                                                resetAll()
+                                                fileInputRef.current?.click()
+                                            }}
+                                            className="absolute bottom-4 left-4 px-4 py-2 bg-black/70 hover:bg-black text-white text-sm font-medium rounded transition-colors"
+                                        >
+                                            Cambiar imagen
+                                        </button>
+                                    </div>
+
+                                    {/* RIGHT: Items List */}
+                                    <div className="bg-background border-l border-foreground/20 flex flex-col h-full">
+                                        {/* Header */}
+                                        <div className="px-6 py-4 border-b border-foreground/20 flex items-center justify-between flex-shrink-0">
+                                            <div className="flex items-center gap-3">
+                                                <div className="w-10 h-10 bg-foreground flex items-center justify-center rounded">
+                                                    <ShoppingCart className="w-5 h-5 text-background" />
+                                                </div>
+                                                <div>
+                                                    <h2 className="font-bold text-foreground text-lg">Productos</h2>
+                                                    <p className="text-sm text-foreground/60">
+                                                        {scannedItems.length > 0
+                                                            ? `${scannedItems.length} items detectados`
+                                                            : isScanning ? 'Analizando...' : 'Sin productos'}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                            {scannedItems.length > 0 && (
+                                                <div className="text-right">
+                                                    <p className="text-sm text-foreground/60">Total</p>
+                                                    <p className="font-mono font-bold text-xl text-foreground">${itemsTotal.toFixed(2)}</p>
+                                                </div>
+                                            )}
                                         </div>
 
-                                        {/* Items Panel - White Background */}
-                                        {scannedItems.length > 0 && (
-                                            <div className="bg-white border-t-4 border-black flex flex-col max-h-[45%]">
-                                                {/* Header */}
-                                                <div className="px-4 py-3 bg-black text-white flex items-center justify-between flex-shrink-0">
-                                                    <div className="flex items-center gap-2">
-                                                        <ShoppingCart className="w-4 h-4" />
-                                                        <span className="font-bold text-sm uppercase tracking-wide">
-                                                            {scannedItems.length} Productos
-                                                        </span>
-                                                    </div>
-                                                    <span className="font-mono font-bold">${itemsTotal.toFixed(2)}</span>
-                                                </div>
-
-                                                {/* List */}
-                                                <div className="overflow-y-auto flex-1 bg-white">
+                                        {/* Items List */}
+                                        <div className="flex-1 overflow-y-auto">
+                                            {scannedItems.length > 0 ? (
+                                                <div className="divide-y divide-foreground/10">
                                                     {scannedItems.map((item, index) => (
                                                         <div
                                                             key={index}
-                                                            className="px-4 py-3 flex items-center gap-3 border-b border-neutral-100 hover:bg-neutral-50 group"
+                                                            className="px-6 py-4 flex items-center gap-4 hover:bg-foreground/5 group"
                                                         >
-                                                            <div className="w-9 h-9 bg-neutral-100 flex items-center justify-center flex-shrink-0 rounded">
-                                                                <Package className="w-4 h-4 text-neutral-500" />
+                                                            <div className="w-10 h-10 bg-foreground/10 flex items-center justify-center flex-shrink-0 rounded">
+                                                                <Package className="w-5 h-5 text-foreground/40" />
                                                             </div>
                                                             <div className="flex-1 min-w-0">
-                                                                <p className="font-medium text-sm text-black truncate">
+                                                                <p className="font-medium text-foreground truncate">
                                                                     {item.name || 'Producto sin nombre'}
                                                                 </p>
-                                                                <p className="text-xs text-neutral-500">
-                                                                    {item.quantity > 1 ? `${item.quantity} × $${item.unit_price.toFixed(2)}` : `Unitario: $${item.unit_price.toFixed(2)}`}
+                                                                <p className="text-sm text-foreground/60">
+                                                                    {item.quantity > 1
+                                                                        ? `${item.quantity} × $${item.unit_price.toFixed(2)}`
+                                                                        : `Unitario: $${item.unit_price.toFixed(2)}`}
                                                                 </p>
                                                             </div>
-                                                            <span className="font-mono font-bold text-black">
+                                                            <span className="font-mono font-bold text-lg text-foreground">
                                                                 ${item.total_price.toFixed(2)}
                                                             </span>
                                                             <button
                                                                 type="button"
                                                                 onClick={() => handleRemoveItem(index)}
-                                                                className="p-1.5 text-neutral-300 hover:text-red-500 hover:bg-red-50 rounded opacity-0 group-hover:opacity-100 transition-all"
+                                                                className="p-2 text-foreground/30 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded opacity-0 group-hover:opacity-100 transition-all"
                                                             >
                                                                 <Trash2 className="w-4 h-4" />
                                                             </button>
                                                         </div>
                                                     ))}
                                                 </div>
-                                            </div>
-                                        )}
-                                    </div>
-
-                                    {/* RIGHT COLUMN: Form */}
-                                    <div className="bg-white p-8 overflow-y-auto border-l border-neutral-200">
-                                        <form onSubmit={handleSubmit} className="max-w-md mx-auto space-y-6">
-                                            {/* Status Banner */}
-                                            {!isScanning && (scanState === 'success' || scanState === 'partial' || manualMode) && (
-                                                <div className={cn(
-                                                    "px-4 py-3 flex items-center gap-2 text-sm rounded",
-                                                    scanState === 'success' ? "bg-green-50 text-green-800 border border-green-200" : "bg-amber-50 text-amber-800 border border-amber-200"
-                                                )}>
-                                                    <CheckCircle className="w-4 h-4 flex-shrink-0" />
-                                                    <span>
-                                                        {scanState === 'success'
-                                                            ? `Datos extraídos correctamente • ${scannedItems.length} productos`
-                                                            : manualMode ? 'Ingresa los datos manualmente' : 'Algunos datos requieren verificación'}
-                                                    </span>
+                                            ) : (
+                                                <div className="h-full flex items-center justify-center text-foreground/40">
+                                                    {isScanning ? (
+                                                        <div className="flex items-center gap-3">
+                                                            <Sparkles className="w-5 h-5 animate-pulse" />
+                                                            <span>Detectando productos...</span>
+                                                        </div>
+                                                    ) : (
+                                                        <p>Los productos aparecerán aquí</p>
+                                                    )}
                                                 </div>
                                             )}
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
 
-                                            {/* Store Name */}
-                                            <div>
-                                                <label className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-neutral-500 mb-2">
-                                                    <Store className="w-3 h-3" />
-                                                    Tienda *
-                                                </label>
+                        {/* Bottom Bar - Fixed Form */}
+                        {preview && (
+                            <form onSubmit={handleSubmit} className="flex-shrink-0">
+                                <div className="bg-neutral-900 dark:bg-neutral-950 px-6 py-4">
+                                    <div className="max-w-6xl mx-auto flex items-center gap-4">
+                                        {/* Store */}
+                                        <div className="flex-1 min-w-0">
+                                            <label className="text-xs text-neutral-400 uppercase tracking-wider mb-1 block">Tienda</label>
+                                            <input
+                                                type="text"
+                                                required
+                                                value={storeName}
+                                                onChange={(e) => setStoreName(e.target.value)}
+                                                placeholder="HEB, Walmart..."
+                                                disabled={isScanning}
+                                                className="w-full px-3 py-2 bg-neutral-800 border border-neutral-700 text-white placeholder-neutral-500 focus:outline-none focus:border-white disabled:opacity-50 rounded"
+                                            />
+                                        </div>
+
+                                        {/* Date */}
+                                        <div className="w-40">
+                                            <label className="text-xs text-neutral-400 uppercase tracking-wider mb-1 block">Fecha</label>
+                                            <input
+                                                type="date"
+                                                required
+                                                value={date}
+                                                onChange={(e) => setDate(e.target.value)}
+                                                disabled={isScanning}
+                                                className="w-full px-3 py-2 bg-neutral-800 border border-neutral-700 text-white focus:outline-none focus:border-white disabled:opacity-50 rounded"
+                                            />
+                                        </div>
+
+                                        {/* Total */}
+                                        <div className="w-32">
+                                            <label className="text-xs text-neutral-400 uppercase tracking-wider mb-1 block">Total</label>
+                                            <div className="relative">
+                                                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-500">$</span>
                                                 <input
-                                                    type="text"
+                                                    type="number"
+                                                    step="0.01"
                                                     required
-                                                    value={storeName}
-                                                    onChange={(e) => setStoreName(e.target.value)}
-                                                    placeholder="HEB, Walmart, Oxxo..."
+                                                    value={amount}
+                                                    onChange={(e) => setAmount(e.target.value)}
                                                     disabled={isScanning}
-                                                    className="w-full px-4 py-3 border-2 border-neutral-300 text-black font-medium focus:outline-none focus:border-black disabled:opacity-50 disabled:bg-neutral-100 transition-colors"
+                                                    placeholder="0.00"
+                                                    className="w-full pl-7 pr-3 py-2 bg-neutral-800 border border-neutral-700 text-white font-mono font-bold focus:outline-none focus:border-white disabled:opacity-50 rounded"
                                                 />
                                             </div>
+                                        </div>
 
-                                            {/* Date & Amount */}
-                                            <div className="grid grid-cols-2 gap-4">
-                                                <div>
-                                                    <label className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-neutral-500 mb-2">
-                                                        <Calendar className="w-3 h-3" />
-                                                        Fecha *
-                                                    </label>
-                                                    <input
-                                                        type="date"
-                                                        required
-                                                        value={date}
-                                                        onChange={(e) => setDate(e.target.value)}
-                                                        disabled={isScanning}
-                                                        className="w-full px-4 py-3 border-2 border-neutral-300 text-black font-mono focus:outline-none focus:border-black disabled:opacity-50 disabled:bg-neutral-100 transition-colors"
-                                                    />
-                                                </div>
-                                                <div>
-                                                    <label className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-neutral-500 mb-2">
-                                                        <DollarSign className="w-3 h-3" />
-                                                        Total *
-                                                    </label>
-                                                    <input
-                                                        type="number"
-                                                        step="0.01"
-                                                        required
-                                                        value={amount}
-                                                        onChange={(e) => setAmount(e.target.value)}
-                                                        disabled={isScanning}
-                                                        placeholder="0.00"
-                                                        className="w-full px-4 py-3 border-2 border-neutral-300 text-black font-mono text-xl font-bold focus:outline-none focus:border-black disabled:opacity-50 disabled:bg-neutral-100 transition-colors"
-                                                    />
-                                                </div>
-                                            </div>
-
-                                            {/* Category */}
-                                            <div className="pt-4 border-t border-neutral-200">
+                                        {/* Category */}
+                                        <div className="w-48">
+                                            <label className="text-xs text-neutral-400 uppercase tracking-wider mb-1 block">Categoría</label>
+                                            <div className="[&_button]:bg-neutral-800 [&_button]:border-neutral-700 [&_button]:text-white [&_button]:hover:bg-neutral-700">
                                                 <CategoryManager
                                                     selectedId={categoryId || undefined}
                                                     onSelect={setCategoryId}
+                                                    compact
                                                 />
                                             </div>
+                                        </div>
 
-                                            {/* Submit Button */}
+                                        {/* Submit */}
+                                        <div className="flex-shrink-0">
+                                            <label className="text-xs text-transparent mb-1 block">.</label>
                                             <button
                                                 type="submit"
                                                 disabled={!canSubmit}
                                                 className={cn(
-                                                    "w-full py-4 font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-2",
+                                                    "px-8 py-2 font-bold uppercase tracking-wider transition-all flex items-center gap-2 rounded",
                                                     canSubmit
-                                                        ? "bg-black text-white hover:bg-neutral-800"
-                                                        : "bg-neutral-200 text-neutral-400 cursor-not-allowed"
+                                                        ? "bg-white text-black hover:bg-neutral-200"
+                                                        : "bg-neutral-700 text-neutral-500 cursor-not-allowed"
                                                 )}
                                             >
                                                 {uploading ? (
@@ -466,27 +489,15 @@ export default function ReceiptUpload() {
                                                 ) : (
                                                     <>
                                                         <CheckCircle className="w-4 h-4" />
-                                                        Guardar Recibo
+                                                        Guardar
                                                     </>
                                                 )}
                                             </button>
-
-                                            {/* Change Image Link */}
-                                            <button
-                                                type="button"
-                                                onClick={() => {
-                                                    resetAll()
-                                                    fileInputRef.current?.click()
-                                                }}
-                                                className="w-full py-3 text-sm text-neutral-500 hover:text-black transition-colors underline"
-                                            >
-                                                Cambiar imagen
-                                            </button>
-                                        </form>
+                                        </div>
                                     </div>
                                 </div>
-                            )}
-                        </div>
+                            </form>
+                        )}
 
                         <input
                             ref={fileInputRef}

@@ -117,19 +117,19 @@ export default function SpendingTrendsChart({ receipts, period, className }: Spe
 
     if (dataPoints.length === 0) {
         return (
-            <div className={cn("border border-black bg-white p-6", className)}>
+            <div className={cn("border border-foreground bg-background p-6", className)}>
                 <div className="flex items-center gap-2 mb-4">
-                    <TrendingUp className="h-4 w-4 text-neutral-400" />
-                    <h3 className="font-bold text-sm uppercase tracking-wider text-neutral-500">
+                    <TrendingUp className="h-4 w-4 text-foreground/40" />
+                    <h3 className="font-bold text-sm uppercase tracking-wider text-foreground/60">
                         Spending Trends
                     </h3>
                 </div>
                 <div className="flex flex-col items-center justify-center py-12 text-center">
-                    <div className="h-16 w-16 bg-neutral-100 border border-black flex items-center justify-center mb-4">
-                        <TrendingUp className="h-8 w-8 text-neutral-300" />
+                    <div className="h-16 w-16 bg-black/5 dark:bg-transparent border border-foreground/20 flex items-center justify-center mb-4">
+                        <TrendingUp className="h-8 w-8 text-foreground/30" />
                     </div>
-                    <p className="text-neutral-500 text-sm">No spending data</p>
-                    <p className="text-neutral-400 text-xs mt-1">Upload receipts to see trends</p>
+                    <p className="text-foreground/60 text-sm">No spending data</p>
+                    <p className="text-foreground/40 text-xs mt-1">Upload receipts to see trends</p>
                 </div>
             </div>
         )
@@ -163,17 +163,17 @@ export default function SpendingTrendsChart({ receipts, period, className }: Spe
     }))
 
     return (
-        <div className={cn("border border-black bg-white", className)}>
-            <div className="flex items-center justify-between p-4 border-b border-black bg-neutral-100">
-                <div className="flex items-center gap-2">
+        <div className={cn("border border-foreground bg-background", className)}>
+            <div className="flex items-center justify-between p-4 border-b border-foreground/20 bg-foreground/10">
+                <div className="flex items-center gap-2 text-foreground">
                     <TrendingUp className="h-4 w-4" />
                     <h3 className="font-bold text-sm uppercase tracking-wider">Spending Trends</h3>
                 </div>
                 <div className={cn(
                     "flex items-center gap-1 text-xs font-bold px-2 py-1",
-                    trend > 5 && "text-swiss-orange bg-orange-50",
-                    trend < -5 && "text-swiss-green bg-green-50",
-                    trend >= -5 && trend <= 5 && "text-neutral-500 bg-neutral-100"
+                    trend > 5 && "text-swiss-orange bg-orange-50 dark:bg-orange-900/30",
+                    trend < -5 && "text-swiss-green bg-green-50 dark:bg-green-900/30",
+                    trend >= -5 && trend <= 5 && "text-foreground/60 bg-foreground/10"
                 )}>
                     {trend > 5 && <TrendingUp className="h-3 w-3" />}
                     {trend < -5 && <TrendingDown className="h-3 w-3" />}
