@@ -95,7 +95,7 @@ export default function SpendingTrendsChart({ receipts, period, className }: Spe
 
         // Convert to sorted array
         const points: DataPoint[] = Array.from(dataMap.entries())
-            .map(([_, value]) => ({
+            .map(([, value]) => ({
                 label: labelFormat(value.date),
                 amount: value.amount,
                 date: value.date

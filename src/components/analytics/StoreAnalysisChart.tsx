@@ -2,7 +2,7 @@
 
 import { useMemo } from 'react'
 import { motion } from 'framer-motion'
-import { Store, TrendingUp, MapPin } from 'lucide-react'
+import { Store, MapPin } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 interface StoreAnalysisProps {

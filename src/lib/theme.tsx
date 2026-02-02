@@ -15,16 +15,13 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined)
 const THEME_KEY = 'daticket-theme'
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-    const [theme, setThemeState] = useState<Theme>('system')
+    const [theme, setThemeState] = useState<Theme>(() => {
+        if (typeof window === 'undefined') return 'system'
+        const saved = window.localStorage.getItem(THEME_KEY)
+        if (saved === 'light' || saved === 'dark' || saved === 'system') return saved
+        return 'system'
+    })
     const [resolvedTheme, setResolvedTheme] = useState<'light' | 'dark'>('light')
-
-    useEffect(() => {
-        // Load saved theme
-        const saved = localStorage.getItem(THEME_KEY) as Theme | null
-        if (saved) {
-            setThemeState(saved)
-        }
-    }, [])
 
     useEffect(() => {
         const root = document.documentElement

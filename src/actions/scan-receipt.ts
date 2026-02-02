@@ -218,12 +218,22 @@ Si no puedes determinar algún campo, usa null.`
                     ? parsed.purchase_date
                     : undefined,
                 items: Array.isArray(parsed.items) 
-                    ? parsed.items.map((item: any) => ({
-                        name: String(item.name || ''),
-                        quantity: Number(item.quantity) || 1,
-                        unit_price: Number(item.unit_price) || 0,
-                        total_price: Number(item.total_price) || 0
-                    }))
+                    ? parsed.items.map((item: unknown) => {
+                        const obj = (item && typeof item === 'object')
+                            ? (item as Record<string, unknown>)
+                            : {}
+
+                        const quantity = Number(obj.quantity)
+                        const unitPrice = Number(obj.unit_price)
+                        const totalPrice = Number(obj.total_price)
+
+                        return {
+                            name: String(obj.name ?? ''),
+                            quantity: Number.isFinite(quantity) && quantity > 0 ? quantity : 1,
+                            unit_price: Number.isFinite(unitPrice) ? unitPrice : 0,
+                            total_price: Number.isFinite(totalPrice) ? totalPrice : 0,
+                        }
+                    })
                     : []
             }
 

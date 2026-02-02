@@ -1,4 +1,5 @@
 'use client'
+'use client'
 
 import { useEffect, useState, useMemo, Suspense } from 'react'
 import { createClient } from '@/lib/supabase/client'
@@ -12,6 +13,10 @@ interface Receipt {
     purchase_date: string | null
     total_amount: number | null
     category_name: string | null
+}
+
+type ReceiptQueryRow = Omit<Receipt, 'category_name'> & {
+    categories: { name: string } | { name: string }[] | null
 }
 
 function ReportContent() {
@@ -52,13 +57,17 @@ function ReportContent() {
                 .lte('purchase_date', end.toISOString().split('T')[0])
                 .order('purchase_date', { ascending: false })
 
-            if (data) {
-                const formattedData = data.map((r: any) => ({
-                    ...r,
-                    category_name: r.categories?.name || null
-                }))
-                setReceipts(formattedData)
-            }
+            const rows = (data ?? []) as ReceiptQueryRow[]
+            const formattedData: Receipt[] = rows.map((r) => ({
+                id: r.id,
+                store_name: r.store_name,
+                purchase_date: r.purchase_date,
+                total_amount: r.total_amount,
+                category_name: Array.isArray(r.categories)
+                    ? r.categories[0]?.name ?? null
+                    : r.categories?.name ?? null,
+            }))
+            setReceipts(formattedData)
             setLoading(false)
         }
         fetchReceipts()

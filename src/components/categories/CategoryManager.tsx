@@ -1,8 +1,8 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { Plus, Tag, Check } from 'lucide-react'
+import { Plus, Check } from 'lucide-react'
 
 type Category = {
     id: string
@@ -21,23 +21,24 @@ const DEFAULT_CATEGORIES = [
 
 export default function CategoryManager({
     onSelect,
-    selectedId
+    selectedId,
+    compact = false,
 }: {
     onSelect?: (id: string) => void,
-    selectedId?: string
+    selectedId?: string,
+    compact?: boolean
 }) {
     const [categories, setCategories] = useState<Category[]>([])
     const [newCategory, setNewCategory] = useState('')
     const [loading, setLoading] = useState(true)
     const supabase = createClient()
 
-    useEffect(() => {
-        fetchCategories()
-    }, [])
-
-    async function fetchCategories() {
+    const fetchCategories = useCallback(async () => {
         const { data: { user } } = await supabase.auth.getUser()
-        if (!user) return
+        if (!user) {
+            setLoading(false)
+            return
+        }
 
         const { data } = await supabase
             .from('categories')
@@ -48,7 +49,11 @@ export default function CategoryManager({
             setCategories(data)
         }
         setLoading(false)
-    }
+    }, [supabase])
+
+    useEffect(() => {
+        fetchCategories()
+    }, [fetchCategories])
 
     const addCategory = async (name: string, color: string = '#000000') => {
         if (!name.trim()) return
@@ -83,15 +88,17 @@ export default function CategoryManager({
     }
 
     return (
-        <div className="space-y-4">
-            <label className="block text-xs font-bold uppercase tracking-wider text-neutral-500">
-                Category
-            </label>
+        <div className={compact ? "space-y-2" : "space-y-4"}>
+            {!compact && (
+                <label className="block text-xs font-bold uppercase tracking-wider text-neutral-500">
+                    Category
+                </label>
+            )}
 
             {loading ? (
                 <div className="text-sm text-neutral-500 font-mono">Loading...</div>
             ) : (
-                <div className="flex flex-wrap gap-2">
+                <div className={compact ? "flex flex-wrap gap-1" : "flex flex-wrap gap-2"}>
                     {categories.map(cat => {
                         const isSelected = selectedId === cat.id
                         return (
@@ -99,13 +106,13 @@ export default function CategoryManager({
                                 key={cat.id}
                                 type="button"
                                 onClick={() => onSelect && onSelect(cat.id)}
-                                className={`inline-flex items-center gap-2 px-3 py-2 text-sm font-bold border transition-colors ${isSelected
+                                className={`inline-flex items-center gap-2 ${compact ? 'px-2 py-1 text-xs' : 'px-3 py-2 text-sm'} font-bold border transition-colors ${isSelected
                                         ? 'bg-black text-white border-black'
                                         : 'bg-white text-black border-black hover:bg-neutral-100'
                                     }`}
                             >
                                 <div
-                                    className="h-3 w-3 border border-black"
+                                    className={compact ? "h-2.5 w-2.5 border border-black" : "h-3 w-3 border border-black"}
                                     style={{ backgroundColor: cat.color }}
                                 />
                                 {cat.name}
@@ -121,7 +128,7 @@ export default function CategoryManager({
                             value={newCategory}
                             onChange={(e) => setNewCategory(e.target.value)}
                             placeholder="New..."
-                            className="w-24 px-3 py-2 text-sm font-medium focus:outline-none bg-white"
+                            className={`${compact ? 'w-20 px-2 py-1 text-xs' : 'w-24 px-3 py-2 text-sm'} font-medium focus:outline-none bg-white`}
                             onKeyDown={(e) => {
                                 if (e.key === 'Enter') {
                                     e.preventDefault()

@@ -1,6 +1,6 @@
 'use client'
 
-import { createContext, useContext, useEffect, useState } from 'react'
+import { createContext, useContext, useState } from 'react'
 
 export interface CategoryBudget {
     category: string
@@ -32,19 +32,17 @@ const getCurrentMonth = () => {
 }
 
 export function BudgetProvider({ children }: { children: React.ReactNode }) {
-    const [budgets, setBudgets] = useState<MonthlyBudget[]>([])
-
-    useEffect(() => {
-        const saved = localStorage.getItem(BUDGET_KEY)
-        if (saved) {
-            try {
-                const parsed = JSON.parse(saved)
-                setBudgets(parsed)
-            } catch {
-                // Invalid JSON, use empty
-            }
+    const [budgets, setBudgets] = useState<MonthlyBudget[]>(() => {
+        if (typeof window === 'undefined') return []
+        const saved = window.localStorage.getItem(BUDGET_KEY)
+        if (!saved) return []
+        try {
+            const parsed: unknown = JSON.parse(saved)
+            return Array.isArray(parsed) ? (parsed as MonthlyBudget[]) : []
+        } catch {
+            return []
         }
-    }, [])
+    })
 
     const saveBudgets = (newBudgets: MonthlyBudget[]) => {
         setBudgets(newBudgets)

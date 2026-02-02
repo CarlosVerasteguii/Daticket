@@ -1,10 +1,12 @@
 'use client'
 
 import { useEffect, useState, useRef } from 'react'
+import type { ReactNode } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import DashboardShell from '@/components/layout/DashboardShell'
-import { Settings as SettingsIcon, Bell, Moon, Sun, Monitor, Globe, Database, Shield, ChevronRight, Check, DollarSign, Mail, TrendingUp, Calendar, AlertTriangle, Download, Upload, Trash2, AlertCircle, Lock } from 'lucide-react'
+import { Settings as SettingsIcon, Bell, Moon, Sun, Monitor, Globe, Database, ChevronRight, Check, DollarSign, Mail, TrendingUp, Calendar, AlertTriangle, Download, Upload, Trash2, AlertCircle, Lock } from 'lucide-react'
+import type { LucideIcon } from 'lucide-react'
 import SessionsList from '@/components/settings/SessionsList'
 import PasswordChange from '@/components/settings/PasswordChange'
 import AuditLog from '@/components/settings/AuditLog'
@@ -18,7 +20,7 @@ export default function SettingsPage() {
     const router = useRouter()
     const supabase = createClient()
     const { theme, setTheme, resolvedTheme } = useTheme()
-    const { currency, setCurrency, formatAmount } = useCurrency()
+    const { currency, setCurrency } = useCurrency()
     const { preferences, updatePreference } = useNotifications()
     const [showThemeMenu, setShowThemeMenu] = useState(false)
     const [showCurrencyMenu, setShowCurrencyMenu] = useState(false)
@@ -211,7 +213,7 @@ export default function SettingsPage() {
         { value: 'system' as const, label: 'System', icon: Monitor },
     ]
 
-    const notificationOptions: { key: keyof NotificationPreferences; label: string; description: string; icon: any }[] = [
+    const notificationOptions: { key: keyof NotificationPreferences; label: string; description: string; icon: LucideIcon }[] = [
         { key: 'emailDigest', label: 'Email Digest', description: 'Daily summary of receipts', icon: Mail },
         { key: 'spendingAlerts', label: 'Spending Alerts', description: 'When expenses exceed threshold', icon: TrendingUp },
         { key: 'weeklyReports', label: 'Weekly Reports', description: 'Sunday expense summary', icon: Calendar },
@@ -220,7 +222,15 @@ export default function SettingsPage() {
 
     const enabledCount = Object.values(preferences).filter(Boolean).length
 
-    const SettingRow = ({ icon: Icon, title, description, action, onClick }: any) => (
+    type SettingRowProps = {
+        icon: LucideIcon
+        title: string
+        description: string
+        action?: ReactNode
+        onClick?: () => void
+    }
+
+    const SettingRow = ({ icon: Icon, title, description, action, onClick }: SettingRowProps) => (
         <div 
             className={cn(
                 "flex items-center justify-between p-4 border-b border-black dark:border-neutral-700 last:border-b-0 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors",
@@ -440,7 +450,7 @@ export default function SettingsPage() {
                         <div className="mb-4">
                             <h3 className="font-bold text-sm mb-1">Active Sessions</h3>
                             <p className="text-xs text-neutral-500 dark:text-neutral-400">
-                                View and manage devices where you're currently logged in
+                                View and manage devices where you&apos;re currently logged in
                             </p>
                         </div>
                         <SessionsList />

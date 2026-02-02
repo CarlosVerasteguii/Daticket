@@ -1,22 +1,24 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { Loader2, Plus, Calendar, DollarSign, Store } from 'lucide-react'
+import { Loader2, Plus, Calendar, Store } from 'lucide-react'
 import Link from 'next/link'
 import Image from 'next/image'
 
+type Category = {
+    id: string
+    name: string
+    color: string
+}
+
 type Receipt = {
     id: string
-    store_name: string
-    purchase_date: string
-    total_amount: number
-    image_url: string
-    categories: {
-        id: string
-        name: string
-        color: string
-    } | null // Supabase returns object for single relation if not array mode, but let's be safe
+    store_name: string | null
+    purchase_date: string | null
+    total_amount: number | null
+    image_url: string | null
+    categories: Category | Category[] | null
 }
 
 export default function ReceiptList() {
@@ -24,7 +26,7 @@ export default function ReceiptList() {
     const [loading, setLoading] = useState(true)
     const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
     const [categories, setCategories] = useState<{ id: string, name: string }[]>([])
-    const supabase = createClient()
+    const supabase = useMemo(() => createClient(), [])
 
     useEffect(() => {
         async function fetchData() {
@@ -34,19 +36,21 @@ export default function ReceiptList() {
             ])
 
             if (receiptsRes.data) {
-                // Cast or transform if needed. ensuring categories is treated correctly.
-                // If it's an array (which it might be if relationship is ambiguous), take first.
-                // But usually with category_id FK it is singular.
-                setReceipts(receiptsRes.data as any)
+                setReceipts(receiptsRes.data as unknown as Receipt[])
             }
             if (categoriesRes.data) setCategories(categoriesRes.data)
             setLoading(false)
         }
         fetchData()
-    }, [])
+    }, [supabase])
+
+    const getCategory = (cats: Receipt['categories']): Category | null => {
+        if (!cats) return null
+        return Array.isArray(cats) ? (cats[0] ?? null) : cats
+    }
 
     const filteredReceipts = selectedCategory
-        ? receipts.filter(r => (Array.isArray(r.categories) ? r.categories[0]?.id : r.categories?.id) === selectedCategory)
+        ? receipts.filter(r => getCategory(r.categories)?.id === selectedCategory)
         : receipts
 
 
@@ -113,33 +117,19 @@ export default function ReceiptList() {
                     {filteredReceipts.map((receipt) => (
                         <div key={receipt.id} className="bg-white overflow-hidden shadow rounded-lg hover:shadow-md transition-shadow">
                             <div className="relative h-48 w-full bg-gray-100">
-                                {/* Note: In a real app we need signed URLs for private buckets. 
-                 For now assume we handle it or public for MVP, 
-                 BUT we set private bucket so we need a signed URL or download mechanism.
-                 Let's fix this in the fetch logic or display logic. 
-                 Actually, simpler for MVP YOLO: Just use the Image component if we had signed URL,
-                 or standard Supabase 'transform' URL if we had tokens.
-                 
-                 FIX: We will fetch signed URLs on the fly or just one for list.
-                 Better: Use a StorageImage component that handles it.
-              */}
                                 <StorageImage path={receipt.image_url} alt={receipt.store_name} />
                             </div>
                             <div className="px-4 py-4">
                                 <div className="flex justify-between items-start">
                                     <div>
                                         <h3 className="text-lg font-medium text-gray-900 truncate flex items-center">
-                                            <Store className="w-4 h-4 mr-1 text-gray-400" /> {receipt.store_name}
+                                            <Store className="w-4 h-4 mr-1 text-gray-400" /> {receipt.store_name || 'Unknown'}
                                         </h3>
                                         <p className="text-sm text-gray-500 flex items-center mt-1">
-                                            <Calendar className="w-3 h-3 mr-1" /> {receipt.purchase_date}
+                                            <Calendar className="w-3 h-3 mr-1" /> {receipt.purchase_date || 'N/A'}
                                         </p>
-                                        {/* @ts-ignore - Supabase join inference */}
-                                        {/* Handle categories being potentially an array or object */}
                                         {(() => {
-                                            // @ts-ignore
-                                            const cats = receipt.categories
-                                            const cat = Array.isArray(cats) ? cats[0] : cats
+                                            const cat = getCategory(receipt.categories)
                                             if (!cat) return null
                                             return (
                                                 <span
@@ -152,7 +142,7 @@ export default function ReceiptList() {
                                         })()}
                                     </div>
                                     <div className="text-lg font-bold text-gray-900 flex items-center">
-                                        ${receipt.total_amount}
+                                        ${receipt.total_amount ?? 0}
                                     </div>
                                 </div>
                             </div>
@@ -164,12 +154,14 @@ export default function ReceiptList() {
     )
 }
 
-function StorageImage({ path, alt }: { path: string, alt: string }) {
+function StorageImage({ path, alt }: { path: string | null, alt: string | null }) {
     const [src, setSrc] = useState<string | null>(null)
-    const supabase = createClient()
+    const supabase = useMemo(() => createClient(), [])
 
     useEffect(() => {
         async function getUrl() {
+            setSrc(null)
+            if (!path) return
             // Only if it looks like a path (contains /)
             if (!path.includes('/')) return
 
@@ -180,9 +172,9 @@ function StorageImage({ path, alt }: { path: string, alt: string }) {
             if (data) setSrc(data.signedUrl)
         }
         getUrl()
-    }, [path])
+    }, [path, supabase])
 
     if (!src) return <div className="h-full w-full flex items-center justify-center text-gray-400 bg-gray-100">Loading...</div>
 
-    return <Image src={src} alt={alt} fill className="object-cover" />
+    return <Image src={src} alt={alt || 'Receipt'} fill className="object-cover" />
 }

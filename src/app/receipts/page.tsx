@@ -17,7 +17,6 @@ import {
   Filter,
   Receipt,
   Search,
-  ArrowUpRight,
   Save,
   Bookmark,
   Download,
@@ -36,6 +35,10 @@ interface Receipt {
     notes: string | null
     created_at: string
     category_name: string | null
+}
+
+type ReceiptQueryRow = Omit<Receipt, 'category_name'> & {
+    categories: { name: string } | { name: string }[] | null
 }
 
 const containerVariants = {
@@ -95,7 +98,17 @@ export default function ReceiptsPage() {
     const [showDatePicker, setShowDatePicker] = useState(false)
     const [amountRange, setAmountRange] = useState<AmountRange>({ min: null, max: null })
     const [showAmountPicker, setShowAmountPicker] = useState(false)
-    const [savedFilters, setSavedFilters] = useState<SavedFilter[]>([])
+    const [savedFilters, setSavedFilters] = useState<SavedFilter[]>(() => {
+        if (typeof window === 'undefined') return []
+        const stored = window.localStorage.getItem(SAVED_FILTERS_KEY)
+        if (!stored) return []
+        try {
+            const parsed: unknown = JSON.parse(stored)
+            return Array.isArray(parsed) ? (parsed as SavedFilter[]) : []
+        } catch {
+            return []
+        }
+    })
     const [showSavedFilters, setShowSavedFilters] = useState(false)
     const [newFilterName, setNewFilterName] = useState('')
     const [showSaveDialog, setShowSaveDialog] = useState(false)
@@ -112,18 +125,6 @@ export default function ReceiptsPage() {
     const [visibleCount, setVisibleCount] = useState(12)
     const loadMoreRef = useRef<HTMLDivElement>(null)
     const ITEMS_PER_LOAD = 12
-
-    // Load saved filters from localStorage
-    useEffect(() => {
-        const stored = localStorage.getItem(SAVED_FILTERS_KEY)
-        if (stored) {
-            try {
-                setSavedFilters(JSON.parse(stored))
-            } catch {
-                // Ignore parse errors
-            }
-        }
-    }, [])
 
     const saveCurrentFilter = useCallback(() => {
         if (!newFilterName.trim()) return
@@ -246,18 +247,25 @@ export default function ReceiptsPage() {
             `)
             .order('created_at', { ascending: false })
 
-        if (data) {
-            const formattedData = data.map((r: any) => ({
-                ...r,
-                category_name: r.categories?.name || null
-            }))
-            setReceipts(formattedData)
-        }
+        const rows = (data ?? []) as ReceiptQueryRow[]
+        const formattedData: Receipt[] = rows.map((r) => ({
+            id: r.id,
+            store_name: r.store_name,
+            purchase_date: r.purchase_date,
+            total_amount: r.total_amount,
+            image_url: r.image_url,
+            notes: r.notes,
+            created_at: r.created_at,
+            category_name: Array.isArray(r.categories)
+                ? r.categories[0]?.name ?? null
+                : r.categories?.name ?? null,
+        }))
+        setReceipts(formattedData)
         setLoading(false)
     }, [router, supabase])
 
     useEffect(() => {
-        fetchReceipts()
+        fetchReceipts(false)
     }, [fetchReceipts])
 
     // Pull-to-refresh handlers

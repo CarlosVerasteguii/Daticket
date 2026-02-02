@@ -416,7 +416,7 @@ export default function SessionsList({ className }: SessionsListProps) {
                             </div>
                             <p className="text-gray-600 dark:text-gray-300 mb-6">
                                 This will sign you out from <strong>all devices</strong>, including this one. 
-                                You'll need to sign in again on all your devices.
+                                You&apos;ll need to sign in again on all your devices.
                             </p>
                             <div className="flex gap-3 justify-end">
                                 <button

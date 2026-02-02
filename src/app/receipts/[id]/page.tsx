@@ -5,16 +5,27 @@ import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import DashboardShell from '@/components/layout/DashboardShell'
-import { ArrowLeft, Trash2, Calendar, Store, DollarSign, Loader2, Save, Tag, Check, AlertCircle } from 'lucide-react'
+import Image from 'next/image'
+import { ArrowLeft, Trash2, Loader2, Save, Tag, Check, AlertCircle } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 
 type ToastType = 'success' | 'error' | null
+
+interface ReceiptRow {
+    id: string
+    store_name: string | null
+    purchase_date: string | null
+    total_amount: number | null
+    image_url: string | null
+    notes: string | null
+    created_at: string
+}
 
 export default function ReceiptDetailPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = use(params)
     const router = useRouter()
     const supabase = createClient()
-    const [receipt, setReceipt] = useState<any>(null)
+    const [receipt, setReceipt] = useState<ReceiptRow | null>(null)
     const [loading, setLoading] = useState(true)
     const [deleting, setDeleting] = useState(false)
     const [saving, setSaving] = useState(false)
@@ -46,17 +57,25 @@ export default function ReceiptDetailPage({ params }: { params: Promise<{ id: st
                 .eq('id', id)
                 .single()
 
-            if (data) {
-                setReceipt(data)
-                setStoreName(data.store_name || '')
-                setTotalAmount(data.total_amount?.toString() || '')
-                setPurchaseDate(data.purchase_date || '')
-                setNotes(data.notes || '')
+            if (error) {
+                console.error('Error fetching receipt:', error)
+                showToast('error', 'Failed to load receipt. Please try again.')
+                setLoading(false)
+                return
+            }
 
-                if (data.image_url) {
+            if (data) {
+                const row = data as ReceiptRow
+                setReceipt(row)
+                setStoreName(row.store_name || '')
+                setTotalAmount(row.total_amount?.toString() || '')
+                setPurchaseDate(row.purchase_date || '')
+                setNotes(row.notes || '')
+
+                if (row.image_url) {
                     const { data: urlData } = supabase.storage
                         .from('receipts')
-                        .getPublicUrl(data.image_url)
+                        .getPublicUrl(row.image_url)
                     setImageUrl(urlData.publicUrl)
                 }
             }
@@ -117,7 +136,7 @@ export default function ReceiptDetailPage({ params }: { params: Promise<{ id: st
                 return
             }
 
-            if (receipt.image_url) {
+            if (receipt?.image_url) {
                 await supabase.storage.from('receipts').remove([receipt.image_url])
             }
 
@@ -185,11 +204,15 @@ export default function ReceiptDetailPage({ params }: { params: Promise<{ id: st
                 {/* Left: Image */}
                 <div className="bg-neutral-100 border-r border-black flex items-center justify-center p-8">
                     {imageUrl ? (
-                        <img
-                            src={imageUrl}
-                            alt="Receipt"
-                            className="max-w-full max-h-[600px] object-contain shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]"
-                        />
+                        <div className="relative w-full h-[600px] max-w-[560px] shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
+                            <Image
+                                src={imageUrl}
+                                alt="Receipt"
+                                fill
+                                sizes="(max-width: 1024px) 100vw, 50vw"
+                                className="object-contain"
+                            />
+                        </div>
                     ) : (
                         <div className="text-neutral-400">No Image Available</div>
                     )}

@@ -1,7 +1,7 @@
 'use client'
 
 import Link from "next/link";
-import { ArrowRight, Receipt, Scan, BarChart3, Shield, Sparkles, Upload } from "lucide-react";
+import { ArrowRight, Receipt, Scan, BarChart3, Shield, Sparkles } from "lucide-react";
 import { motion } from "framer-motion";
 
 // Animation variants

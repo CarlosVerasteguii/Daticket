@@ -431,7 +431,7 @@ export default function BudgetPage() {
                             <div className="p-8 text-center text-neutral-500 dark:text-neutral-400">
                                 <Wallet className="h-12 w-12 mx-auto mb-3 opacity-50" />
                                 <p className="font-medium">No category budgets set</p>
-                                <p className="text-sm mt-1">Click "Add" to set budgets for specific categories</p>
+                                <p className="text-sm mt-1">Click &quot;Add&quot; to set budgets for specific categories</p>
                             </div>
                         )}
 

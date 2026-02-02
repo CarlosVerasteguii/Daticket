@@ -80,21 +80,35 @@ export default function CategoryBreakdownChart({ receipts, className }: Category
     }
 
     // Calculate angles for donut chart
-    let cumulativeAngle = 0
-    const segments = categoryData.map((cat, index) => {
-        const percentage = (cat.amount / total) * 100
-        const angle = (percentage / 100) * 360
-        const startAngle = cumulativeAngle
-        cumulativeAngle += angle
-        
-        return {
-            ...cat,
-            percentage,
-            startAngle,
-            endAngle: cumulativeAngle,
-            color: CHART_COLORS[index % CHART_COLORS.length]
-        }
-    })
+    type Segment = (typeof categoryData)[number] & {
+        percentage: number
+        startAngle: number
+        endAngle: number
+        color: string
+    }
+
+    const segments = categoryData.reduce<{ cumulativeAngle: number; segments: Segment[] }>(
+        (acc, cat, index) => {
+            const percentage = (cat.amount / total) * 100
+            const angle = (percentage / 100) * 360
+            const startAngle = acc.cumulativeAngle
+            const endAngle = startAngle + angle
+
+            const segment: Segment = {
+                ...cat,
+                percentage,
+                startAngle,
+                endAngle,
+                color: CHART_COLORS[index % CHART_COLORS.length],
+            }
+
+            return {
+                cumulativeAngle: endAngle,
+                segments: [...acc.segments, segment],
+            }
+        },
+        { cumulativeAngle: 0, segments: [] }
+    ).segments
 
     // SVG path for donut segment
     const createArcPath = (startAngle: number, endAngle: number, innerRadius: number, outerRadius: number) => {

@@ -54,7 +54,7 @@ function parseUserAgent(userAgent: string): SessionInfo['device'] {
     }
 }
 
-async function getAuthenticatedUser(request: NextRequest) {
+async function getAuthenticatedUser() {
     const cookieStore = await cookies()
 
     const supabase = createServerClient(
@@ -89,7 +89,7 @@ async function getAuthenticatedUser(request: NextRequest) {
 // GET /api/sessions - List all user sessions
 export async function GET(request: NextRequest) {
     try {
-        const auth = await getAuthenticatedUser(request)
+        const auth = await getAuthenticatedUser()
 
         if (!auth) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -140,7 +140,7 @@ export async function GET(request: NextRequest) {
                 }
             } catch (adminError) {
                 // Admin API failed, but we still have current session
-                console.warn('Admin API unavailable, showing current session only')
+                console.warn('Admin API unavailable, showing current session only:', adminError)
             }
         }
 
@@ -154,7 +154,7 @@ export async function GET(request: NextRequest) {
 // DELETE /api/sessions - Revoke a specific session or all sessions
 export async function DELETE(request: NextRequest) {
     try {
-        const auth = await getAuthenticatedUser(request)
+        const auth = await getAuthenticatedUser()
 
         if (!auth) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -244,7 +244,7 @@ export async function DELETE(request: NextRequest) {
 // POST /api/sessions - Register a new session (called on login)
 export async function POST(request: NextRequest) {
     try {
-        const auth = await getAuthenticatedUser(request)
+        const auth = await getAuthenticatedUser()
 
         if (!auth) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })

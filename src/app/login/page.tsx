@@ -52,8 +52,9 @@ function LoginForm() {
 
             router.push('/dashboard')
             router.refresh()
-        } catch (err: any) {
-            setError(err.message || 'Correo o contraseña inválidos')
+        } catch (err: unknown) {
+            const message = err instanceof Error ? err.message : 'Correo o contraseña inválidos'
+            setError(message || 'Correo o contraseña inválidos')
         } finally {
             setIsLoading(false)
         }

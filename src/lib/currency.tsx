@@ -1,6 +1,6 @@
 'use client'
 
-import { createContext, useContext, useEffect, useState } from 'react'
+import { createContext, useContext, useState } from 'react'
 
 export interface CurrencyConfig {
     code: string
@@ -33,15 +33,12 @@ const CurrencyContext = createContext<CurrencyContextType | undefined>(undefined
 const CURRENCY_KEY = 'daticket-currency'
 
 export function CurrencyProvider({ children }: { children: React.ReactNode }) {
-    const [currency, setCurrencyState] = useState<CurrencyConfig>(CURRENCIES[0])
-
-    useEffect(() => {
-        const saved = localStorage.getItem(CURRENCY_KEY)
-        if (saved) {
-            const found = CURRENCIES.find(c => c.code === saved)
-            if (found) setCurrencyState(found)
-        }
-    }, [])
+    const [currency, setCurrencyState] = useState<CurrencyConfig>(() => {
+        if (typeof window === 'undefined') return CURRENCIES[0]
+        const saved = window.localStorage.getItem(CURRENCY_KEY)
+        if (!saved) return CURRENCIES[0]
+        return CURRENCIES.find(c => c.code === saved) ?? CURRENCIES[0]
+    })
 
     const setCurrency = (code: string) => {
         const found = CURRENCIES.find(c => c.code === code)

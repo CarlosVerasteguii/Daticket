@@ -1,6 +1,6 @@
 'use client'
 
-import { createContext, useContext, useEffect, useState, useCallback } from 'react'
+import { createContext, useContext, useState, useCallback } from 'react'
 
 export interface NotificationPreferences {
     emailDigest: boolean
@@ -42,31 +42,31 @@ const NOTIFICATION_KEY = 'daticket-notifications'
 const ALERTS_KEY = 'daticket-alerts'
 
 export function NotificationProvider({ children }: { children: React.ReactNode }) {
-    const [preferences, setPreferences] = useState<NotificationPreferences>(DEFAULT_PREFS)
+    const [preferences, setPreferences] = useState<NotificationPreferences>(() => {
+        if (typeof window === 'undefined') return DEFAULT_PREFS
+        const saved = window.localStorage.getItem(NOTIFICATION_KEY)
+        if (!saved) return DEFAULT_PREFS
+        try {
+            const parsed: unknown = JSON.parse(saved)
+            if (!parsed || typeof parsed !== 'object') return DEFAULT_PREFS
+            return { ...DEFAULT_PREFS, ...(parsed as Partial<NotificationPreferences>) }
+        } catch {
+            return DEFAULT_PREFS
+        }
+    })
     const [alerts, setAlerts] = useState<SpendingAlert[]>([])
-    const [shownAlerts, setShownAlerts] = useState<Set<string>>(new Set())
-
-    useEffect(() => {
-        const saved = localStorage.getItem(NOTIFICATION_KEY)
-        if (saved) {
-            try {
-                const parsed = JSON.parse(saved)
-                setPreferences({ ...DEFAULT_PREFS, ...parsed })
-            } catch {
-                // Invalid JSON, use defaults
-            }
+    const [shownAlerts, setShownAlerts] = useState<Set<string>>(() => {
+        if (typeof window === 'undefined') return new Set()
+        const savedAlerts = window.sessionStorage.getItem(ALERTS_KEY)
+        if (!savedAlerts) return new Set()
+        try {
+            const parsed: unknown = JSON.parse(savedAlerts)
+            if (!Array.isArray(parsed)) return new Set()
+            return new Set(parsed.filter((v): v is string => typeof v === 'string'))
+        } catch {
+            return new Set()
         }
-        
-        // Load shown alerts for this session
-        const savedAlerts = sessionStorage.getItem(ALERTS_KEY)
-        if (savedAlerts) {
-            try {
-                setShownAlerts(new Set(JSON.parse(savedAlerts)))
-            } catch {
-                // Invalid JSON
-            }
-        }
-    }, [])
+    })
 
     const updatePreference = (key: keyof NotificationPreferences, value: boolean) => {
         const updated = { ...preferences, [key]: value }

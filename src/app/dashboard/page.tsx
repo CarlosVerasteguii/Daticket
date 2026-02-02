@@ -10,11 +10,9 @@ import {
     ArrowUpRight,
     TrendingUp,
     TrendingDown,
-    CheckCircle,
     FileText,
     Upload,
     X,
-    Image as ImageIcon,
     Receipt,
     Calendar,
     DollarSign,
@@ -33,10 +31,14 @@ interface Receipt {
     store_name: string | null
     purchase_date: string | null
     total_amount: number | null
-    image_url: string
+    image_url: string | null
     notes: string | null
     created_at: string
     category_name: string | null
+}
+
+type ReceiptQueryRow = Omit<Receipt, 'category_name'> & {
+    categories: { name: string } | { name: string }[] | null
 }
 
 type TimePeriod = 'week' | 'month' | 'quarter' | 'year'
@@ -176,7 +178,6 @@ const MetricCard = ({
 export default function DashboardPage() {
     const router = useRouter()
     const supabase = createClient()
-    const [user, setUser] = useState<any>(null)
     const [allReceipts, setAllReceipts] = useState<Receipt[]>([])
     const [selectedReceipt, setSelectedReceipt] = useState<Receipt | null>(null)
     const [loading, setLoading] = useState(true)
@@ -190,7 +191,6 @@ export default function DashboardPage() {
                 router.push('/login')
                 return
             }
-            setUser(session.user)
 
             // Fetch ALL receipts for calculations (we'll filter by period in useMemo)
             const { data, error } = await supabase
@@ -207,13 +207,24 @@ export default function DashboardPage() {
                 `)
                 .order('created_at', { ascending: false })
 
-            if (data) {
-                const formattedData = data.map((r: any) => ({
-                    ...r,
-                    category_name: r.categories?.name || null
-                }))
-                setAllReceipts(formattedData)
+            if (error) {
+                console.error('Error fetching receipts:', error)
             }
+
+            const rows = (data ?? []) as ReceiptQueryRow[]
+            const formattedData: Receipt[] = rows.map((r) => ({
+                id: r.id,
+                store_name: r.store_name,
+                purchase_date: r.purchase_date,
+                total_amount: r.total_amount,
+                image_url: r.image_url ?? null,
+                notes: r.notes,
+                created_at: r.created_at,
+                category_name: Array.isArray(r.categories)
+                    ? r.categories[0]?.name ?? null
+                    : r.categories?.name ?? null,
+            }))
+            setAllReceipts(formattedData)
             setLoading(false)
         }
         checkUserAndFetchReceipts()
@@ -517,14 +528,18 @@ export default function DashboardPage() {
 
                                     {/* Image Preview */}
                                     <div className="flex-1 bg-foreground/20 flex items-center justify-center min-h-[300px] relative overflow-hidden group">
-                                        <motion.img
-                                            src={getImageUrl(selectedReceipt.image_url)}
-                                            alt="Receipt"
-                                            className="max-w-full max-h-[400px] object-contain"
-                                            initial={{ scale: 0.9, opacity: 0 }}
-                                            animate={{ scale: 1, opacity: 1 }}
-                                            transition={{ duration: 0.3 }}
-                                        />
+                                        {selectedReceipt.image_url ? (
+                                            <motion.img
+                                                src={getImageUrl(selectedReceipt.image_url)}
+                                                alt="Receipt"
+                                                className="max-w-full max-h-[400px] object-contain"
+                                                initial={{ scale: 0.9, opacity: 0 }}
+                                                animate={{ scale: 1, opacity: 1 }}
+                                                transition={{ duration: 0.3 }}
+                                            />
+                                        ) : (
+                                            <div className="text-foreground/50 font-mono text-sm">No image</div>
+                                        )}
                                     </div>
 
                                     {/* Receipt Details */}
