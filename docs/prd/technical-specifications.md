@@ -15,7 +15,7 @@
 ### Technology Stack
 
 #### Frontend
-- **Framework:** Next.js 14+ with App Router
+- **Framework:** Next.js 16+ with App Router
 - **Language:** TypeScript
 - **Styling:** Tailwind CSS (responsive design)
 - **State Management:** React hooks + context
@@ -50,10 +50,32 @@
 - store_name (String)
 - purchase_date (Date)
 - total_amount (Decimal)
-- image_url (String, Supabase Storage URL)
+- category_id (UUID, Foreign Key → Categories, Optional)
+- primary_file_id (UUID, Foreign Key → ReceiptFiles, Optional)
 - notes (Text, Optional)
 - created_at (Timestamp)
 - updated_at (Timestamp)
+
+**ReceiptFiles Table**
+- id (UUID, Primary Key)
+- receipt_id (UUID, Foreign Key → Receipts)
+- user_id (UUID, Foreign Key → Users)
+- bucket_id (String, e.g. `"receipts"`)
+- path (String, Storage object path: `{user_id}/{receipt_id}/...`)
+- kind (String: `original|thumbnail|attachment`)
+- mime_type (String, Optional)
+- size_bytes (Number, Optional)
+- created_at (Timestamp)
+
+**ReceiptItems Table** (Optional, for analytics)
+- id (UUID, Primary Key)
+- receipt_id (UUID, Foreign Key → Receipts)
+- user_id (UUID, Foreign Key → Users)
+- name (String)
+- quantity (Number)
+- unit_price (Number)
+- total_price (Number)
+- created_at (Timestamp)
 
 **Categories Table**
 - id (UUID, Primary Key)
@@ -61,11 +83,6 @@
 - name (String)
 - color (String, Hex color for UI)
 - created_at (Timestamp)
-
-**Receipt Categories Junction Table**
-- id (UUID, Primary Key)
-- receipt_id (UUID, Foreign Key → Receipts)
-- category_id (UUID, Foreign Key → Categories)
 
 ### API Endpoints
 
@@ -220,4 +237,4 @@ These requirements define the quality attributes that the system must meet acros
 - Performance monitoring (Vercel Analytics)
 - User analytics (basic usage metrics)
 - Database query performance monitoring (Supabase dashboard)
-
+

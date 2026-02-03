@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, use } from 'react'
+import { useEffect, useMemo, useState, use } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
@@ -11,20 +11,32 @@ import { motion, AnimatePresence } from 'framer-motion'
 
 type ToastType = 'success' | 'error' | null
 
+type ReceiptFile = {
+    id: string
+    bucket_id: string
+    path: string
+    mime_type: string | null
+    size_bytes: number | null
+}
+
 interface ReceiptRow {
     id: string
     store_name: string | null
     purchase_date: string | null
     total_amount: number | null
-    image_url: string | null
+    primary_file: ReceiptFile | null
     notes: string | null
     created_at: string
+}
+
+type ReceiptRowQuery = Omit<ReceiptRow, 'primary_file'> & {
+    primary_file: ReceiptFile | ReceiptFile[] | null
 }
 
 export default function ReceiptDetailPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = use(params)
     const router = useRouter()
-    const supabase = createClient()
+    const supabase = useMemo(() => createClient(), [])
     const [receipt, setReceipt] = useState<ReceiptRow | null>(null)
     const [loading, setLoading] = useState(true)
     const [deleting, setDeleting] = useState(false)
@@ -53,7 +65,21 @@ export default function ReceiptDetailPage({ params }: { params: Promise<{ id: st
 
             const { data, error } = await supabase
                 .from('receipts')
-                .select('*')
+                .select(`
+                    id,
+                    store_name,
+                    purchase_date,
+                    total_amount,
+                    notes,
+                    created_at,
+                    primary_file:receipt_files!receipts_primary_file_id_fkey(
+                        id,
+                        bucket_id,
+                        path,
+                        mime_type,
+                        size_bytes
+                    )
+                `)
                 .eq('id', id)
                 .single()
 
@@ -65,18 +91,29 @@ export default function ReceiptDetailPage({ params }: { params: Promise<{ id: st
             }
 
             if (data) {
-                const row = data as ReceiptRow
-                setReceipt(row)
+                const row = data as ReceiptRowQuery
+                const primaryFile = Array.isArray(row.primary_file)
+                    ? row.primary_file[0] ?? null
+                    : row.primary_file ?? null
+
+                const normalized: ReceiptRow = { ...row, primary_file: primaryFile }
+
+                setReceipt(normalized)
                 setStoreName(row.store_name || '')
                 setTotalAmount(row.total_amount?.toString() || '')
                 setPurchaseDate(row.purchase_date || '')
                 setNotes(row.notes || '')
 
-                if (row.image_url) {
-                    const { data: urlData } = supabase.storage
+                if (normalized.primary_file?.path) {
+                    const { data: urlData, error: urlError } = await supabase.storage
                         .from('receipts')
-                        .getPublicUrl(row.image_url)
-                    setImageUrl(urlData.publicUrl)
+                        .createSignedUrl(normalized.primary_file.path, 60 * 60)
+
+                    if (urlError) {
+                        console.warn('Failed to create signed URL for receipt image:', urlError)
+                    } else {
+                        setImageUrl(urlData.signedUrl)
+                    }
                 }
             }
             setLoading(false)
@@ -134,10 +171,6 @@ export default function ReceiptDetailPage({ params }: { params: Promise<{ id: st
             if (dbError) {
                 showToast('error', 'Failed to delete. Please try again.')
                 return
-            }
-
-            if (receipt?.image_url) {
-                await supabase.storage.from('receipts').remove([receipt.image_url])
             }
 
             router.refresh()

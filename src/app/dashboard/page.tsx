@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useMemo } from 'react'
+import { useEffect, useState, useMemo, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
@@ -31,14 +31,25 @@ interface Receipt {
     store_name: string | null
     purchase_date: string | null
     total_amount: number | null
-    image_url: string | null
+    primary_file: ReceiptFile | null
+    thumbnail_file: ReceiptFile | null
     notes: string | null
     created_at: string
     category_name: string | null
 }
 
-type ReceiptQueryRow = Omit<Receipt, 'category_name'> & {
+type ReceiptFile = {
+    id: string
+    bucket_id: string
+    path: string
+    mime_type: string | null
+    size_bytes: number | null
+}
+
+type ReceiptQueryRow = Omit<Receipt, 'category_name' | 'primary_file' | 'thumbnail_file'> & {
     categories: { name: string } | { name: string }[] | null
+    primary_file: ReceiptFile | ReceiptFile[] | null
+    thumbnail_file: ReceiptFile | ReceiptFile[] | null
 }
 
 type TimePeriod = 'week' | 'month' | 'quarter' | 'year'
@@ -177,12 +188,13 @@ const MetricCard = ({
 
 export default function DashboardPage() {
     const router = useRouter()
-    const supabase = createClient()
+    const supabase = useMemo(() => createClient(), [])
     const [allReceipts, setAllReceipts] = useState<Receipt[]>([])
     const [selectedReceipt, setSelectedReceipt] = useState<Receipt | null>(null)
     const [loading, setLoading] = useState(true)
     const [selectedPeriod, setSelectedPeriod] = useState<TimePeriod>('month')
     const [periodDropdownOpen, setPeriodDropdownOpen] = useState(false)
+    const [selectedReceiptImageUrl, setSelectedReceiptImageUrl] = useState<string | null>(null)
 
     useEffect(() => {
         const checkUserAndFetchReceipts = async () => {
@@ -200,10 +212,23 @@ export default function DashboardPage() {
                     store_name,
                     purchase_date,
                     total_amount,
-                    image_url,
                     notes,
                     created_at,
-                    categories(name)
+                    categories(name),
+                    primary_file:receipt_files!receipts_primary_file_id_fkey(
+                        id,
+                        bucket_id,
+                        path,
+                        mime_type,
+                        size_bytes
+                    ),
+                    thumbnail_file:receipt_files!receipts_thumbnail_file_id_fkey(
+                        id,
+                        bucket_id,
+                        path,
+                        mime_type,
+                        size_bytes
+                    )
                 `)
                 .order('created_at', { ascending: false })
 
@@ -217,7 +242,12 @@ export default function DashboardPage() {
                 store_name: r.store_name,
                 purchase_date: r.purchase_date,
                 total_amount: r.total_amount,
-                image_url: r.image_url ?? null,
+                primary_file: Array.isArray(r.primary_file)
+                    ? r.primary_file[0] ?? null
+                    : r.primary_file ?? null,
+                thumbnail_file: Array.isArray(r.thumbnail_file)
+                    ? r.thumbnail_file[0] ?? null
+                    : r.thumbnail_file ?? null,
                 notes: r.notes,
                 created_at: r.created_at,
                 category_name: Array.isArray(r.categories)
@@ -266,11 +296,30 @@ export default function DashboardPage() {
         ? Math.round(((totalAmount - previousTotal) / previousTotal) * 100)
         : totalAmount > 0 ? 100 : 0
 
-    // Get public URL for image
-    const getImageUrl = (path: string) => {
-        const { data } = supabase.storage.from('receipts').getPublicUrl(path)
-        return data.publicUrl
-    }
+    const getSignedImageUrl = useCallback(async (path: string): Promise<string | null> => {
+        const { data, error } = await supabase.storage.from('receipts').createSignedUrl(path, 60 * 60)
+        if (error) {
+            console.warn('Failed to create signed URL for receipt image:', error)
+            return null
+        }
+        return data.signedUrl
+    }, [supabase])
+
+    useEffect(() => {
+        let cancelled = false
+        setSelectedReceiptImageUrl(null)
+
+        if (!selectedReceipt?.primary_file?.path) return
+
+        getSignedImageUrl(selectedReceipt.primary_file.path).then((url) => {
+            if (cancelled) return
+            setSelectedReceiptImageUrl(url)
+        })
+
+        return () => {
+            cancelled = true
+        }
+    }, [selectedReceipt?.primary_file?.path, getSignedImageUrl])
 
     // Format date
     const formatDate = (dateStr: string | null) => {
@@ -528,9 +577,9 @@ export default function DashboardPage() {
 
                                     {/* Image Preview */}
                                     <div className="flex-1 bg-foreground/20 flex items-center justify-center min-h-[300px] relative overflow-hidden group">
-                                        {selectedReceipt.image_url ? (
+                                        {selectedReceiptImageUrl ? (
                                             <motion.img
-                                                src={getImageUrl(selectedReceipt.image_url)}
+                                                src={selectedReceiptImageUrl}
                                                 alt="Receipt"
                                                 className="max-w-full max-h-[400px] object-contain"
                                                 initial={{ scale: 0.9, opacity: 0 }}

@@ -12,12 +12,21 @@ type Category = {
     color: string
 }
 
+type ReceiptFile = {
+    id: string
+    bucket_id: string
+    path: string
+    mime_type: string | null
+    size_bytes: number | null
+}
+
 type Receipt = {
     id: string
     store_name: string | null
     purchase_date: string | null
     total_amount: number | null
-    image_url: string | null
+    primary_file: ReceiptFile | ReceiptFile[] | null
+    thumbnail_file: ReceiptFile | ReceiptFile[] | null
     categories: Category | Category[] | null
 }
 
@@ -31,7 +40,30 @@ export default function ReceiptList() {
     useEffect(() => {
         async function fetchData() {
             const [receiptsRes, categoriesRes] = await Promise.all([
-                supabase.from('receipts').select('*, categories(*)').order('purchase_date', { ascending: false }),
+                supabase
+                    .from('receipts')
+                    .select(`
+                        id,
+                        store_name,
+                        purchase_date,
+                        total_amount,
+                        categories(*),
+                        primary_file:receipt_files!receipts_primary_file_id_fkey(
+                            id,
+                            bucket_id,
+                            path,
+                            mime_type,
+                            size_bytes
+                        ),
+                        thumbnail_file:receipt_files!receipts_thumbnail_file_id_fkey(
+                            id,
+                            bucket_id,
+                            path,
+                            mime_type,
+                            size_bytes
+                        )
+                    `)
+                    .order('purchase_date', { ascending: false }),
                 supabase.from('categories').select('id, name').order('name')
             ])
 
@@ -47,6 +79,11 @@ export default function ReceiptList() {
     const getCategory = (cats: Receipt['categories']): Category | null => {
         if (!cats) return null
         return Array.isArray(cats) ? (cats[0] ?? null) : cats
+    }
+
+    const getFile = (file: Receipt['primary_file'] | Receipt['thumbnail_file']): ReceiptFile | null => {
+        if (!file) return null
+        return Array.isArray(file) ? (file[0] ?? null) : file
     }
 
     const filteredReceipts = selectedCategory
@@ -114,10 +151,17 @@ export default function ReceiptList() {
                 </div>
             ) : (
                 <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                    {filteredReceipts.map((receipt) => (
+                    {filteredReceipts.map((receipt) => {
+                        const primary = getFile(receipt.primary_file)
+                        const thumb = getFile(receipt.thumbnail_file)
+
+                        return (
                         <div key={receipt.id} className="bg-white overflow-hidden shadow rounded-lg hover:shadow-md transition-shadow">
                             <div className="relative h-48 w-full bg-gray-100">
-                                <StorageImage path={receipt.image_url} alt={receipt.store_name} />
+                                <StorageImage
+                                    path={thumb?.path ?? primary?.path ?? null}
+                                    alt={receipt.store_name}
+                                />
                             </div>
                             <div className="px-4 py-4">
                                 <div className="flex justify-between items-start">
@@ -147,7 +191,8 @@ export default function ReceiptList() {
                                 </div>
                             </div>
                         </div>
-                    ))}
+                        )
+                    })}
                 </div>
             )}
         </div>

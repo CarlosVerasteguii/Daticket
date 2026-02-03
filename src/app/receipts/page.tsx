@@ -1,11 +1,12 @@
 'use client'
 
-import { useEffect, useState, useCallback, useRef } from 'react'
+import { useEffect, useState, useCallback, useMemo, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import DashboardShell from '@/components/layout/DashboardShell'
 import { ReceiptsGridSkeleton } from '@/components/ui/Skeleton'
+import type { SupabaseClient } from '@supabase/supabase-js'
 import { 
   Plus, 
   X, 
@@ -31,14 +32,25 @@ interface Receipt {
     store_name: string | null
     purchase_date: string | null
     total_amount: number | null
-    image_url: string
+    primary_file: ReceiptFile | null
+    thumbnail_file: ReceiptFile | null
     notes: string | null
     created_at: string
     category_name: string | null
 }
 
-type ReceiptQueryRow = Omit<Receipt, 'category_name'> & {
+type ReceiptFile = {
+    id: string
+    bucket_id: string
+    path: string
+    mime_type: string | null
+    size_bytes: number | null
+}
+
+type ReceiptQueryRow = Omit<Receipt, 'category_name' | 'primary_file' | 'thumbnail_file'> & {
     categories: { name: string } | { name: string }[] | null
+    primary_file: ReceiptFile | ReceiptFile[] | null
+    thumbnail_file: ReceiptFile | ReceiptFile[] | null
 }
 
 const containerVariants = {
@@ -88,7 +100,7 @@ const SAVED_FILTERS_KEY = 'daticket-saved-filters'
 
 export default function ReceiptsPage() {
     const router = useRouter()
-    const supabase = createClient()
+    const supabase = useMemo(() => createClient(), [])
     const [receipts, setReceipts] = useState<Receipt[]>([])
     const [selectedReceipt, setSelectedReceipt] = useState<Receipt | null>(null)
     const [loading, setLoading] = useState(true)
@@ -240,10 +252,23 @@ export default function ReceiptsPage() {
                 store_name,
                 purchase_date,
                 total_amount,
-                image_url,
                 notes,
                 created_at,
-                categories(name)
+                categories(name),
+                primary_file:receipt_files!receipts_primary_file_id_fkey(
+                    id,
+                    bucket_id,
+                    path,
+                    mime_type,
+                    size_bytes
+                ),
+                thumbnail_file:receipt_files!receipts_thumbnail_file_id_fkey(
+                    id,
+                    bucket_id,
+                    path,
+                    mime_type,
+                    size_bytes
+                )
             `)
             .order('created_at', { ascending: false })
 
@@ -253,7 +278,12 @@ export default function ReceiptsPage() {
             store_name: r.store_name,
             purchase_date: r.purchase_date,
             total_amount: r.total_amount,
-            image_url: r.image_url,
+            primary_file: Array.isArray(r.primary_file)
+                ? r.primary_file[0] ?? null
+                : r.primary_file ?? null,
+            thumbnail_file: Array.isArray(r.thumbnail_file)
+                ? r.thumbnail_file[0] ?? null
+                : r.thumbnail_file ?? null,
             notes: r.notes,
             created_at: r.created_at,
             category_name: Array.isArray(r.categories)
@@ -318,11 +348,6 @@ export default function ReceiptsPage() {
         
         return () => observer.disconnect()
     }, [])
-
-    const getImageUrl = (path: string) => {
-        const { data } = supabase.storage.from('receipts').getPublicUrl(path)
-        return data.publicUrl
-    }
 
     const formatDate = (dateStr: string | null) => {
         if (!dateStr) return 'N/A'
@@ -978,26 +1003,11 @@ export default function ReceiptsPage() {
                                         >
                                             {/* Thumbnail with Lazy Loading */}
                                             <div className="h-32 bg-foreground/10 overflow-hidden relative">
-                                                <motion.img
-                                                    src={getImageUrl(receipt.image_url)}
-                                                    alt="Receipt"
-                                                    loading="lazy"
+                                                <SignedReceiptImage
+                                                    supabase={supabase}
+                                                    path={receipt.thumbnail_file?.path ?? receipt.primary_file?.path ?? null}
                                                     className="w-full h-full object-cover transition-all duration-500"
-                                                    style={{ 
-                                                        filter: 'blur(0px)',
-                                                        opacity: 1 
-                                                    }}
-                                                    onLoad={(e) => {
-                                                        const img = e.currentTarget
-                                                        img.style.filter = 'blur(0px)'
-                                                        img.style.opacity = '1'
-                                                    }}
-                                                    onError={(e) => {
-                                                        const img = e.currentTarget
-                                                        img.style.opacity = '0.5'
-                                                    }}
-                                                    whileHover={{ scale: 1.05 }}
-                                                    transition={{ duration: 0.4 }}
+                                                    hover
                                                 />
                                                 {/* Blur placeholder */}
                                                 <div className="absolute inset-0 bg-gradient-to-br from-foreground/20 to-foreground/10 -z-10" />
@@ -1070,12 +1080,10 @@ export default function ReceiptsPage() {
 
                                     {/* Image */}
                                     <div className="flex-1 bg-foreground/20 overflow-hidden relative group">
-                                        <motion.img
-                                            src={getImageUrl(selectedReceipt.image_url)}
-                                            alt="Receipt"
+                                        <SignedReceiptImage
+                                            supabase={supabase}
+                                            path={selectedReceipt.primary_file?.path ?? null}
                                             className="w-full h-full object-contain"
-                                            initial={{ scale: 0.9 }}
-                                            animate={{ scale: 1 }}
                                         />
                                     </div>
 
@@ -1161,5 +1169,78 @@ export default function ReceiptsPage() {
                 </div>
             </motion.div>
         </DashboardShell>
+    )
+}
+
+function SignedReceiptImage({
+    supabase,
+    path,
+    className,
+    hover = false,
+}: {
+    supabase: SupabaseClient
+    path: string | null
+    className: string
+    hover?: boolean
+}) {
+    const [src, setSrc] = useState<string | null>(null)
+
+    useEffect(() => {
+        let cancelled = false
+        setSrc(null)
+
+        if (!path) return
+
+        supabase.storage
+            .from('receipts')
+            .createSignedUrl(path, 60 * 60)
+            .then(({ data, error }) => {
+                if (cancelled) return
+                if (error) {
+                    console.warn('Failed to create signed URL for receipt image:', error)
+                    return
+                }
+                setSrc(data.signedUrl)
+            })
+
+        return () => {
+            cancelled = true
+        }
+    }, [path, supabase])
+
+    if (!path || !src) {
+        return (
+            <div className={cn(className, 'flex items-center justify-center')}>
+                <ImageIcon className="h-10 w-10 text-foreground/30" />
+            </div>
+        )
+    }
+
+    if (hover) {
+        return (
+            <motion.img
+                src={src}
+                alt="Receipt"
+                loading="lazy"
+                className={className}
+                onError={(e) => {
+                    e.currentTarget.style.opacity = '0.5'
+                }}
+                whileHover={{ scale: 1.05 }}
+                transition={{ duration: 0.4 }}
+            />
+        )
+    }
+
+    return (
+        <motion.img
+            src={src}
+            alt="Receipt"
+            loading="lazy"
+            className={className}
+            onError={(e) => {
+                e.currentTarget.style.opacity = '0.5'
+            }}
+        />
     )
 }

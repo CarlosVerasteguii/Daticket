@@ -39,7 +39,8 @@ interface User {
 - `store_name`: string - Name of the store
 - `purchase_date`: date - Date of purchase
 - `total_amount`: decimal - Total amount spent
-- `image_url`: string - Supabase Storage URL
+- `category_id`: UUID (optional) - Foreign key to Category
+- `primary_file_id`: UUID (optional) - Foreign key to ReceiptFile (current primary image)
 - `notes`: string (optional) - User notes
 - `created_at`: timestamp - Upload timestamp
 - `updated_at`: timestamp - Last edit timestamp
@@ -50,21 +51,26 @@ interface User {
 interface Receipt {
   id: string;
   user_id: string;
-  store_name: string;
-  purchase_date: string; // ISO 8601 date
-  total_amount: number;
-  image_url: string;
-  notes?: string;
+  store_name: string | null;
+  purchase_date: string | null; // ISO 8601 date
+  total_amount: number | null;
+  category_id?: string | null;
+  primary_file_id?: string | null;
+  notes?: string | null;
   created_at: string;
   updated_at: string;
   // Virtual fields (joined)
-  categories?: Category[];
+  category?: Category | null;
+  primary_file?: ReceiptFile | null;
+  items?: ReceiptItem[];
 }
 ```
 
 **Relationships:**
 - Many-to-One with User
-- Many-to-Many with Categories (through ReceiptCategory junction)
+- Many-to-One with Category (optional)
+- One-to-Many with ReceiptFile
+- One-to-Many with ReceiptItem
 
 ---
 
@@ -97,33 +103,76 @@ interface Category {
 
 **Relationships:**
 - Many-to-One with User
-- Many-to-Many with Receipts (through ReceiptCategory junction)
+- One-to-Many with Receipts
 
 ---
 
-### ReceiptCategory Model (Junction Table)
+### ReceiptFile Model
 
-**Purpose:** Links receipts to categories in a many-to-many relationship.
+**Purpose:** Represents a file stored in Supabase Storage associated with a receipt (e.g., original image, thumbnail, attachments).
 
 **Key Attributes:**
 - `id`: UUID - Primary key
 - `receipt_id`: UUID - Foreign key to Receipt
-- `category_id`: UUID - Foreign key to Category
-- `created_at`: timestamp - Association timestamp
+- `user_id`: UUID - Foreign key to User (with RLS)
+- `bucket_id`: string - Storage bucket (e.g., `"receipts"`)
+- `path`: string - Object path inside the bucket (e.g., `{user_id}/{receipt_id}/original.jpg`)
+- `kind`: string - `"original" | "thumbnail" | "attachment"`
+- `mime_type`: string (optional) - MIME type (e.g., `image/jpeg`)
+- `size_bytes`: number (optional) - File size in bytes
+- `created_at`: timestamp - Creation timestamp
 
 **TypeScript Interface:**
 
 ```typescript
-interface ReceiptCategory {
+interface ReceiptFile {
   id: string;
   receipt_id: string;
-  category_id: string;
+  user_id: string;
+  bucket_id: string;
+  path: string;
+  kind: 'original' | 'thumbnail' | 'attachment';
+  mime_type?: string | null;
+  size_bytes?: number | null;
   created_at: string;
 }
 ```
 
 **Relationships:**
 - Many-to-One with Receipt
-- Many-to-One with Category
+- Many-to-One with User
 
 ---
+
+### ReceiptItem Model
+
+**Purpose:** Represents individual line items extracted from a receipt for price history and analytics.
+
+**Key Attributes:**
+- `id`: UUID - Primary key
+- `receipt_id`: UUID - Foreign key to Receipt
+- `user_id`: UUID - Foreign key to User (with RLS)
+- `name`: string - Item name
+- `quantity`: number - Quantity
+- `unit_price`: number - Unit price
+- `total_price`: number - Total price for this item
+- `created_at`: timestamp - Creation timestamp
+
+**TypeScript Interface:**
+
+```typescript
+interface ReceiptItem {
+  id: string;
+  receipt_id: string;
+  user_id: string;
+  name: string;
+  quantity: number;
+  unit_price: number;
+  total_price: number;
+  created_at: string;
+}
+```
+
+**Relationships:**
+- Many-to-One with Receipt
+- Many-to-One with User

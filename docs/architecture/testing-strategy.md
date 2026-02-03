@@ -61,7 +61,7 @@ describe('ReceiptCard', () => {
     store_name: 'Whole Foods',
     purchase_date: '2025-01-15',
     total_amount: 85.50,
-    image_url: 'https://example.com/image.jpg',
+    primary_file: { path: 'user-id/receipt-id/original.jpg' },
   };
 
   it('renders receipt information', () => {

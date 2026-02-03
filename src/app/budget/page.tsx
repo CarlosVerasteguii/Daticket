@@ -27,6 +27,11 @@ interface SpendingData {
     byCategory: Record<string, number>
 }
 
+type ReceiptSpendingRow = {
+    total_amount: number | null
+    categories: { name: string } | { name: string }[] | null
+}
+
 export default function BudgetPage() {
     const router = useRouter()
     const supabase = createClient()
@@ -65,19 +70,29 @@ export default function BudgetPage() {
             const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0]
             const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().split('T')[0]
 
-            const { data: receipts } = await supabase
+            const { data: receipts, error } = await supabase
                 .from('receipts')
-                .select('amount, category')
+                .select('total_amount, categories(name)')
                 .eq('user_id', session.user.id)
-                .gte('receipt_date', startOfMonth)
-                .lte('receipt_date', endOfMonth)
+                .gte('purchase_date', startOfMonth)
+                .lte('purchase_date', endOfMonth)
+
+            if (error) {
+                console.error('Failed to fetch receipts for budget:', error)
+                setLoading(false)
+                return
+            }
 
             if (receipts) {
-                const total = receipts.reduce((sum, r) => sum + (r.amount || 0), 0)
+                const rows = receipts as unknown as ReceiptSpendingRow[]
+                const total = rows.reduce((sum, r) => sum + (Number(r.total_amount) || 0), 0)
                 const byCategory: Record<string, number> = {}
-                receipts.forEach(r => {
-                    const cat = r.category || 'Other'
-                    byCategory[cat] = (byCategory[cat] || 0) + (r.amount || 0)
+                rows.forEach(r => {
+                    const cat = Array.isArray(r.categories)
+                        ? r.categories[0]?.name
+                        : r.categories?.name
+                    const name = cat || 'Uncategorized'
+                    byCategory[name] = (byCategory[name] || 0) + (Number(r.total_amount) || 0)
                 })
                 setSpending({ total, byCategory })
             }
@@ -103,15 +118,21 @@ export default function BudgetPage() {
                 const startOfMonth = new Date(year, month - 1, 1).toISOString().split('T')[0]
                 const endOfMonth = new Date(year, month, 0).toISOString().split('T')[0]
 
-                const { data: receipts } = await supabase
+                const { data: receipts, error } = await supabase
                     .from('receipts')
-                    .select('amount')
+                    .select('total_amount')
                     .eq('user_id', session.user.id)
-                    .gte('receipt_date', startOfMonth)
-                    .lte('receipt_date', endOfMonth)
+                    .gte('purchase_date', startOfMonth)
+                    .lte('purchase_date', endOfMonth)
+
+                if (error) {
+                    console.error(`Failed to fetch receipts for ${budget.month}:`, error)
+                    continue
+                }
 
                 if (receipts) {
-                    spendingByMonth[budget.month] = receipts.reduce((sum, r) => sum + (r.amount || 0), 0)
+                    const total = receipts.reduce((sum, r) => sum + (Number((r as { total_amount: number | null }).total_amount) || 0), 0)
+                    spendingByMonth[budget.month] = total
                 }
             }
 

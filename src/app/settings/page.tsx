@@ -16,6 +16,29 @@ import { useNotifications, NotificationPreferences } from '@/lib/notifications'
 import { cn } from '@/lib/utils'
 import { motion, AnimatePresence } from 'framer-motion'
 
+function extractReceiptsObjectPath(value: string): string | null {
+    const trimmed = value.trim()
+    if (!trimmed) return null
+
+    // Already looks like a storage object path: "{userId}/..."
+    if (!trimmed.startsWith('http')) return trimmed
+
+    try {
+        const url = new URL(trimmed)
+        const parts = url.pathname.split('/').filter(Boolean)
+        const bucketIndex = parts.findIndex((p) => p === 'receipts')
+        if (bucketIndex === -1) return null
+        const objectPath = parts.slice(bucketIndex + 1).join('/')
+        return objectPath || null
+    } catch {
+        return null
+    }
+}
+
+function isNonNull<T>(value: T | null | undefined): value is T {
+    return value !== null && value !== undefined
+}
+
 export default function SettingsPage() {
     const router = useRouter()
     const supabase = createClient()
@@ -49,28 +72,37 @@ export default function SettingsPage() {
             const { data: { session } } = await supabase.auth.getSession()
             if (!session) return
 
-            // Fetch all user receipts
-            const { data: receipts } = await supabase
-                .from('receipts')
-                .select('*')
-                .eq('user_id', session.user.id)
-                .order('created_at', { ascending: false })
-
-            // Fetch user categories
-            const { data: categories } = await supabase
-                .from('categories')
-                .select('*')
-                .eq('user_id', session.user.id)
+            const [receiptsRes, receiptFilesRes, receiptItemsRes, categoriesRes] = await Promise.all([
+                supabase
+                    .from('receipts')
+                    .select('id, store_name, purchase_date, total_amount, notes, created_at, category_id, primary_file_id, thumbnail_file_id')
+                    .eq('user_id', session.user.id)
+                    .order('created_at', { ascending: false }),
+                supabase
+                    .from('receipt_files')
+                    .select('id, receipt_id, bucket_id, path, kind, mime_type, size_bytes, created_at, source_file_id')
+                    .eq('user_id', session.user.id),
+                supabase
+                    .from('receipt_items')
+                    .select('id, receipt_id, name, quantity, unit_price, total_price')
+                    .eq('user_id', session.user.id),
+                supabase
+                    .from('categories')
+                    .select('id, name, color, created_at')
+                    .eq('user_id', session.user.id),
+            ])
 
             const exportData = {
-                version: '1.0.0',
+                version: '2.1.0',
                 exportedAt: new Date().toISOString(),
                 user: {
                     email: session.user.email,
                     id: session.user.id
                 },
-                receipts: receipts || [],
-                categories: categories || [],
+                receipts: receiptsRes.data || [],
+                receipt_files: receiptFilesRes.data || [],
+                receipt_items: receiptItemsRes.data || [],
+                categories: categoriesRes.data || [],
                 preferences: {
                     theme,
                     currency: currency.code,
@@ -104,49 +136,281 @@ export default function SettingsPage() {
         setImportStatus('importing')
         try {
             const text = await file.text()
-            const data = JSON.parse(text)
+            const data: unknown = JSON.parse(text)
 
             // Validate structure
-            if (!data.version || !data.receipts) {
+            if (!data || typeof data !== 'object') {
+                throw new Error('Invalid backup file format')
+            }
+
+            const backup = data as Record<string, unknown>
+
+            if (typeof backup.version !== 'string') {
                 throw new Error('Invalid backup file format')
             }
 
             const { data: { session } } = await supabase.auth.getSession()
             if (!session) return
 
-            // Import receipts (skip if they already exist by matching store+amount+date)
-            if (data.receipts?.length > 0) {
-                for (const receipt of data.receipts) {
-                    // Check if receipt exists
-                    const { data: existing } = await supabase
-                        .from('receipts')
-                        .select('id')
-                        .eq('user_id', session.user.id)
-                        .eq('store_name', receipt.store_name)
-                        .eq('amount', receipt.amount)
-                        .eq('receipt_date', receipt.receipt_date)
-                        .single()
+            const version = backup.version
 
-                    if (!existing) {
-                        await supabase.from('receipts').insert({
+            const { data: existingReceipts } = await supabase
+                .from('receipts')
+                .select('id')
+                .eq('user_id', session.user.id)
+
+            const existingReceiptIds = new Set((existingReceipts ?? []).map((r) => r.id))
+
+            // Import categories first (best-effort, preserves IDs when present)
+            const rawCategories = Array.isArray(backup.categories) ? backup.categories : []
+            const categoriesPayload = rawCategories
+                .filter((c) => c && typeof c === 'object')
+                .map((c) => {
+                    const obj = c as Record<string, unknown>
+                    const name = typeof obj.name === 'string' ? obj.name : null
+                    if (!name) return null
+
+                    return {
+                        id: typeof obj.id === 'string' ? obj.id : undefined,
+                        user_id: session.user.id,
+                        name,
+                        color: typeof obj.color === 'string' ? obj.color : null,
+                    }
+                })
+                .filter(isNonNull)
+
+            if (categoriesPayload.length > 0) {
+                const { error } = await supabase.from('categories').upsert(categoriesPayload, { onConflict: 'id' })
+                if (error) {
+                    console.warn('Category import failed:', error)
+                }
+            }
+
+            if (version.startsWith('2')) {
+                const rawReceipts = Array.isArray(backup.receipts) ? backup.receipts : []
+                const receiptsToInsert = rawReceipts
+                    .filter((r) => r && typeof r === 'object')
+                    .map((r) => {
+                        const obj = r as Record<string, unknown>
+                        const id = typeof obj.id === 'string' ? obj.id : null
+                        if (!id || existingReceiptIds.has(id)) return null
+
+                        return {
+                            id,
                             user_id: session.user.id,
-                            store_name: receipt.store_name,
-                            amount: receipt.amount,
-                            receipt_date: receipt.receipt_date,
-                            category: receipt.category,
-                            notes: receipt.notes,
-                            image_url: receipt.image_url
-                        })
+                            store_name: typeof obj.store_name === 'string' ? obj.store_name : null,
+                            purchase_date: typeof obj.purchase_date === 'string' ? obj.purchase_date : null,
+                            total_amount: typeof obj.total_amount === 'number' ? obj.total_amount : null,
+                            notes: typeof obj.notes === 'string' ? obj.notes : null,
+                            category_id: typeof obj.category_id === 'string' ? obj.category_id : null,
+                            primary_file_id: null,
+                            thumbnail_file_id: null,
+                        }
+                    })
+                    .filter(isNonNull)
+
+                const receiptIdsToInsert = receiptsToInsert.map((r) => r.id)
+
+                if (receiptsToInsert.length > 0) {
+                    const { error } = await supabase.from('receipts').insert(receiptsToInsert)
+                    if (error) throw error
+                }
+
+                // Import receipt files (metadata only). Only import paths that belong to the current user folder.
+                const rawFiles = Array.isArray(backup.receipt_files) ? backup.receipt_files : []
+                const filesToInsert = rawFiles
+                    .filter((f) => f && typeof f === 'object')
+                    .map((f) => {
+                        const obj = f as Record<string, unknown>
+                        const receiptId = typeof obj.receipt_id === 'string' ? obj.receipt_id : null
+                        if (!receiptId || !receiptIdsToInsert.includes(receiptId)) return null
+
+                        const bucketId = typeof obj.bucket_id === 'string' ? obj.bucket_id : 'receipts'
+                        const path = typeof obj.path === 'string' ? obj.path : null
+                        if (bucketId !== 'receipts' || !path || !path.startsWith(`${session.user.id}/`)) return null
+
+                        const kind = typeof obj.kind === 'string' ? obj.kind : 'original'
+                        const sourceFileId = typeof obj.source_file_id === 'string' ? obj.source_file_id : null
+                        if (kind === 'thumbnail' && !sourceFileId) return null
+
+                        return {
+                            id: typeof obj.id === 'string' ? obj.id : undefined,
+                            receipt_id: receiptId,
+                            user_id: session.user.id,
+                            bucket_id: 'receipts',
+                            path,
+                            kind,
+                            mime_type: typeof obj.mime_type === 'string' ? obj.mime_type : null,
+                            size_bytes: typeof obj.size_bytes === 'number' ? obj.size_bytes : null,
+                            source_file_id: sourceFileId,
+                        }
+                    })
+                    .filter(isNonNull)
+
+                if (filesToInsert.length > 0) {
+                    const originals = filesToInsert.filter((f) => f.kind === 'original')
+                    const derived = filesToInsert.filter((f) => f.kind !== 'original')
+
+                    if (originals.length > 0) {
+                        const { error } = await supabase.from('receipt_files').insert(originals)
+                        if (error) throw error
+                    }
+
+                    if (derived.length > 0) {
+                        const { error } = await supabase.from('receipt_files').insert(derived)
+                        if (error) throw error
+                    }
+                }
+
+                // Link primary files after file import
+                for (const r of rawReceipts) {
+                    if (!r || typeof r !== 'object') continue
+                    const obj = r as Record<string, unknown>
+                    const receiptId = typeof obj.id === 'string' ? obj.id : null
+                    const primaryFileId = typeof obj.primary_file_id === 'string' ? obj.primary_file_id : null
+                    if (!receiptId || !primaryFileId || !receiptIdsToInsert.includes(receiptId)) continue
+
+                    // Only link if this file was imported (belongs to this user folder)
+                    const filePath = filesToInsert.find((f) => f.id === primaryFileId && f.receipt_id === receiptId)?.path
+                    if (!filePath) continue
+
+                    const { error } = await supabase
+                        .from('receipts')
+                        .update({ primary_file_id: primaryFileId })
+                        .eq('id', receiptId)
+
+                    if (error) {
+                        console.warn('Failed to link primary_file_id for receipt:', receiptId, error)
+                    }
+                }
+
+                // Link thumbnail files after file import
+                for (const r of rawReceipts) {
+                    if (!r || typeof r !== 'object') continue
+                    const obj = r as Record<string, unknown>
+                    const receiptId = typeof obj.id === 'string' ? obj.id : null
+                    const thumbnailFileId = typeof obj.thumbnail_file_id === 'string' ? obj.thumbnail_file_id : null
+                    if (!receiptId || !thumbnailFileId || !receiptIdsToInsert.includes(receiptId)) continue
+
+                    const filePath = filesToInsert.find((f) => f.id === thumbnailFileId && f.receipt_id === receiptId)?.path
+                    if (!filePath) continue
+
+                    const { error } = await supabase
+                        .from('receipts')
+                        .update({ thumbnail_file_id: thumbnailFileId })
+                        .eq('id', receiptId)
+
+                    if (error) {
+                        console.warn('Failed to link thumbnail_file_id for receipt:', receiptId, error)
+                    }
+                }
+
+                // Import receipt items (only for newly inserted receipts)
+                const rawItems = Array.isArray(backup.receipt_items) ? backup.receipt_items : []
+                const itemsToInsert = rawItems
+                    .filter((it) => it && typeof it === 'object')
+                    .map((it) => {
+                        const obj = it as Record<string, unknown>
+                        const receiptId = typeof obj.receipt_id === 'string' ? obj.receipt_id : null
+                        if (!receiptId || !receiptIdsToInsert.includes(receiptId)) return null
+
+                        return {
+                            receipt_id: receiptId,
+                            user_id: session.user.id,
+                            name: typeof obj.name === 'string' ? obj.name : '',
+                            quantity: typeof obj.quantity === 'number' ? obj.quantity : 1,
+                            unit_price: typeof obj.unit_price === 'number' ? obj.unit_price : 0,
+                            total_price: typeof obj.total_price === 'number' ? obj.total_price : 0,
+                        }
+                    })
+                    .filter(isNonNull)
+
+                if (itemsToInsert.length > 0) {
+                    const { error } = await supabase.from('receipt_items').insert(itemsToInsert)
+                    if (error) throw error
+                }
+            } else {
+                // Legacy backup (v1): map old column names and convert `image_url` (if present) into `receipt_files` metadata.
+                const rawReceipts = Array.isArray(backup.receipts) ? backup.receipts : []
+
+                for (const receipt of rawReceipts) {
+                    if (!receipt || typeof receipt !== 'object') continue
+                    const obj = receipt as Record<string, unknown>
+
+                    const id = typeof obj.id === 'string' ? obj.id : crypto.randomUUID()
+                    if (existingReceiptIds.has(id)) continue
+
+                    const totalAmount = typeof obj.total_amount === 'number'
+                        ? obj.total_amount
+                        : typeof obj.amount === 'number'
+                            ? obj.amount
+                            : null
+
+                    const purchaseDate = typeof obj.purchase_date === 'string'
+                        ? obj.purchase_date
+                        : typeof obj.receipt_date === 'string'
+                            ? obj.receipt_date
+                            : null
+
+                    const { error: insertError } = await supabase.from('receipts').insert({
+                        id,
+                        user_id: session.user.id,
+                        store_name: typeof obj.store_name === 'string' ? obj.store_name : null,
+                        purchase_date: purchaseDate,
+                        total_amount: totalAmount,
+                        notes: typeof obj.notes === 'string' ? obj.notes : null,
+                        category_id: null,
+                    })
+
+                    if (insertError) {
+                        console.warn('Failed to import legacy receipt:', insertError)
+                        continue
+                    }
+
+                    existingReceiptIds.add(id)
+
+                    const legacyImageUrl = typeof obj.image_url === 'string' ? obj.image_url : null
+                    const objectPath = legacyImageUrl ? extractReceiptsObjectPath(legacyImageUrl) : null
+
+                    if (objectPath && objectPath.startsWith(`${session.user.id}/`)) {
+                        const { data: fileRow, error: fileError } = await supabase
+                            .from('receipt_files')
+                            .insert({
+                                receipt_id: id,
+                                user_id: session.user.id,
+                                bucket_id: 'receipts',
+                                path: objectPath,
+                                kind: 'original',
+                                mime_type: null,
+                                size_bytes: null,
+                            })
+                            .select('id')
+                            .single()
+
+                        if (!fileError && fileRow?.id) {
+                            await supabase.from('receipts').update({ primary_file_id: fileRow.id }).eq('id', id)
+                        }
                     }
                 }
             }
 
             // Import preferences
-            if (data.preferences) {
-                if (data.preferences.theme) setTheme(data.preferences.theme)
-                if (data.preferences.currency) setCurrency(data.preferences.currency)
-                if (data.preferences.notifications) {
-                    Object.entries(data.preferences.notifications).forEach(([key, value]) => {
+            const rawPreferences = backup.preferences && typeof backup.preferences === 'object'
+                ? (backup.preferences as Record<string, unknown>)
+                : null
+
+            if (rawPreferences) {
+                if (rawPreferences.theme === 'light' || rawPreferences.theme === 'dark' || rawPreferences.theme === 'system') {
+                    setTheme(rawPreferences.theme)
+                }
+                if (typeof rawPreferences.currency === 'string') setCurrency(rawPreferences.currency)
+
+                const rawNotifications = rawPreferences.notifications && typeof rawPreferences.notifications === 'object'
+                    ? (rawPreferences.notifications as Record<string, unknown>)
+                    : null
+
+                if (rawNotifications) {
+                    Object.entries(rawNotifications).forEach(([key, value]) => {
                         updatePreference(key as keyof NotificationPreferences, value as boolean)
                     })
                 }

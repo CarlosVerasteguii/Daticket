@@ -12,6 +12,22 @@ import { cn } from '@/lib/utils'
 
 type ScanState = 'idle' | 'scanning' | 'success' | 'partial' | 'error'
 
+function getFileExtension(file: File): string {
+    const mime = file.type.toLowerCase()
+
+    if (mime === 'image/jpeg') return 'jpg'
+    if (mime === 'image/png') return 'png'
+    if (mime === 'image/webp') return 'webp'
+    if (mime === 'image/gif') return 'gif'
+    if (mime === 'image/heic') return 'heic'
+    if (mime === 'image/heif') return 'heif'
+
+    const fromName = file.name.split('.').pop()?.trim().toLowerCase()
+    if (fromName) return fromName
+
+    return 'jpg'
+}
+
 export default function ReceiptUpload() {
     const [isOpen, setIsOpen] = useState(false)
     const [file, setFile] = useState<File | null>(null)
@@ -133,36 +149,75 @@ export default function ReceiptUpload() {
         if (!file || !storeName || !amount) return
 
         setUploading(true)
+        let receiptId: string | null = null
+        let uploadedPath: string | null = null
+        let receiptFileId: string | null = null
         try {
             const { data: { user } } = await supabase.auth.getUser()
             if (!user) throw new Error('No autenticado')
 
-            const fileExt = file.name.split('.').pop()
-            const fileName = `${user.id}/${Date.now()}-${Math.random().toString(36).slice(2)}.${fileExt}`
-
-            const { error: uploadError } = await supabase.storage
-                .from('receipts')
-                .upload(fileName, file)
-            if (uploadError) throw uploadError
-
-            const { data: receiptData, error: dbError } = await supabase
+            const { data: receiptData, error: receiptError } = await supabase
                 .from('receipts')
                 .insert({
                     user_id: user.id,
                     store_name: storeName,
                     total_amount: parseFloat(amount),
-                    purchase_date: date,
-                    image_url: fileName,
+                    purchase_date: date || null,
                     category_id: categoryId
                 })
                 .select('id')
                 .single()
-            if (dbError) throw dbError
+            if (receiptError) throw receiptError
+            receiptId = receiptData.id
 
-            if (scannedItems.length > 0 && receiptData?.id) {
-                await supabase.from('receipt_items').insert(
+            const ext = getFileExtension(file)
+            uploadedPath = `${user.id}/${receiptId}/original-${Date.now()}.${ext}`
+
+            const { error: uploadError } = await supabase.storage
+                .from('receipts')
+                .upload(uploadedPath, file, { contentType: file.type || undefined })
+            if (uploadError) throw uploadError
+
+            const { data: receiptFile, error: fileError } = await supabase
+                .from('receipt_files')
+                .insert({
+                    receipt_id: receiptId,
+                    user_id: user.id,
+                    bucket_id: 'receipts',
+                    path: uploadedPath,
+                    kind: 'original',
+                    mime_type: file.type || null,
+                    size_bytes: file.size,
+                })
+                .select('id')
+                .single()
+            if (fileError) throw fileError
+            receiptFileId = receiptFile.id
+
+            const { error: linkError } = await supabase
+                .from('receipts')
+                .update({ primary_file_id: receiptFileId })
+                .eq('id', receiptId)
+            if (linkError) throw linkError
+
+            // Fire-and-forget: server-side thumbnail generation (best-effort).
+            const { data: { session } } = await supabase.auth.getSession()
+            const accessToken = session?.access_token
+
+            void supabase.functions
+                .invoke('generate-receipt-thumbnail-v3', {
+                    body: { receipt_id: receiptId, access_token: accessToken },
+                    headers: accessToken ? { authorization: `Bearer ${accessToken}` } : undefined,
+                })
+                .then(({ error }) => {
+                    if (error) console.warn('Thumbnail generation failed:', error)
+                })
+                .catch((err) => console.warn('Thumbnail generation failed:', err))
+
+            if (scannedItems.length > 0) {
+                const { error: itemsError } = await supabase.from('receipt_items').insert(
                     scannedItems.map(item => ({
-                        receipt_id: receiptData.id,
+                        receipt_id: receiptId,
                         user_id: user.id,
                         name: item.name,
                         quantity: item.quantity,
@@ -170,12 +225,26 @@ export default function ReceiptUpload() {
                         total_price: item.total_price
                     }))
                 )
+
+                if (itemsError) {
+                    console.warn('Failed to insert receipt items:', itemsError)
+                }
             }
 
             handleClose()
             router.push('/receipts')
             router.refresh()
         } catch (error) {
+            try {
+                if (receiptId) {
+                    await supabase.from('receipts').delete().eq('id', receiptId)
+                }
+                if (uploadedPath && !receiptFileId) {
+                    await supabase.storage.from('receipts').remove([uploadedPath])
+                }
+            } catch (cleanupError) {
+                console.warn('Receipt upload cleanup failed:', cleanupError)
+            }
             alert('Error: ' + (error instanceof Error ? error.message : 'Desconocido'))
         } finally {
             setUploading(false)
