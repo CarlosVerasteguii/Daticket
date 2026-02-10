@@ -37,7 +37,7 @@ export default function StoreAnalysisChart({ receipts, className }: StoreAnalysi
         const storeMap = new Map<string, { amount: number; count: number }>()
 
         receipts.forEach(receipt => {
-            const store = receipt.store_name || 'Unknown Store'
+            const store = receipt.store_name || 'Tienda desconocida'
             const amount = Number(receipt.total_amount) || 0
             
             if (storeMap.has(store)) {
@@ -73,15 +73,15 @@ export default function StoreAnalysisChart({ receipts, className }: StoreAnalysi
                 <div className="flex items-center gap-2 mb-4">
                     <Store className="h-4 w-4 text-foreground/40" />
                     <h3 className="font-bold text-sm uppercase tracking-wider text-foreground/60">
-                        Top Stores
+                        Tiendas principales
                     </h3>
                 </div>
                 <div className="flex flex-col items-center justify-center py-12 text-center">
                     <div className="h-16 w-16 bg-black/5 dark:bg-transparent border border-foreground/20 flex items-center justify-center mb-4">
                         <MapPin className="h-8 w-8 text-foreground/30" />
                     </div>
-                    <p className="text-foreground/60 text-sm">No store data</p>
-                    <p className="text-foreground/40 text-xs mt-1">Upload receipts to see analysis</p>
+                    <p className="text-foreground/60 text-sm">Sin datos de tiendas</p>
+                    <p className="text-foreground/40 text-xs mt-1">Sube recibos para ver el análisis</p>
                 </div>
             </div>
         )
@@ -92,10 +92,10 @@ export default function StoreAnalysisChart({ receipts, className }: StoreAnalysi
             <div className="flex items-center justify-between p-4 border-b border-foreground/20 bg-foreground/10">
                 <div className="flex items-center gap-2 text-foreground">
                     <Store className="h-4 w-4" />
-                    <h3 className="font-bold text-sm uppercase tracking-wider">Top Stores</h3>
+                    <h3 className="font-bold text-sm uppercase tracking-wider">Tiendas principales</h3>
                 </div>
                 <span className="text-xs text-foreground/60 font-mono">
-                    {storeData.length} stores
+                    {storeData.length} tiendas
                 </span>
             </div>
             
@@ -125,7 +125,7 @@ export default function StoreAnalysisChart({ receipts, className }: StoreAnalysi
                                     </div>
                                     <div className="flex items-center gap-4 flex-shrink-0">
                                         <span className="text-xs text-foreground/60">
-                                            {store.receiptCount} visit{store.receiptCount !== 1 ? 's' : ''}
+                                            {store.receiptCount} visita{store.receiptCount !== 1 ? 's' : ''}
                                         </span>
                                         <span className="font-bold font-mono text-sm min-w-[80px] text-right text-foreground">
                                             ${store.totalAmount.toFixed(2)}
@@ -156,9 +156,9 @@ export default function StoreAnalysisChart({ receipts, className }: StoreAnalysi
                     <table className="w-full text-sm">
                         <thead>
                             <tr className="border-b border-foreground/20">
-                                <th className="text-left py-2 font-bold text-xs uppercase tracking-wider text-foreground/60">Store</th>
-                                <th className="text-right py-2 font-bold text-xs uppercase tracking-wider text-foreground/60">Avg/Visit</th>
-                                <th className="text-right py-2 font-bold text-xs uppercase tracking-wider text-foreground/60">% Share</th>
+                                <th className="text-left py-2 font-bold text-xs uppercase tracking-wider text-foreground/60">Tienda</th>
+                                <th className="text-right py-2 font-bold text-xs uppercase tracking-wider text-foreground/60">Prom./visita</th>
+                                <th className="text-right py-2 font-bold text-xs uppercase tracking-wider text-foreground/60">% participación</th>
                             </tr>
                         </thead>
                         <tbody>

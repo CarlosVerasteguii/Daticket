@@ -472,16 +472,16 @@ export default function SettingsPage() {
     }
 
     const themeOptions = [
-        { value: 'light' as const, label: 'Light', icon: Sun },
-        { value: 'dark' as const, label: 'Dark', icon: Moon },
-        { value: 'system' as const, label: 'System', icon: Monitor },
+        { value: 'light' as const, label: 'Claro', icon: Sun },
+        { value: 'dark' as const, label: 'Oscuro', icon: Moon },
+        { value: 'system' as const, label: 'Sistema', icon: Monitor },
     ]
 
     const notificationOptions: { key: keyof NotificationPreferences; label: string; description: string; icon: LucideIcon }[] = [
-        { key: 'emailDigest', label: 'Email Digest', description: 'Daily summary of receipts', icon: Mail },
-        { key: 'spendingAlerts', label: 'Spending Alerts', description: 'When expenses exceed threshold', icon: TrendingUp },
-        { key: 'weeklyReports', label: 'Weekly Reports', description: 'Sunday expense summary', icon: Calendar },
-        { key: 'budgetWarnings', label: 'Budget Warnings', description: 'Alert when nearing budget limit', icon: AlertTriangle },
+        { key: 'emailDigest', label: 'Resumen por correo', description: 'Resumen diario de recibos', icon: Mail },
+        { key: 'spendingAlerts', label: 'Alertas de gasto', description: 'Cuando los gastos superan el umbral', icon: TrendingUp },
+        { key: 'weeklyReports', label: 'Reportes semanales', description: 'Resumen semanal (domingo)', icon: Calendar },
+        { key: 'budgetWarnings', label: 'Avisos de presupuesto', description: 'Alerta al acercarte al límite', icon: AlertTriangle },
     ]
 
     const enabledCount = Object.values(preferences).filter(Boolean).length
@@ -522,8 +522,8 @@ export default function SettingsPage() {
         <DashboardShell>
             {/* Header */}
             <div className="p-6 border-b border-black dark:border-neutral-700 bg-white dark:bg-neutral-900">
-                <h1 className="text-3xl font-bold tracking-tighter">Settings</h1>
-                <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-1">Configure your preferences</p>
+                <h1 className="text-3xl font-bold tracking-tighter">Ajustes</h1>
+                <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-1">Configura tus preferencias</p>
             </div>
 
             {/* Main Content */}
@@ -532,18 +532,18 @@ export default function SettingsPage() {
                 <div className="border border-black dark:border-neutral-700 bg-white dark:bg-neutral-900">
                     <div className="p-4 border-b border-black dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 flex items-center gap-3">
                         <SettingsIcon className="h-5 w-5" />
-                        <h2 className="font-bold uppercase text-sm tracking-wider">Preferences</h2>
+                        <h2 className="font-bold uppercase text-sm tracking-wider">Preferencias</h2>
                     </div>
 
                     {/* Notifications Toggle */}
                     <div className="relative">
                         <SettingRow
                             icon={Bell}
-                            title="Notifications"
-                            description="Email alerts and spending notifications"
+                            title="Notificaciones"
+                            description="Alertas por correo y notificaciones de gasto"
                             action={
                                 <span className="text-sm font-mono text-neutral-500 dark:text-neutral-400">
-                                    {enabledCount}/{notificationOptions.length} enabled
+                                    {enabledCount}/{notificationOptions.length} activadas
                                 </span>
                             }
                             onClick={() => setShowNotificationMenu(!showNotificationMenu)}
@@ -604,11 +604,11 @@ export default function SettingsPage() {
                     <div className="relative">
                         <SettingRow
                             icon={resolvedTheme === 'dark' ? Moon : Sun}
-                            title="Appearance"
-                            description="Theme and display settings"
+                            title="Apariencia"
+                            description="Tema y ajustes de pantalla"
                             action={
                                 <span className="text-sm font-mono text-neutral-500 dark:text-neutral-400 capitalize">
-                                    {theme}
+                                    {themeOptions.find((option) => option.value === theme)?.label ?? theme}
                                 </span>
                             }
                             onClick={() => setShowThemeMenu(!showThemeMenu)}
@@ -651,8 +651,8 @@ export default function SettingsPage() {
                     <div className="relative">
                         <SettingRow
                             icon={DollarSign}
-                            title="Currency"
-                            description="Display format for amounts"
+                            title="Moneda"
+                            description="Formato para mostrar importes"
                             action={
                                 <span className="text-sm font-mono text-neutral-500 dark:text-neutral-400">
                                     {currency.code} ({currency.symbol})
@@ -697,9 +697,9 @@ export default function SettingsPage() {
 
                     <SettingRow
                         icon={Globe}
-                        title="Language"
-                        description="Interface language"
-                        action={<span className="text-sm font-mono text-neutral-500 dark:text-neutral-400">English</span>}
+                        title="Idioma"
+                        description="Idioma de la interfaz"
+                        action={<span className="text-sm font-mono text-neutral-500 dark:text-neutral-400">Español</span>}
                     />
                 </div>
 
@@ -707,14 +707,14 @@ export default function SettingsPage() {
                 <div className="border border-black dark:border-neutral-700 bg-white dark:bg-neutral-900">
                     <div className="p-4 border-b border-black dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 flex items-center gap-3">
                         <Lock className="h-5 w-5" />
-                        <h2 className="font-bold uppercase text-sm tracking-wider">Security</h2>
+                        <h2 className="font-bold uppercase text-sm tracking-wider">Seguridad</h2>
                     </div>
 
                     <div className="p-4">
                         <div className="mb-4">
-                            <h3 className="font-bold text-sm mb-1">Active Sessions</h3>
+                            <h3 className="font-bold text-sm mb-1">Sesiones activas</h3>
                             <p className="text-xs text-neutral-500 dark:text-neutral-400">
-                                View and manage devices where you&apos;re currently logged in
+                                Ve y administra los dispositivos donde tienes una sesión iniciada
                             </p>
                         </div>
                         <SessionsList />
@@ -729,7 +729,7 @@ export default function SettingsPage() {
                 <div className="border border-black dark:border-neutral-700 bg-white dark:bg-neutral-900">
                     <div className="p-4 border-b border-black dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 flex items-center gap-3">
                         <Database className="h-5 w-5" />
-                        <h2 className="font-bold uppercase text-sm tracking-wider">Data & Storage</h2>
+                        <h2 className="font-bold uppercase text-sm tracking-wider">Datos y almacenamiento</h2>
                     </div>
 
                     <div className="flex items-center justify-between p-4 border-b border-black dark:border-neutral-700 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors">
@@ -738,8 +738,8 @@ export default function SettingsPage() {
                                 <Download className="h-5 w-5" />
                             </div>
                             <div>
-                                <p className="font-bold">Export Data</p>
-                                <p className="text-sm text-neutral-500 dark:text-neutral-400">Download all receipts as JSON backup</p>
+                                <p className="font-bold">Exportar datos</p>
+                                <p className="text-sm text-neutral-500 dark:text-neutral-400">Descarga todos tus recibos en un respaldo JSON</p>
                             </div>
                         </div>
                         <button 
@@ -752,9 +752,9 @@ export default function SettingsPage() {
                                 exportStatus === 'done' && "bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300"
                             )}
                         >
-                            {exportStatus === 'idle' && 'Export JSON'}
-                            {exportStatus === 'exporting' && 'Exporting...'}
-                            {exportStatus === 'done' && '✓ Downloaded'}
+                            {exportStatus === 'idle' && 'Exportar JSON'}
+                            {exportStatus === 'exporting' && 'Exportando...'}
+                            {exportStatus === 'done' && '✓ Descargado'}
                         </button>
                     </div>
 
@@ -764,8 +764,8 @@ export default function SettingsPage() {
                                 <Upload className="h-5 w-5" />
                             </div>
                             <div>
-                                <p className="font-bold">Import Data</p>
-                                <p className="text-sm text-neutral-500 dark:text-neutral-400">Restore from JSON backup file</p>
+                                <p className="font-bold">Importar datos</p>
+                                <p className="text-sm text-neutral-500 dark:text-neutral-400">Restaura desde un archivo de respaldo JSON</p>
                             </div>
                         </div>
                         <div>
@@ -787,10 +787,10 @@ export default function SettingsPage() {
                                     importStatus === 'error' && "bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300"
                                 )}
                             >
-                                {importStatus === 'idle' && 'Import JSON'}
-                                {importStatus === 'importing' && 'Importing...'}
-                                {importStatus === 'done' && '✓ Imported'}
-                                {importStatus === 'error' && '✗ Failed'}
+                                {importStatus === 'idle' && 'Importar JSON'}
+                                {importStatus === 'importing' && 'Importando...'}
+                                {importStatus === 'done' && '✓ Importado'}
+                                {importStatus === 'error' && '✗ Falló'}
                             </label>
                         </div>
                     </div>
@@ -800,7 +800,7 @@ export default function SettingsPage() {
                 <div className="border border-red-500 dark:border-red-700 bg-white dark:bg-neutral-900">
                     <div className="p-4 border-b border-red-500 dark:border-red-700 bg-red-50 dark:bg-red-900/20 flex items-center gap-3">
                         <AlertCircle className="h-5 w-5 text-red-600 dark:text-red-400" />
-                        <h2 className="font-bold uppercase text-sm tracking-wider text-red-600 dark:text-red-400">Danger Zone</h2>
+                        <h2 className="font-bold uppercase text-sm tracking-wider text-red-600 dark:text-red-400">Zona de peligro</h2>
                     </div>
 
                     <div className="flex items-center justify-between p-4">
@@ -809,24 +809,24 @@ export default function SettingsPage() {
                                 <Trash2 className="h-5 w-5 text-red-600 dark:text-red-400" />
                             </div>
                             <div>
-                                <p className="font-bold text-red-600 dark:text-red-400">Delete Account</p>
-                                <p className="text-sm text-red-500/70 dark:text-red-400/70">Permanently delete your account and all data</p>
+                                <p className="font-bold text-red-600 dark:text-red-400">Eliminar cuenta</p>
+                                <p className="text-sm text-red-500/70 dark:text-red-400/70">Elimina tu cuenta y todos tus datos permanentemente</p>
                             </div>
                         </div>
                         <button 
                             onClick={() => setShowDeleteModal(true)}
                             className="px-4 py-2 bg-red-600 text-white text-xs font-bold hover:bg-red-700 transition-colors"
                         >
-                            Delete Account
+                            Eliminar cuenta
                         </button>
                     </div>
                 </div>
 
                 {/* Info */}
                 <div className="border border-black dark:border-neutral-700 bg-white dark:bg-neutral-900 p-6">
-                    <p className="text-xs font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-400 mb-2">App Version</p>
+                    <p className="text-xs font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-400 mb-2">Versión de la app</p>
                     <p className="font-mono">Daticket v1.0.0</p>
-                    <p className="text-xs text-neutral-400 mt-2">Swiss International Edition</p>
+                    <p className="text-xs text-neutral-400 mt-2">Edición Internacional Suiza</p>
                 </div>
             </div>
 
@@ -852,32 +852,32 @@ export default function SettingsPage() {
                                     <AlertCircle className="h-6 w-6 text-red-600" />
                                 </div>
                                 <div>
-                                    <h3 className="font-bold text-lg">Delete Account</h3>
-                                    <p className="text-sm text-neutral-500">This action cannot be undone</p>
+                                    <h3 className="font-bold text-lg">Eliminar cuenta</h3>
+                                    <p className="text-sm text-neutral-500">Esta acción no se puede deshacer</p>
                                 </div>
                             </div>
 
                             <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 p-4 mb-4">
                                 <p className="text-sm text-red-700 dark:text-red-300">
-                                    <strong>Warning:</strong> This will permanently delete:
+                                    <strong>Advertencia:</strong> Esto eliminará permanentemente:
                                 </p>
                                 <ul className="text-sm text-red-600 dark:text-red-400 mt-2 space-y-1 list-disc list-inside">
-                                    <li>All your receipts and images</li>
-                                    <li>All your categories</li>
-                                    <li>All your preferences and settings</li>
-                                    <li>Your account and login credentials</li>
+                                    <li>Todos tus recibos e imágenes</li>
+                                    <li>Todas tus categorías</li>
+                                    <li>Todas tus preferencias y ajustes</li>
+                                    <li>Tu cuenta y credenciales de acceso</li>
                                 </ul>
                             </div>
 
                             <div className="mb-4">
                                 <label className="block text-sm font-medium mb-2">
-                                    Type <span className="font-mono font-bold">DELETE</span> to confirm:
+                                    Escribe <span className="font-mono font-bold">ELIMINAR</span> para confirmar:
                                 </label>
                                 <input
                                     type="text"
                                     value={deleteConfirmation}
                                     onChange={(e) => setDeleteConfirmation(e.target.value)}
-                                    placeholder="DELETE"
+                                    placeholder="ELIMINAR"
                                     className="w-full px-4 py-2 border border-black dark:border-neutral-700 bg-white dark:bg-neutral-800 font-mono"
                                 />
                             </div>
@@ -891,22 +891,22 @@ export default function SettingsPage() {
                                     }}
                                     className="flex-1 px-4 py-2 border border-black dark:border-neutral-700 font-bold hover:bg-neutral-100 dark:hover:bg-neutral-800"
                                 >
-                                    Cancel
+                                    Cancelar
                                 </button>
                                 <button
                                     onClick={handleDeleteAccount}
-                                    disabled={deleteConfirmation !== 'DELETE' || deleteStatus === 'deleting'}
+                                    disabled={deleteConfirmation !== 'ELIMINAR' || deleteStatus === 'deleting'}
                                     className={cn(
                                         "flex-1 px-4 py-2 font-bold text-white transition-colors",
-                                        deleteConfirmation === 'DELETE' 
+                                        deleteConfirmation === 'ELIMINAR' 
                                             ? "bg-red-600 hover:bg-red-700" 
                                             : "bg-neutral-300 dark:bg-neutral-700 cursor-not-allowed",
                                         deleteStatus === 'deleting' && "cursor-wait"
                                     )}
                                 >
-                                    {deleteStatus === 'idle' && 'Delete Forever'}
-                                    {deleteStatus === 'deleting' && 'Deleting...'}
-                                    {deleteStatus === 'error' && 'Error - Try Again'}
+                                    {deleteStatus === 'idle' && 'Eliminar definitivamente'}
+                                    {deleteStatus === 'deleting' && 'Eliminando...'}
+                                    {deleteStatus === 'error' && 'Error - Intenta de nuevo'}
                                 </button>
                             </div>
                         </motion.div>

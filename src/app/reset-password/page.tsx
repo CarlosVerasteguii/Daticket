@@ -13,12 +13,12 @@ import { cn } from '@/lib/utils'
 const resetPasswordSchema = z.object({
     password: z
         .string()
-        .min(8, 'Password must be at least 8 characters')
-        .regex(/\d/, 'Password must contain at least one number')
-        .regex(/[A-Z]/, 'Password must contain at least one uppercase letter'),
+        .min(8, 'La contraseña debe tener al menos 8 caracteres')
+        .regex(/\d/, 'La contraseña debe incluir al menos un número')
+        .regex(/[A-Z]/, 'La contraseña debe incluir al menos una letra mayúscula'),
     confirmPassword: z.string(),
 }).refine((data) => data.password === data.confirmPassword, {
-    message: "Passwords don't match",
+    message: 'Las contraseñas no coinciden',
     path: ['confirmPassword'],
 })
 
@@ -30,9 +30,9 @@ interface PasswordRequirement {
 }
 
 const PASSWORD_REQUIREMENTS: PasswordRequirement[] = [
-    { label: 'At least 8 characters', test: (p) => p.length >= 8 },
-    { label: 'At least one number', test: (p) => /\d/.test(p) },
-    { label: 'At least one uppercase letter', test: (p) => /[A-Z]/.test(p) },
+    { label: 'Al menos 8 caracteres', test: (p) => p.length >= 8 },
+    { label: 'Al menos un número', test: (p) => /\d/.test(p) },
+    { label: 'Al menos una letra mayúscula', test: (p) => /[A-Z]/.test(p) },
 ]
 
 function ResetPasswordForm() {
@@ -96,7 +96,7 @@ function ResetPasswordForm() {
                 router.push('/login?reset=success')
             }, 2000)
         } catch (err: unknown) {
-            const errorMessage = err instanceof Error ? err.message : 'Failed to reset password'
+            const errorMessage = err instanceof Error ? err.message : 'No se pudo restablecer la contraseña'
             setError(errorMessage)
         } finally {
             setIsLoading(false)
@@ -112,7 +112,7 @@ function ResetPasswordForm() {
                         <Loader2 className="h-8 w-8 animate-spin" />
                     </div>
                     <p className="text-center text-sm text-neutral-600">
-                        Verifying reset link...
+                        Verificando enlace...
                     </p>
                 </div>
             </main>
@@ -129,10 +129,10 @@ function ResetPasswordForm() {
                             <AlertTriangle className="h-8 w-8 text-orange-600" />
                         </div>
                         <h1 className="text-2xl font-bold tracking-tighter text-black">
-                            Invalid or Expired Link
+                            Enlace inválido o expirado
                         </h1>
                         <p className="mt-4 text-sm text-neutral-600">
-                            This password reset link is invalid or has expired. Please request a new one.
+                            Este enlace para restablecer contraseña es inválido o ya expiró. Solicita uno nuevo.
                         </p>
                     </div>
 
@@ -140,7 +140,7 @@ function ResetPasswordForm() {
                         href="/forgot-password"
                         className="flex w-full justify-center border border-black bg-black px-4 py-3 text-sm font-bold uppercase tracking-wider text-white hover:bg-neutral-800 transition-all"
                     >
-                        Request New Link
+                        Solicitar nuevo enlace
                     </Link>
                 </div>
             </main>
@@ -157,10 +157,10 @@ function ResetPasswordForm() {
                             <Check className="h-8 w-8 text-green-600" />
                         </div>
                         <h1 className="text-2xl font-bold tracking-tighter text-black">
-                            Password Updated!
+                            ¡Contraseña actualizada!
                         </h1>
                         <p className="mt-4 text-sm text-neutral-600">
-                            Your password has been successfully reset. Redirecting to login...
+                            Tu contraseña se restableció correctamente. Redirigiendo a iniciar sesión...
                         </p>
                     </div>
                     <div className="flex justify-center">
@@ -179,10 +179,10 @@ function ResetPasswordForm() {
                         <KeyRound className="h-8 w-8" />
                     </div>
                     <h1 className="text-2xl font-bold tracking-tighter text-black">
-                        Reset Your Password
+                        Restablecer contraseña
                     </h1>
                     <p className="mt-2 text-sm text-neutral-600">
-                        Enter your new password below
+                        Ingresa tu nueva contraseña
                     </p>
                 </div>
 
@@ -195,7 +195,7 @@ function ResetPasswordForm() {
                 <form className="mt-8 space-y-6" onSubmit={handleSubmit(onSubmit)}>
                     <div>
                         <label htmlFor="password" className="block text-xs font-bold uppercase tracking-wider text-black mb-2">
-                            New Password
+                            Nueva contraseña
                         </label>
                         <div className="relative">
                             <input
@@ -245,7 +245,7 @@ function ResetPasswordForm() {
 
                     <div>
                         <label htmlFor="confirmPassword" className="block text-xs font-bold uppercase tracking-wider text-black mb-2">
-                            Confirm New Password
+                            Confirmar nueva contraseña
                         </label>
                         <div className="relative">
                             <input
@@ -277,10 +277,10 @@ function ResetPasswordForm() {
                             {isLoading ? (
                                 <>
                                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                    Resetting...
+                                    Restableciendo...
                                 </>
                             ) : (
-                                'Reset Password'
+                                'Restablecer contraseña'
                             )}
                         </button>
                     </div>

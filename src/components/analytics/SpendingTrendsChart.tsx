@@ -41,7 +41,7 @@ export default function SpendingTrendsChart({ receipts, period, className }: Spe
             case 'week':
                 groupBy = 'day'
                 numPoints = 7
-                labelFormat = (d) => d.toLocaleDateString('en-US', { weekday: 'short' })
+                labelFormat = (d) => d.toLocaleDateString('es-MX', { weekday: 'short' })
                 break
             case 'month':
                 groupBy = 'day'
@@ -56,7 +56,7 @@ export default function SpendingTrendsChart({ receipts, period, className }: Spe
             case 'year':
                 groupBy = 'month'
                 numPoints = 12
-                labelFormat = (d) => d.toLocaleDateString('en-US', { month: 'short' })
+                labelFormat = (d) => d.toLocaleDateString('es-MX', { month: 'short' })
                 break
         }
 
@@ -121,15 +121,15 @@ export default function SpendingTrendsChart({ receipts, period, className }: Spe
                 <div className="flex items-center gap-2 mb-4">
                     <TrendingUp className="h-4 w-4 text-foreground/40" />
                     <h3 className="font-bold text-sm uppercase tracking-wider text-foreground/60">
-                        Spending Trends
+                        Tendencias de gasto
                     </h3>
                 </div>
                 <div className="flex flex-col items-center justify-center py-12 text-center">
                     <div className="h-16 w-16 bg-black/5 dark:bg-transparent border border-foreground/20 flex items-center justify-center mb-4">
                         <TrendingUp className="h-8 w-8 text-foreground/30" />
                     </div>
-                    <p className="text-foreground/60 text-sm">No spending data</p>
-                    <p className="text-foreground/40 text-xs mt-1">Upload receipts to see trends</p>
+                    <p className="text-foreground/60 text-sm">Sin datos de gasto</p>
+                    <p className="text-foreground/40 text-xs mt-1">Sube recibos para ver tendencias</p>
                 </div>
             </div>
         )
@@ -167,7 +167,7 @@ export default function SpendingTrendsChart({ receipts, period, className }: Spe
             <div className="flex items-center justify-between p-4 border-b border-foreground/20 bg-foreground/10">
                 <div className="flex items-center gap-2 text-foreground">
                     <TrendingUp className="h-4 w-4" />
-                    <h3 className="font-bold text-sm uppercase tracking-wider">Spending Trends</h3>
+                    <h3 className="font-bold text-sm uppercase tracking-wider">Tendencias de gasto</h3>
                 </div>
                 <div className={cn(
                     "flex items-center gap-1 text-xs font-bold px-2 py-1",
@@ -256,15 +256,15 @@ export default function SpendingTrendsChart({ receipts, period, className }: Spe
                 {/* Stats */}
                 <div className="mt-4 pt-4 border-t border-neutral-200 grid grid-cols-3 gap-4 text-center">
                     <div>
-                        <p className="text-xs text-neutral-500 uppercase tracking-wider">Avg/Period</p>
+                        <p className="text-xs text-neutral-500 uppercase tracking-wider">Prom./periodo</p>
                         <p className="font-bold font-mono">${avgAmount.toFixed(0)}</p>
                     </div>
                     <div>
-                        <p className="text-xs text-neutral-500 uppercase tracking-wider">Highest</p>
+                        <p className="text-xs text-neutral-500 uppercase tracking-wider">Máximo</p>
                         <p className="font-bold font-mono">${maxAmount.toFixed(0)}</p>
                     </div>
                     <div>
-                        <p className="text-xs text-neutral-500 uppercase tracking-wider">Data Points</p>
+                        <p className="text-xs text-neutral-500 uppercase tracking-wider">Puntos</p>
                         <p className="font-bold font-mono">{dataPoints.length}</p>
                     </div>
                 </div>

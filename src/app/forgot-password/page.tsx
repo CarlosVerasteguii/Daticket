@@ -9,7 +9,7 @@ import Link from 'next/link'
 import { Loader2, ArrowLeft, Mail, Check } from 'lucide-react'
 
 const forgotPasswordSchema = z.object({
-    email: z.string().email('Please enter a valid email address'),
+    email: z.string().email('Ingresa un correo electrónico válido'),
 })
 
 type ForgotPasswordFormData = z.infer<typeof forgotPasswordSchema>
@@ -48,7 +48,7 @@ export default function ForgotPasswordPage() {
             setSubmittedEmail(data.email)
             setEmailSent(true)
         } catch (err: unknown) {
-            const errorMessage = err instanceof Error ? err.message : 'Failed to send reset email'
+            const errorMessage = err instanceof Error ? err.message : 'No se pudo enviar el correo de restablecimiento'
             setError(errorMessage)
         } finally {
             setIsLoading(false)
@@ -64,10 +64,10 @@ export default function ForgotPasswordPage() {
                             <Check className="h-8 w-8 text-green-600" />
                         </div>
                         <h1 className="text-2xl font-bold tracking-tighter text-black">
-                            Check Your Email
+                            Revisa tu correo
                         </h1>
                         <p className="mt-4 text-sm text-neutral-600">
-                            We sent a password reset link to:
+                            Enviamos un enlace para restablecer tu contraseña a:
                         </p>
                         <p className="mt-2 font-bold text-black">
                             {submittedEmail}
@@ -76,12 +76,12 @@ export default function ForgotPasswordPage() {
 
                     <div className="border border-neutral-200 bg-neutral-50 p-4 text-sm text-neutral-600">
                         <p className="mb-2">
-                            <strong>Didn&apos;t receive the email?</strong>
+                            <strong>¿No recibiste el correo?</strong>
                         </p>
                         <ul className="list-disc list-inside space-y-1 text-xs">
-                            <li>Check your spam folder</li>
-                            <li>Make sure you entered the correct email</li>
-                            <li>Wait a few minutes and try again</li>
+                            <li>Revisa la carpeta de spam</li>
+                            <li>Verifica que el correo sea correcto</li>
+                            <li>Espera unos minutos e inténtalo de nuevo</li>
                         </ul>
                     </div>
 
@@ -93,14 +93,14 @@ export default function ForgotPasswordPage() {
                             }}
                             className="flex w-full justify-center border border-black bg-black px-4 py-3 text-sm font-bold uppercase tracking-wider text-white hover:bg-neutral-800 transition-all"
                         >
-                            Try Another Email
+                            Probar otro correo
                         </button>
                         <Link
                             href="/login"
                             className="flex w-full justify-center items-center gap-2 border border-black bg-white px-4 py-3 text-sm font-bold uppercase tracking-wider text-black hover:bg-neutral-100 transition-all"
                         >
                             <ArrowLeft className="h-4 w-4" />
-                            Back to Login
+                            Volver a iniciar sesión
                         </Link>
                     </div>
                 </div>
@@ -116,10 +116,10 @@ export default function ForgotPasswordPage() {
                         <Mail className="h-8 w-8" />
                     </div>
                     <h1 className="text-2xl font-bold tracking-tighter text-black">
-                        Forgot Password?
+                        ¿Olvidaste tu contraseña?
                     </h1>
                     <p className="mt-2 text-sm text-neutral-600">
-                        Enter your email and we&apos;ll send you a reset link
+                        Ingresa tu correo y te enviaremos un enlace de restablecimiento
                     </p>
                 </div>
 
@@ -132,7 +132,7 @@ export default function ForgotPasswordPage() {
                 <form className="mt-8 space-y-6" onSubmit={handleSubmit(onSubmit)}>
                     <div>
                         <label htmlFor="email" className="block text-xs font-bold uppercase tracking-wider text-black mb-2">
-                            Email address
+                            Correo electrónico
                         </label>
                         <input
                             id="email"
@@ -156,10 +156,10 @@ export default function ForgotPasswordPage() {
                             {isLoading ? (
                                 <>
                                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                    Sending...
+                                    Enviando...
                                 </>
                             ) : (
-                                'Send Reset Link'
+                                'Enviar enlace'
                             )}
                         </button>
                     </div>
@@ -167,7 +167,7 @@ export default function ForgotPasswordPage() {
                     <div className="text-center text-sm">
                         <Link href="/login" className="flex items-center justify-center gap-2 font-bold text-neutral-600 hover:text-black transition-colors">
                             <ArrowLeft className="h-4 w-4" />
-                            Back to Login
+                            Volver a iniciar sesión
                         </Link>
                     </div>
                 </form>

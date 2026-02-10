@@ -112,7 +112,7 @@ export default function ReceiptList() {
                             : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                             }`}
                     >
-                        All
+                        Todas
                     </button>
                     {categories.map(cat => (
                         <button
@@ -132,10 +132,10 @@ export default function ReceiptList() {
             {filteredReceipts.length === 0 ? (
                 <div className="text-center py-12 bg-white rounded-lg border-2 border-dashed border-gray-300">
                     <h3 className="mt-2 text-sm font-medium text-gray-900">
-                        {selectedCategory ? 'No receipts in this category' : 'No receipts'}
+                        {selectedCategory ? 'No hay recibos en esta categoría' : 'No hay recibos'}
                     </h3>
                     <p className="mt-1 text-sm text-gray-500">
-                        {selectedCategory ? 'Try selecting a different category.' : 'Get started by uploading your first receipt.'}
+                        {selectedCategory ? 'Prueba seleccionando otra categoría.' : 'Empieza subiendo tu primer recibo.'}
                     </p>
                     {!selectedCategory && (
                         <div className="mt-6">
@@ -144,7 +144,7 @@ export default function ReceiptList() {
                                 className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                             >
                                 <Plus className="-ml-1 mr-2 h-5 w-5" aria-hidden="true" />
-                                Upload Receipt
+                                Subir recibo
                             </Link>
                         </div>
                     )}
@@ -167,10 +167,10 @@ export default function ReceiptList() {
                                 <div className="flex justify-between items-start">
                                     <div>
                                         <h3 className="text-lg font-medium text-gray-900 truncate flex items-center">
-                                            <Store className="w-4 h-4 mr-1 text-gray-400" /> {receipt.store_name || 'Unknown'}
+                                            <Store className="w-4 h-4 mr-1 text-gray-400" /> {receipt.store_name || 'Desconocida'}
                                         </h3>
                                         <p className="text-sm text-gray-500 flex items-center mt-1">
-                                            <Calendar className="w-3 h-3 mr-1" /> {receipt.purchase_date || 'N/A'}
+                                            <Calendar className="w-3 h-3 mr-1" /> {receipt.purchase_date || 'N/D'}
                                         </p>
                                         {(() => {
                                             const cat = getCategory(receipt.categories)
@@ -219,7 +219,7 @@ function StorageImage({ path, alt }: { path: string | null, alt: string | null }
         getUrl()
     }, [path, supabase])
 
-    if (!src) return <div className="h-full w-full flex items-center justify-center text-gray-400 bg-gray-100">Loading...</div>
+    if (!src) return <div className="h-full w-full flex items-center justify-center text-gray-400 bg-gray-100">Cargando...</div>
 
-    return <Image src={src} alt={alt || 'Receipt'} fill className="object-cover" />
+    return <Image src={src} alt={alt || 'Recibo'} fill className="object-cover" />
 }

@@ -85,7 +85,7 @@ export default function ReceiptDetailPage({ params }: { params: Promise<{ id: st
 
             if (error) {
                 console.error('Error fetching receipt:', error)
-                showToast('error', 'Failed to load receipt. Please try again.')
+                showToast('error', 'No se pudo cargar el recibo. Intenta de nuevo.')
                 setLoading(false)
                 return
             }
@@ -144,21 +144,21 @@ export default function ReceiptDetailPage({ params }: { params: Promise<{ id: st
             if (error) {
                 // Revert: Go back and show error
                 router.back()
-                showToast('error', 'Failed to save. Please try again.')
+                showToast('error', 'No se pudo guardar. Intenta de nuevo.')
             }
         } catch {
             router.back()
-            showToast('error', 'Network error. Please try again.')
+            showToast('error', 'Error de red. Intenta de nuevo.')
         }
         setSaving(false)
     }
 
     const handleDelete = async () => {
-        if (!confirm('Are you sure you want to delete this receipt? This cannot be undone.')) return
+        if (!confirm('¿Seguro que quieres eliminar este recibo? Esto no se puede deshacer.')) return
 
         // Optimistic update: Navigate immediately
         setDeleting(true)
-        showToast('success', 'Receipt deleted')
+        showToast('success', 'Recibo eliminado')
         router.push('/receipts')
         
         // Background delete
@@ -169,13 +169,13 @@ export default function ReceiptDetailPage({ params }: { params: Promise<{ id: st
                 .eq('id', id)
 
             if (dbError) {
-                showToast('error', 'Failed to delete. Please try again.')
+                showToast('error', 'No se pudo eliminar. Intenta de nuevo.')
                 return
             }
 
             router.refresh()
         } catch {
-            showToast('error', 'Network error during delete.')
+            showToast('error', 'Error de red al eliminar.')
         }
     }
 
@@ -193,8 +193,8 @@ export default function ReceiptDetailPage({ params }: { params: Promise<{ id: st
         return (
             <DashboardShell>
                 <div className="flex flex-col items-center justify-center h-96">
-                    <p className="text-lg font-bold mb-4">Receipt not found</p>
-                    <Link href="/receipts" className="underline">Back to Receipts</Link>
+                    <p className="text-lg font-bold mb-4">Recibo no encontrado</p>
+                    <Link href="/receipts" className="underline">Volver a recibos</Link>
                 </div>
             </DashboardShell>
         )
@@ -209,7 +209,7 @@ export default function ReceiptDetailPage({ params }: { params: Promise<{ id: st
                         <ArrowLeft className="h-5 w-5" />
                     </Link>
                     <div>
-                        <h1 className="text-2xl font-bold tracking-tighter">Edit Receipt</h1>
+                        <h1 className="text-2xl font-bold tracking-tighter">Editar recibo</h1>
                         <p className="text-xs text-neutral-500 font-mono mt-1">ID: {id.slice(0, 8)}...</p>
                     </div>
                 </div>
@@ -220,7 +220,7 @@ export default function ReceiptDetailPage({ params }: { params: Promise<{ id: st
                         className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white font-bold hover:bg-blue-700 border border-black disabled:opacity-50"
                     >
                         <Save className="h-4 w-4" />
-                        {saving ? 'Saving...' : 'Save Changes'}
+                        {saving ? 'Guardando...' : 'Guardar cambios'}
                     </button>
                     <button
                         onClick={handleDelete}
@@ -240,14 +240,14 @@ export default function ReceiptDetailPage({ params }: { params: Promise<{ id: st
                         <div className="relative w-full h-[600px] max-w-[560px] shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
                             <Image
                                 src={imageUrl}
-                                alt="Receipt"
+                                alt="Recibo"
                                 fill
                                 sizes="(max-width: 1024px) 100vw, 50vw"
                                 className="object-contain"
                             />
                         </div>
                     ) : (
-                        <div className="text-neutral-400">No Image Available</div>
+                        <div className="text-neutral-400">Sin imagen</div>
                     )}
                 </div>
 
@@ -255,20 +255,20 @@ export default function ReceiptDetailPage({ params }: { params: Promise<{ id: st
                 <div className="bg-white p-8">
                     <h2 className="text-lg font-bold uppercase tracking-wider mb-6 flex items-center gap-2">
                         <Tag className="h-5 w-5" />
-                        Receipt Details
+                        Detalles del recibo
                     </h2>
 
                     <div className="space-y-6">
                         {/* Store Name */}
                         <div>
                             <label className="block text-xs font-bold uppercase tracking-wider text-neutral-500 mb-2">
-                                Store Name
+                                Tienda
                             </label>
                             <input
                                 type="text"
                                 value={storeName}
                                 onChange={(e) => setStoreName(e.target.value)}
-                                placeholder="Enter store name"
+                                placeholder="Nombre de la tienda"
                                 className="w-full px-4 py-3 border border-black font-medium focus:outline-none focus:ring-2 focus:ring-blue-500"
                             />
                         </div>
@@ -276,7 +276,7 @@ export default function ReceiptDetailPage({ params }: { params: Promise<{ id: st
                         {/* Amount */}
                         <div>
                             <label className="block text-xs font-bold uppercase tracking-wider text-neutral-500 mb-2">
-                                Total Amount
+                                Importe total
                             </label>
                             <div className="relative">
                                 <span className="absolute left-4 top-1/2 -translate-y-1/2 text-neutral-500">$</span>
@@ -294,7 +294,7 @@ export default function ReceiptDetailPage({ params }: { params: Promise<{ id: st
                         {/* Date */}
                         <div>
                             <label className="block text-xs font-bold uppercase tracking-wider text-neutral-500 mb-2">
-                                Purchase Date
+                                Fecha de compra
                             </label>
                             <input
                                 type="date"
@@ -307,12 +307,12 @@ export default function ReceiptDetailPage({ params }: { params: Promise<{ id: st
                         {/* Notes */}
                         <div>
                             <label className="block text-xs font-bold uppercase tracking-wider text-neutral-500 mb-2">
-                                Notes
+                                Notas
                             </label>
                             <textarea
                                 value={notes}
                                 onChange={(e) => setNotes(e.target.value)}
-                                placeholder="Add any additional notes..."
+                                placeholder="Agrega notas adicionales..."
                                 rows={4}
                                 className="w-full px-4 py-3 border border-black resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
                             />
@@ -322,7 +322,7 @@ export default function ReceiptDetailPage({ params }: { params: Promise<{ id: st
                     {/* Meta Info */}
                     <div className="mt-8 pt-6 border-t border-black">
                         <p className="text-xs text-neutral-500 font-mono">
-                            Uploaded: {new Date(receipt.created_at).toLocaleString()}
+                            Subido: {new Date(receipt.created_at).toLocaleString('es-MX')}
                         </p>
                     </div>
                 </div>

@@ -12,9 +12,9 @@ interface PasswordRequirement {
 }
 
 const PASSWORD_REQUIREMENTS: PasswordRequirement[] = [
-    { label: 'At least 8 characters', test: (p) => p.length >= 8 },
-    { label: 'At least one number', test: (p) => /\d/.test(p) },
-    { label: 'At least one uppercase letter', test: (p) => /[A-Z]/.test(p) },
+    { label: 'Al menos 8 caracteres', test: (p) => p.length >= 8 },
+    { label: 'Al menos un número', test: (p) => /\d/.test(p) },
+    { label: 'Al menos una letra mayúscula', test: (p) => /[A-Z]/.test(p) },
 ]
 
 export default function PasswordChange() {
@@ -45,7 +45,7 @@ export default function PasswordChange() {
             // First, verify current password by attempting to sign in
             const { data: { user } } = await supabase.auth.getUser()
             if (!user?.email) {
-                setError('Unable to verify user. Please try again.')
+                setError('No se pudo verificar el usuario. Intenta de nuevo.')
                 setIsSubmitting(false)
                 return
             }
@@ -56,7 +56,7 @@ export default function PasswordChange() {
             })
 
             if (signInError) {
-                setError('Current password is incorrect')
+                setError('La contraseña actual es incorrecta')
                 setIsSubmitting(false)
                 return
             }
@@ -67,7 +67,7 @@ export default function PasswordChange() {
             })
 
             if (updateError) {
-                setError(updateError.message || 'Failed to update password')
+                setError(updateError.message || 'No se pudo actualizar la contraseña')
                 setIsSubmitting(false)
                 return
             }
@@ -83,7 +83,7 @@ export default function PasswordChange() {
                     },
                     body: JSON.stringify({
                         type: 'password_change',
-                        details: 'Password changed from settings',
+                        details: 'Contraseña cambiada desde ajustes',
                     }),
                 }).catch(() => {/* Audit logging is best-effort */})
             }
@@ -100,7 +100,7 @@ export default function PasswordChange() {
             }, 3000)
 
         } catch {
-            setError('An unexpected error occurred. Please try again.')
+            setError('Ocurrió un error inesperado. Intenta de nuevo.')
         } finally {
             setIsSubmitting(false)
         }
@@ -123,10 +123,10 @@ export default function PasswordChange() {
                 <div>
                     <h3 className="font-bold text-sm mb-1 flex items-center gap-2">
                         <KeyRound className="h-4 w-4" />
-                        Change Password
+                        Cambiar contraseña
                     </h3>
                     <p className="text-xs text-neutral-500 dark:text-neutral-400">
-                        Update your password for enhanced security
+                        Actualiza tu contraseña para mayor seguridad
                     </p>
                 </div>
                 {!isExpanded && (
@@ -135,7 +135,7 @@ export default function PasswordChange() {
                         onClick={() => setIsExpanded(true)}
                         className="px-4 py-2 border border-black dark:border-neutral-600 text-xs font-bold hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors"
                     >
-                        CHANGE
+                        CAMBIAR
                     </button>
                 )}
             </div>
@@ -153,7 +153,7 @@ export default function PasswordChange() {
                             {/* Current Password */}
                             <div>
                                 <label className="block text-xs font-bold uppercase mb-2">
-                                    Current Password
+                                    Contraseña actual
                                 </label>
                                 <div className="relative">
                                     <input
@@ -161,7 +161,7 @@ export default function PasswordChange() {
                                         value={currentPassword}
                                         onChange={(e) => setCurrentPassword(e.target.value)}
                                         className="w-full p-3 pr-10 border border-black dark:border-neutral-600 bg-white dark:bg-neutral-800 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white"
-                                        placeholder="Enter current password"
+                                        placeholder="Ingresa tu contraseña actual"
                                         disabled={isSubmitting}
                                     />
                                     <button
@@ -177,7 +177,7 @@ export default function PasswordChange() {
                             {/* New Password */}
                             <div>
                                 <label className="block text-xs font-bold uppercase mb-2">
-                                    New Password
+                                    Nueva contraseña
                                 </label>
                                 <div className="relative">
                                     <input
@@ -185,7 +185,7 @@ export default function PasswordChange() {
                                         value={newPassword}
                                         onChange={(e) => setNewPassword(e.target.value)}
                                         className="w-full p-3 pr-10 border border-black dark:border-neutral-600 bg-white dark:bg-neutral-800 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white"
-                                        placeholder="Enter new password"
+                                        placeholder="Ingresa tu nueva contraseña"
                                         disabled={isSubmitting}
                                     />
                                     <button
@@ -226,7 +226,7 @@ export default function PasswordChange() {
                             {/* Confirm Password */}
                             <div>
                                 <label className="block text-xs font-bold uppercase mb-2">
-                                    Confirm New Password
+                                    Confirmar nueva contraseña
                                 </label>
                                 <div className="relative">
                                     <input
@@ -241,7 +241,7 @@ export default function PasswordChange() {
                                                 ? 'border-green-500 focus:ring-green-500'
                                                 : 'border-black dark:border-neutral-600 focus:ring-black dark:focus:ring-white'
                                         )}
-                                        placeholder="Confirm new password"
+                                        placeholder="Confirma tu nueva contraseña"
                                         disabled={isSubmitting}
                                     />
                                     <button
@@ -253,7 +253,7 @@ export default function PasswordChange() {
                                     </button>
                                 </div>
                                 {confirmPassword.length > 0 && !passwordsMatch && (
-                                    <p className="mt-1 text-xs text-red-500">Passwords do not match</p>
+                                    <p className="mt-1 text-xs text-red-500">Las contraseñas no coinciden</p>
                                 )}
                             </div>
 
@@ -268,7 +268,7 @@ export default function PasswordChange() {
                             {success && (
                                 <div className="p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-400 text-sm flex items-center gap-2">
                                     <Check className="h-4 w-4" />
-                                    Password updated successfully!
+                                    ¡Contraseña actualizada!
                                 </div>
                             )}
 
@@ -287,10 +287,10 @@ export default function PasswordChange() {
                                     {isSubmitting ? (
                                         <>
                                             <Loader2 className="h-4 w-4 animate-spin" />
-                                            Updating...
+                                            Actualizando...
                                         </>
                                     ) : (
-                                        'Update Password'
+                                        'Actualizar contraseña'
                                     )}
                                 </button>
                                 <button
@@ -302,7 +302,7 @@ export default function PasswordChange() {
                                     disabled={isSubmitting}
                                     className="px-4 py-3 border border-black dark:border-neutral-600 font-bold text-sm uppercase hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors"
                                 >
-                                    Cancel
+                                    Cancelar
                                 </button>
                             </div>
                         </form>

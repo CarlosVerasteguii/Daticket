@@ -70,11 +70,11 @@ function formatRelativeTime(dateString: string): string {
     const diffHours = Math.floor(diffMins / 60)
     const diffDays = Math.floor(diffHours / 24)
 
-    if (diffMins < 1) return 'Just now'
-    if (diffMins < 60) return `${diffMins} min ago`
-    if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`
-    if (diffDays < 7) return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`
-    return date.toLocaleDateString()
+    if (diffMins < 1) return 'justo ahora'
+    if (diffMins < 60) return `hace ${diffMins} min`
+    if (diffHours < 24) return `hace ${diffHours} hora${diffHours === 1 ? '' : 's'}`
+    if (diffDays < 7) return `hace ${diffDays} día${diffDays === 1 ? '' : 's'}`
+    return date.toLocaleDateString('es-MX')
 }
 
 export default function SessionsList({ className }: SessionsListProps) {
@@ -102,14 +102,14 @@ export default function SessionsList({ className }: SessionsListProps) {
             const response = await fetch('/api/sessions')
             
             if (!response.ok) {
-                throw new Error('Failed to fetch sessions')
+                throw new Error('No se pudieron obtener las sesiones')
             }
             
             const data = await response.json()
             setSessions(data.sessions || [])
         } catch (err) {
             console.error('Error fetching sessions:', err)
-            setError('Failed to load sessions')
+            setError('No se pudieron cargar las sesiones')
         } finally {
             setLoading(false)
         }
@@ -136,10 +136,10 @@ export default function SessionsList({ className }: SessionsListProps) {
             })
 
             if (!response.ok) {
-                throw new Error('Failed to revoke session')
+                throw new Error('No se pudo revocar la sesión')
             }
 
-            showToast('success', 'Session revoked successfully')
+            showToast('success', 'Sesión revocada')
             
             // Log audit event
             const { data: { session } } = await supabase.auth.getSession()
@@ -160,7 +160,7 @@ export default function SessionsList({ className }: SessionsListProps) {
             await fetchSessions()
         } catch (err) {
             console.error('Error revoking session:', err)
-            showToast('error', 'Failed to revoke session')
+            showToast('error', 'No se pudo revocar la sesión')
         } finally {
             setRevoking(null)
             setSessionToRevoke(null)
@@ -176,10 +176,10 @@ export default function SessionsList({ className }: SessionsListProps) {
             })
 
             if (!response.ok) {
-                throw new Error('Failed to sign out all devices')
+                throw new Error('No se pudo cerrar sesión en todos los dispositivos')
             }
 
-            showToast('success', 'Signed out from all devices')
+            showToast('success', 'Sesión cerrada en todos los dispositivos')
             
             // Log audit event before redirect
             const { data: { session } } = await supabase.auth.getSession()
@@ -192,7 +192,7 @@ export default function SessionsList({ className }: SessionsListProps) {
                     },
                     body: JSON.stringify({
                         type: 'session_revoked_all',
-                        details: 'All sessions terminated from settings',
+                        details: 'Todas las sesiones cerradas desde ajustes',
                     }),
                 }).catch(() => {/* Audit logging is best-effort */})
             }
@@ -205,7 +205,7 @@ export default function SessionsList({ className }: SessionsListProps) {
             }, 1500)
         } catch (err) {
             console.error('Error signing out all:', err)
-            showToast('error', 'Failed to sign out all devices')
+            showToast('error', 'No se pudo cerrar sesión en todos los dispositivos')
         } finally {
             setSigningOutAll(false)
         }
@@ -230,7 +230,7 @@ export default function SessionsList({ className }: SessionsListProps) {
                     onClick={fetchSessions}
                     className="ml-auto text-sm underline hover:no-underline"
                 >
-                    Retry
+                    Reintentar
                 </button>
             </div>
         )
@@ -242,13 +242,13 @@ export default function SessionsList({ className }: SessionsListProps) {
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
                     <Shield className="w-4 h-4" />
-                    <span>{sessions.length} active session{sessions.length !== 1 ? 's' : ''}</span>
+                    <span>{sessions.length === 1 ? '1 sesión activa' : `${sessions.length} sesiones activas`}</span>
                 </div>
                 <div className="flex items-center gap-2">
                     <button
                         onClick={fetchSessions}
                         className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-                        title="Refresh sessions"
+                        title="Actualizar sesiones"
                     >
                         <RefreshCw className="w-4 h-4" />
                     </button>
@@ -258,7 +258,7 @@ export default function SessionsList({ className }: SessionsListProps) {
                             className="text-sm text-red-500 hover:text-red-600 dark:text-red-400 dark:hover:text-red-300 flex items-center gap-1"
                         >
                             <LogOut className="w-4 h-4" />
-                            Sign out all
+                            Cerrar sesión en todos
                         </button>
                     )}
                 </div>
@@ -298,7 +298,7 @@ export default function SessionsList({ className }: SessionsListProps) {
                                 {getBrowserIcon(session.device.browser)}
                                 {session.isCurrent && (
                                     <span className="px-2 py-0.5 text-xs font-medium bg-green-100 dark:bg-green-800 text-green-700 dark:text-green-300 rounded-full">
-                                        Current Session
+                                        Sesión actual
                                     </span>
                                 )}
                             </div>
@@ -306,7 +306,7 @@ export default function SessionsList({ className }: SessionsListProps) {
                                 {session.device.os} • {session.ipAddress}
                             </div>
                             <div className="text-xs text-gray-400 dark:text-gray-500">
-                                Active {formatRelativeTime(session.lastActive)}
+                                Activo {formatRelativeTime(session.lastActive)}
                             </div>
                         </div>
 
@@ -321,7 +321,7 @@ export default function SessionsList({ className }: SessionsListProps) {
                                         ? "bg-gray-100 dark:bg-gray-700 text-gray-400 cursor-not-allowed"
                                         : "text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600"
                                 )}
-                                title="Revoke session"
+                                title="Revocar sesión"
                             >
                                 {revoking === session.id ? (
                                     <RefreshCw className="w-5 h-5 animate-spin" />
@@ -337,7 +337,7 @@ export default function SessionsList({ className }: SessionsListProps) {
             {sessions.length === 0 && (
                 <div className="text-center py-8 text-gray-500 dark:text-gray-400">
                     <Shield className="w-12 h-12 mx-auto mb-3 opacity-50" />
-                    <p>No active sessions found</p>
+                    <p>No se encontraron sesiones activas</p>
                 </div>
             )}
 
@@ -362,26 +362,26 @@ export default function SessionsList({ className }: SessionsListProps) {
                                 <div className="p-2 bg-red-100 dark:bg-red-900/30 rounded-full">
                                     <AlertCircle className="w-6 h-6 text-red-500" />
                                 </div>
-                                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                                    Revoke Session?
-                                </h3>
+                                    <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                                        ¿Revocar sesión?
+                                    </h3>
                             </div>
                             <p className="text-gray-600 dark:text-gray-300 mb-6">
-                                This will sign out the device using <strong>{sessionToRevoke.device.browser}</strong> on {sessionToRevoke.device.os}. 
-                                The user will need to sign in again.
+                                Esto cerrará la sesión del dispositivo con <strong>{sessionToRevoke.device.browser}</strong> en {sessionToRevoke.device.os}. 
+                                Tendrás que iniciar sesión de nuevo en ese dispositivo.
                             </p>
                             <div className="flex gap-3 justify-end">
                                 <button
                                     onClick={() => setShowConfirmModal(false)}
                                     className="px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
                                 >
-                                    Cancel
+                                    Cancelar
                                 </button>
                                 <button
                                     onClick={confirmRevoke}
                                     className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors"
                                 >
-                                    Revoke Session
+                                    Revocar sesión
                                 </button>
                             </div>
                         </motion.div>
@@ -411,26 +411,26 @@ export default function SessionsList({ className }: SessionsListProps) {
                                     <LogOut className="w-6 h-6 text-red-500" />
                                 </div>
                                 <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                                    Sign Out All Devices?
+                                    ¿Cerrar sesión en todos los dispositivos?
                                 </h3>
                             </div>
                             <p className="text-gray-600 dark:text-gray-300 mb-6">
-                                This will sign you out from <strong>all devices</strong>, including this one. 
-                                You&apos;ll need to sign in again on all your devices.
+                                Esto cerrará tu sesión en <strong>todos los dispositivos</strong>, incluyendo este. 
+                                Tendrás que iniciar sesión de nuevo en todos tus dispositivos.
                             </p>
                             <div className="flex gap-3 justify-end">
                                 <button
                                     onClick={() => setShowSignOutAllModal(false)}
                                     className="px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
                                 >
-                                    Cancel
+                                    Cancelar
                                 </button>
                                 <button
                                     onClick={handleSignOutAll}
                                     disabled={signingOutAll}
                                     className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors disabled:opacity-50"
                                 >
-                                    {signingOutAll ? 'Signing out...' : 'Sign Out All'}
+                                    {signingOutAll ? 'Cerrando...' : 'Cerrar en todos'}
                                 </button>
                             </div>
                         </motion.div>

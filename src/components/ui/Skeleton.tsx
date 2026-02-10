@@ -85,7 +85,7 @@ export function DashboardSkeleton() {
             <table className="w-full">
               <thead className="bg-neutral-100 border-b border-black">
                 <tr>
-                  {['Date', 'Store', 'Amount', 'Category'].map((_, i) => (
+                  {['Fecha', 'Tienda', 'Importe', 'Categoría'].map((_, i) => (
                     <th key={i} className="p-3">
                       <Skeleton className="h-3 w-16" variant="text" />
                     </th>

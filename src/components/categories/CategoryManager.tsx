@@ -11,12 +11,12 @@ type Category = {
 }
 
 const DEFAULT_CATEGORIES = [
-    { name: 'Food', color: '#ef4444' },
-    { name: 'Transport', color: '#3b82f6' },
-    { name: 'Utilities', color: '#eab308' },
-    { name: 'Entertainment', color: '#a855f7' },
-    { name: 'Health', color: '#22c55e' },
-    { name: 'Other', color: '#64748b' },
+    { name: 'Comida', color: '#ef4444' },
+    { name: 'Transporte', color: '#3b82f6' },
+    { name: 'Servicios', color: '#eab308' },
+    { name: 'Entretenimiento', color: '#a855f7' },
+    { name: 'Salud', color: '#22c55e' },
+    { name: 'Otros', color: '#64748b' },
 ]
 
 export default function CategoryManager({
@@ -91,12 +91,12 @@ export default function CategoryManager({
         <div className={compact ? "space-y-2" : "space-y-4"}>
             {!compact && (
                 <label className="block text-xs font-bold uppercase tracking-wider text-neutral-500">
-                    Category
+                    Categoría
                 </label>
             )}
 
             {loading ? (
-                <div className="text-sm text-neutral-500 font-mono">Loading...</div>
+                <div className="text-sm text-neutral-500 font-mono">Cargando...</div>
             ) : (
                 <div className={compact ? "flex flex-wrap gap-1" : "flex flex-wrap gap-2"}>
                     {categories.map(cat => {
@@ -127,7 +127,7 @@ export default function CategoryManager({
                             type="text"
                             value={newCategory}
                             onChange={(e) => setNewCategory(e.target.value)}
-                            placeholder="New..."
+                            placeholder="Nueva..."
                             className={`${compact ? 'w-20 px-2 py-1 text-xs' : 'w-24 px-3 py-2 text-sm'} font-medium focus:outline-none bg-white`}
                             onKeyDown={(e) => {
                                 if (e.key === 'Enter') {
@@ -156,7 +156,7 @@ export default function CategoryManager({
                         onClick={seedDefaults}
                         className="text-sm font-bold underline decoration-2 underline-offset-4 hover:text-blue-600"
                     >
-                        Add default categories
+                        Agregar categorías por defecto
                     </button>
                 </div>
             )}

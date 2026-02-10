@@ -6,6 +6,7 @@ import { AuditEvent, getAuditEventLabel, getAuditEventCategory } from '@/lib/aud
 import { Clock, Shield, Database, LogIn, ChevronDown, AlertCircle } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { formatDistanceToNow } from 'date-fns'
+import { es } from 'date-fns/locale'
 
 export default function AuditLog() {
     const supabase = createClient()
@@ -21,7 +22,7 @@ export default function AuditLog() {
         try {
             const { data: { session } } = await supabase.auth.getSession()
             if (!session) {
-                setError('Not authenticated')
+                setError('No autenticado')
                 return
             }
 
@@ -39,7 +40,7 @@ export default function AuditLog() {
             setEvents(data.events || [])
         } catch (err) {
             console.error('Error fetching audit log:', err)
-            setError('Failed to load activity log')
+            setError('No se pudo cargar el registro de actividad')
         } finally {
             setIsLoading(false)
         }
@@ -85,7 +86,7 @@ export default function AuditLog() {
             <div className="mt-6 pt-6 border-t border-neutral-200 dark:border-neutral-700">
                 <h3 className="font-bold text-sm mb-4 flex items-center gap-2">
                     <Clock className="h-4 w-4" />
-                    Activity Log
+                    Registro de actividad
                 </h3>
                 <div className="space-y-2">
                     {[1, 2, 3].map((i) => (
@@ -101,7 +102,7 @@ export default function AuditLog() {
             <div className="mt-6 pt-6 border-t border-neutral-200 dark:border-neutral-700">
                 <h3 className="font-bold text-sm mb-4 flex items-center gap-2">
                     <Clock className="h-4 w-4" />
-                    Activity Log
+                    Registro de actividad
                 </h3>
                 <div className="flex items-center gap-2 text-red-500 dark:text-red-400 text-sm">
                     <AlertCircle className="h-4 w-4" />
@@ -115,16 +116,16 @@ export default function AuditLog() {
         <div className="mt-6 pt-6 border-t border-neutral-200 dark:border-neutral-700">
             <h3 className="font-bold text-sm mb-1 flex items-center gap-2">
                 <Clock className="h-4 w-4" />
-                Activity Log
+                Registro de actividad
             </h3>
             <p className="text-xs text-neutral-500 dark:text-neutral-400 mb-4">
-                Recent account activities and security events
+                Actividad reciente de la cuenta y eventos de seguridad
             </p>
 
             {events.length === 0 ? (
                 <div className="text-center py-8 text-neutral-500 dark:text-neutral-400">
                     <Clock className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                    <p className="text-sm">No activity recorded yet</p>
+                    <p className="text-sm">Aún no hay actividad registrada</p>
                 </div>
             ) : (
                 <div className="space-y-1">
@@ -150,7 +151,7 @@ export default function AuditLog() {
                                 )}
                             </div>
                             <div className="text-xs text-neutral-500 dark:text-neutral-400 flex-shrink-0">
-                                {formatDistanceToNow(new Date(event.timestamp), { addSuffix: true })}
+                                {formatDistanceToNow(new Date(event.timestamp), { addSuffix: true, locale: es })}
                             </div>
                         </div>
                     ))}
@@ -161,7 +162,7 @@ export default function AuditLog() {
                             className="w-full flex items-center justify-center gap-2 p-3 text-sm font-bold text-neutral-600 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
                         >
                             <ChevronDown className="h-4 w-4" />
-                            Show More ({events.length - showCount} remaining)
+                            Mostrar más ({events.length - showCount} restantes)
                         </button>
                     )}
                 </div>

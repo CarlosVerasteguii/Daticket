@@ -36,7 +36,7 @@ export default function CategoryBreakdownChart({ receipts, className }: Category
         const categoryMap = new Map<string, { amount: number; count: number }>()
         
         receipts.forEach(receipt => {
-            const category = receipt.category_name || 'Uncategorized'
+            const category = receipt.category_name || 'Sin categoría'
             const amount = Number(receipt.total_amount) || 0
             
             if (categoryMap.has(category)) {
@@ -65,15 +65,15 @@ export default function CategoryBreakdownChart({ receipts, className }: Category
                 <div className="flex items-center gap-2 mb-4">
                     <PieChart className="h-4 w-4 text-foreground/40" />
                     <h3 className="font-bold text-sm uppercase tracking-wider text-foreground/60">
-                        Category Breakdown
+                        Desglose por categoría
                     </h3>
                 </div>
                 <div className="flex flex-col items-center justify-center py-12 text-center">
                     <div className="h-16 w-16 bg-black/5 dark:bg-transparent border border-foreground/20 flex items-center justify-center mb-4">
                         <PieChart className="h-8 w-8 text-foreground/30" />
                     </div>
-                    <p className="text-foreground/60 text-sm">No spending data</p>
-                    <p className="text-foreground/40 text-xs mt-1">Upload receipts to see breakdown</p>
+                    <p className="text-foreground/60 text-sm">Sin datos de gasto</p>
+                    <p className="text-foreground/40 text-xs mt-1">Sube recibos para ver el desglose</p>
                 </div>
             </div>
         )
@@ -133,7 +133,7 @@ export default function CategoryBreakdownChart({ receipts, className }: Category
         <div className={cn("border border-foreground/20 bg-background", className)}>
             <div className="flex items-center gap-2 p-4 border-b border-foreground/20 bg-foreground/5">
                 <PieChart className="h-4 w-4 text-foreground" />
-                <h3 className="font-bold text-sm uppercase tracking-wider text-foreground">Category Breakdown</h3>
+                <h3 className="font-bold text-sm uppercase tracking-wider text-foreground">Desglose por categoría</h3>
             </div>
             
             <div className="p-6">
@@ -193,8 +193,8 @@ export default function CategoryBreakdownChart({ receipts, className }: Category
 
                 {/* Category count summary */}
                 <div className="mt-4 pt-4 border-t border-foreground/20 flex justify-between text-sm">
-                    <span className="text-foreground/60">{segments.length} categories</span>
-                    <span className="text-foreground/60">{receipts.length} receipts</span>
+                    <span className="text-foreground/60">{segments.length} categorías</span>
+                    <span className="text-foreground/60">{receipts.length} recibos</span>
                 </div>
             </div>
         </div>

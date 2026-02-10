@@ -296,10 +296,10 @@ export default function ReceiptUpload() {
                         </div>
 
                         {/* Main Content */}
-                        <div className="flex-1 overflow-hidden">
+                        <div className="flex-1 overflow-auto">
                             {!preview ? (
                                 /* Upload Zone */
-                                <div className="h-full flex items-center justify-center p-8">
+                                <div className="min-h-full flex items-center justify-center p-8">
                                     <motion.div
                                         initial={{ opacity: 0, scale: 0.95 }}
                                         animate={{ opacity: 1, scale: 1 }}
@@ -322,7 +322,7 @@ export default function ReceiptUpload() {
                                 /* Split View: Image Left | Items Right */
                                 <div className="h-full grid grid-cols-1 lg:grid-cols-2">
                                     {/* LEFT: Image Only */}
-                                    <div className="bg-neutral-800 relative h-full">
+                                    <div className="bg-neutral-800 relative min-h-[400px] lg:min-h-full">
                                         <Image
                                             src={preview}
                                             alt="Recibo"
@@ -472,74 +472,85 @@ export default function ReceiptUpload() {
 
                         {/* Bottom Bar - Fixed Form */}
                         {preview && (
-                            <form onSubmit={handleSubmit} className="flex-shrink-0">
-                                <div className="bg-neutral-900 dark:bg-neutral-950 px-6 py-4">
-                                    <div className="max-w-6xl mx-auto flex items-center gap-4">
-                                        {/* Store */}
-                                        <div className="flex-1 min-w-0">
-                                            <label className="text-xs text-neutral-400 uppercase tracking-wider mb-1 block">Tienda</label>
-                                            <input
-                                                type="text"
-                                                required
-                                                value={storeName}
-                                                onChange={(e) => setStoreName(e.target.value)}
-                                                placeholder="HEB, Walmart..."
-                                                disabled={isScanning}
-                                                className="w-full px-3 py-2 bg-neutral-800 border border-neutral-700 text-white placeholder-neutral-500 focus:outline-none focus:border-white disabled:opacity-50 rounded"
-                                            />
-                                        </div>
-
-                                        {/* Date */}
-                                        <div className="w-40">
-                                            <label className="text-xs text-neutral-400 uppercase tracking-wider mb-1 block">Fecha</label>
-                                            <input
-                                                type="date"
-                                                required
-                                                value={date}
-                                                onChange={(e) => setDate(e.target.value)}
-                                                disabled={isScanning}
-                                                className="w-full px-3 py-2 bg-neutral-800 border border-neutral-700 text-white focus:outline-none focus:border-white disabled:opacity-50 rounded"
-                                            />
-                                        </div>
-
-                                        {/* Total */}
-                                        <div className="w-32">
-                                            <label className="text-xs text-neutral-400 uppercase tracking-wider mb-1 block">Total</label>
-                                            <div className="relative">
-                                                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-500">$</span>
+                            <form onSubmit={handleSubmit} className="flex-shrink-0 border-t border-neutral-700">
+                                <div className="bg-neutral-900 dark:bg-neutral-950 px-6 py-5">
+                                    <div className="max-w-5xl mx-auto space-y-4">
+                                        {/* Row 1: Main inputs */}
+                                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                            {/* Store */}
+                                            <div className="col-span-2 md:col-span-1">
+                                                <label className="text-xs text-neutral-400 uppercase tracking-wider mb-1.5 block font-medium">
+                                                    Tienda
+                                                </label>
                                                 <input
-                                                    type="number"
-                                                    step="0.01"
+                                                    type="text"
                                                     required
-                                                    value={amount}
-                                                    onChange={(e) => setAmount(e.target.value)}
+                                                    value={storeName}
+                                                    onChange={(e) => setStoreName(e.target.value)}
+                                                    placeholder="HEB, Walmart..."
                                                     disabled={isScanning}
-                                                    placeholder="0.00"
-                                                    className="w-full pl-7 pr-3 py-2 bg-neutral-800 border border-neutral-700 text-white font-mono font-bold focus:outline-none focus:border-white disabled:opacity-50 rounded"
+                                                    className="w-full px-3 py-2.5 bg-neutral-800 border border-neutral-700 text-white placeholder-neutral-500 focus:outline-none focus:border-white focus:ring-1 focus:ring-white disabled:opacity-50 rounded-md transition-colors"
                                                 />
+                                            </div>
+
+                                            {/* Date */}
+                                            <div>
+                                                <label className="text-xs text-neutral-400 uppercase tracking-wider mb-1.5 block font-medium">
+                                                    Fecha
+                                                </label>
+                                                <input
+                                                    type="date"
+                                                    required
+                                                    value={date}
+                                                    onChange={(e) => setDate(e.target.value)}
+                                                    disabled={isScanning}
+                                                    className="w-full px-3 py-2.5 bg-neutral-800 border border-neutral-700 text-white focus:outline-none focus:border-white focus:ring-1 focus:ring-white disabled:opacity-50 rounded-md transition-colors"
+                                                />
+                                            </div>
+
+                                            {/* Total */}
+                                            <div>
+                                                <label className="text-xs text-neutral-400 uppercase tracking-wider mb-1.5 block font-medium">
+                                                    Total
+                                                </label>
+                                                <div className="relative">
+                                                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400 font-medium">$</span>
+                                                    <input
+                                                        type="number"
+                                                        step="0.01"
+                                                        required
+                                                        value={amount}
+                                                        onChange={(e) => setAmount(e.target.value)}
+                                                        disabled={isScanning}
+                                                        placeholder="0.00"
+                                                        className="w-full pl-7 pr-3 py-2.5 bg-neutral-800 border border-neutral-700 text-white font-mono font-bold focus:outline-none focus:border-white focus:ring-1 focus:ring-white disabled:opacity-50 rounded-md transition-colors"
+                                                    />
+                                                </div>
                                             </div>
                                         </div>
 
-                                        {/* Category */}
-                                        <div className="w-48">
-                                            <label className="text-xs text-neutral-400 uppercase tracking-wider mb-1 block">Categoría</label>
-                                            <div className="[&_button]:bg-neutral-800 [&_button]:border-neutral-700 [&_button]:text-white [&_button]:hover:bg-neutral-700">
-                                                <CategoryManager
-                                                    selectedId={categoryId || undefined}
-                                                    onSelect={setCategoryId}
-                                                    compact
-                                                />
+                                        {/* Row 2: Category + Submit */}
+                                        <div className="flex flex-wrap items-end gap-4 justify-between">
+                                            {/* Category */}
+                                            <div className="flex-1 min-w-0">
+                                                <label className="text-xs text-neutral-400 uppercase tracking-wider mb-1.5 block font-medium">
+                                                    Categoría
+                                                </label>
+                                                <div className="[&_button]:bg-neutral-800 [&_button]:border-neutral-700 [&_button]:text-white [&_button]:hover:bg-neutral-700 [&_input]:bg-neutral-800 [&_input]:border-neutral-700 [&_input]:text-white [&_input]:placeholder-neutral-500">
+                                                    <CategoryManager
+                                                        selectedId={categoryId || undefined}
+                                                        onSelect={setCategoryId}
+                                                        compact
+                                                    />
+                                                </div>
                                             </div>
-                                        </div>
 
-                                        {/* Submit */}
-                                        <div className="flex-shrink-0">
-                                            <label className="text-xs text-transparent mb-1 block">.</label>
+                                            {/* Submit */}
                                             <button
                                                 type="submit"
                                                 disabled={!canSubmit}
                                                 className={cn(
-                                                    "px-8 py-2 font-bold uppercase tracking-wider transition-all flex items-center gap-2 rounded",
+                                                    "px-8 py-2.5 font-bold uppercase tracking-wider transition-all flex items-center gap-2 rounded-md flex-shrink-0",
                                                     canSubmit
                                                         ? "bg-white text-black hover:bg-neutral-200"
                                                         : "bg-neutral-700 text-neutral-500 cursor-not-allowed"

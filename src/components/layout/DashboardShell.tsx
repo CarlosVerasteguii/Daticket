@@ -16,7 +16,8 @@ import {
     Search,
     ChevronRight,
     WifiOff,
-    Wallet
+    Wallet,
+    ShoppingCart
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -56,6 +57,7 @@ export default function DashboardShell({ children }: { children: React.ReactNode
         { name: 'Recibos', href: '/receipts', icon: Receipt },
         { name: 'Subir', href: '/upload', icon: Upload },
         { name: 'Presupuesto', href: '/budget', icon: Wallet },
+        { name: 'Smart Shopping', href: '/smart-shopping', icon: ShoppingCart },
         { name: 'Perfil', href: '/profile', icon: User },
         { name: 'Ajustes', href: '/settings', icon: Settings },
     ]
@@ -196,6 +198,7 @@ export default function DashboardShell({ children }: { children: React.ReactNode
                                         'receipts': 'Recibos',
                                         'upload': 'Subir',
                                         'budget': 'Presupuesto',
+                                        'smart-shopping': 'Smart Shopping',
                                         'profile': 'Perfil',
                                         'settings': 'Ajustes',
                                         'login': 'Iniciar Sesión',

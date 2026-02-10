@@ -12,14 +12,14 @@ import { cn } from '@/lib/utils'
 import { motion, AnimatePresence } from 'framer-motion'
 
 const DEFAULT_CATEGORIES = [
-    'Groceries',
-    'Dining',
-    'Transportation',
-    'Entertainment',
-    'Shopping',
-    'Health',
-    'Utilities',
-    'Other'
+    'Supermercado',
+    'Restaurantes',
+    'Transporte',
+    'Entretenimiento',
+    'Compras',
+    'Salud',
+    'Servicios',
+    'Otros'
 ]
 
 interface SpendingData {
@@ -91,7 +91,7 @@ export default function BudgetPage() {
                     const cat = Array.isArray(r.categories)
                         ? r.categories[0]?.name
                         : r.categories?.name
-                    const name = cat || 'Uncategorized'
+                    const name = cat || 'Sin categoría'
                     byCategory[name] = (byCategory[name] || 0) + (Number(r.total_amount) || 0)
                 })
                 setSpending({ total, byCategory })
@@ -188,7 +188,7 @@ export default function BudgetPage() {
     const availableCategories = DEFAULT_CATEGORIES.filter(c => !usedCategories.includes(c))
     const totalCategoryBudgets = currentMonthBudget?.categoryBudgets.reduce((sum, c) => sum + c.amount, 0) || 0
 
-    const currentMonth = new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
+    const currentMonth = new Date().toLocaleDateString('es-MX', { month: 'long', year: 'numeric' })
 
     return (
         <DashboardShell>
@@ -199,29 +199,29 @@ export default function BudgetPage() {
                         <Wallet className="h-6 w-6 text-white dark:text-black" />
                     </div>
                     <div>
-                        <h1 className="text-2xl font-bold">Monthly Budget</h1>
+                        <h1 className="text-2xl font-bold">Presupuesto mensual</h1>
                         <p className="text-neutral-500 dark:text-neutral-400">{currentMonth}</p>
                     </div>
                 </div>
 
                 {/* Total Budget Card */}
                 <div className="border border-black dark:border-neutral-700 bg-white dark:bg-neutral-900">
-                    <div className="p-4 border-b border-black dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 flex items-center gap-3">
-                        <Target className="h-5 w-5" />
-                        <h2 className="font-bold uppercase text-sm tracking-wider">Total Monthly Budget</h2>
-                    </div>
+                        <div className="p-4 border-b border-black dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 flex items-center gap-3">
+                            <Target className="h-5 w-5" />
+                            <h2 className="font-bold uppercase text-sm tracking-wider">Presupuesto mensual total</h2>
+                        </div>
                     
                     <div className="p-6">
                         {editingTotal ? (
                             <div className="flex items-center gap-4">
-                                <input
-                                    type="number"
-                                    value={totalInput}
-                                    onChange={(e) => setTotalInput(e.target.value)}
-                                    placeholder="Enter budget amount"
-                                    className="flex-1 px-4 py-3 border border-black dark:border-neutral-700 bg-white dark:bg-neutral-800 font-mono text-2xl"
-                                    autoFocus
-                                />
+                                    <input
+                                        type="number"
+                                        value={totalInput}
+                                        onChange={(e) => setTotalInput(e.target.value)}
+                                        placeholder="Ingresa el monto del presupuesto"
+                                        className="flex-1 px-4 py-3 border border-black dark:border-neutral-700 bg-white dark:bg-neutral-800 font-mono text-2xl"
+                                        autoFocus
+                                    />
                                 <button
                                     onClick={handleSaveTotal}
                                     className="h-12 w-12 bg-black dark:bg-white text-white dark:text-black flex items-center justify-center hover:opacity-80"
@@ -246,7 +246,7 @@ export default function BudgetPage() {
                                     </p>
                                     {currentMonthBudget?.totalBudget && totalCategoryBudgets > 0 && (
                                         <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-2">
-                                            {formatAmount(totalCategoryBudgets)} allocated to categories 
+                                            {formatAmount(totalCategoryBudgets)} asignado a categorías 
                                             ({Math.round((totalCategoryBudgets / currentMonthBudget.totalBudget) * 100)}%)
                                         </p>
                                     )}
@@ -259,7 +259,7 @@ export default function BudgetPage() {
                                     className="px-4 py-2 border border-black dark:border-neutral-700 font-bold text-sm hover:bg-neutral-100 dark:hover:bg-neutral-800 flex items-center gap-2"
                                 >
                                     <Edit2 className="h-4 w-4" />
-                                    {currentMonthBudget?.totalBudget ? 'Edit' : 'Set Budget'}
+                                    {currentMonthBudget?.totalBudget ? 'Editar' : 'Establecer presupuesto'}
                                 </button>
                             </div>
                         )}
@@ -271,14 +271,14 @@ export default function BudgetPage() {
                     <div className="border border-black dark:border-neutral-700 bg-white dark:bg-neutral-900">
                         <div className="p-4 border-b border-black dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 flex items-center gap-3">
                             <TrendingUp className="h-5 w-5" />
-                            <h2 className="font-bold uppercase text-sm tracking-wider">Spending Progress</h2>
+                            <h2 className="font-bold uppercase text-sm tracking-wider">Progreso de gasto</h2>
                         </div>
                         
                         <div className="p-6">
                             {/* Overall Progress */}
                             <div className="mb-6">
                                 <div className="flex justify-between items-center mb-2">
-                                    <span className="font-medium">Total Spending</span>
+                                    <span className="font-medium">Gasto total</span>
                                     <span className="font-mono">
                                         {formatAmount(spending.total)} / {formatAmount(currentMonthBudget.totalBudget)}
                                     </span>
@@ -307,10 +307,10 @@ export default function BudgetPage() {
                                                 ? "text-yellow-600 dark:text-yellow-400" 
                                                 : "text-green-600 dark:text-green-400"
                                     )}>
-                                        {Math.round((spending.total / currentMonthBudget.totalBudget) * 100)}% used
+                                        {Math.round((spending.total / currentMonthBudget.totalBudget) * 100)}% usado
                                     </span>
                                     <span className="text-neutral-500">
-                                        {formatAmount(Math.max(currentMonthBudget.totalBudget - spending.total, 0))} remaining
+                                        {formatAmount(Math.max(currentMonthBudget.totalBudget - spending.total, 0))} restante
                                     </span>
                                 </div>
 
@@ -329,8 +329,8 @@ export default function BudgetPage() {
                                         <AlertTriangle className="h-5 w-5 flex-shrink-0" />
                                         <span className="text-sm font-medium">
                                             {spending.total >= currentMonthBudget.totalBudget
-                                                ? `You've exceeded your budget by ${formatAmount(spending.total - currentMonthBudget.totalBudget)}!`
-                                                : `Warning: You've used ${Math.round((spending.total / currentMonthBudget.totalBudget) * 100)}% of your budget.`}
+                                                ? `¡Has excedido tu presupuesto por ${formatAmount(spending.total - currentMonthBudget.totalBudget)}!`
+                                                : `Aviso: has usado ${Math.round((spending.total / currentMonthBudget.totalBudget) * 100)}% de tu presupuesto.`}
                                         </span>
                                     </motion.div>
                                 )}
@@ -339,7 +339,7 @@ export default function BudgetPage() {
                             {/* Category Progress */}
                             {currentMonthBudget.categoryBudgets.length > 0 && (
                                 <div className="space-y-4 pt-4 border-t border-neutral-200 dark:border-neutral-700">
-                                    <h3 className="font-bold text-sm uppercase tracking-wider text-neutral-500">By Category</h3>
+                                    <h3 className="font-bold text-sm uppercase tracking-wider text-neutral-500">Por categoría</h3>
                                     {currentMonthBudget.categoryBudgets.map(cat => {
                                         const spent = spending.byCategory[cat.category] || 0
                                         const percentage = (spent / cat.amount) * 100
@@ -379,7 +379,7 @@ export default function BudgetPage() {
                     <div className="p-4 border-b border-black dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 flex items-center justify-between">
                         <div className="flex items-center gap-3">
                             <Wallet className="h-5 w-5" />
-                            <h2 className="font-bold uppercase text-sm tracking-wider">Category Budgets</h2>
+                            <h2 className="font-bold uppercase text-sm tracking-wider">Presupuestos por categoría</h2>
                         </div>
                         {availableCategories.length > 0 && (
                             <button
@@ -387,7 +387,7 @@ export default function BudgetPage() {
                                 className="px-3 py-1 bg-black dark:bg-white text-white dark:text-black text-xs font-bold flex items-center gap-1 hover:opacity-80"
                             >
                                 <Plus className="h-3 w-3" />
-                                Add
+                                Agregar
                             </button>
                         )}
                     </div>
@@ -408,7 +408,7 @@ export default function BudgetPage() {
                                             onChange={(e) => setSelectedCategory(e.target.value)}
                                             className="flex-1 px-3 py-2 border border-black dark:border-neutral-700 bg-white dark:bg-neutral-900"
                                         >
-                                            <option value="">Select category...</option>
+                                            <option value="">Selecciona una categoría...</option>
                                             {availableCategories.map(cat => (
                                                 <option key={cat} value={cat}>{cat}</option>
                                             ))}
@@ -417,7 +417,7 @@ export default function BudgetPage() {
                                             type="number"
                                             value={categoryAmount}
                                             onChange={(e) => setCategoryAmount(e.target.value)}
-                                            placeholder="Amount"
+                                            placeholder="Monto"
                                             className="w-32 px-3 py-2 border border-black dark:border-neutral-700 bg-white dark:bg-neutral-900 font-mono"
                                         />
                                         <button
@@ -451,8 +451,8 @@ export default function BudgetPage() {
                         {currentMonthBudget?.categoryBudgets.length === 0 && !showAddCategory && (
                             <div className="p-8 text-center text-neutral-500 dark:text-neutral-400">
                                 <Wallet className="h-12 w-12 mx-auto mb-3 opacity-50" />
-                                <p className="font-medium">No category budgets set</p>
-                                <p className="text-sm mt-1">Click &quot;Add&quot; to set budgets for specific categories</p>
+                                <p className="font-medium">Aún no hay presupuestos por categoría</p>
+                                <p className="text-sm mt-1">Haz clic en &quot;Agregar&quot; para definir presupuestos por categoría</p>
                             </div>
                         )}
 
@@ -466,7 +466,7 @@ export default function BudgetPage() {
                                         <p className="font-bold">{cat.category}</p>
                                         {currentMonthBudget.totalBudget > 0 && (
                                             <p className="text-xs text-neutral-500">
-                                                {Math.round((cat.amount / currentMonthBudget.totalBudget) * 100)}% of total
+                                                {Math.round((cat.amount / currentMonthBudget.totalBudget) * 100)}% del total
                                             </p>
                                         )}
                                     </div>
@@ -527,7 +527,7 @@ export default function BudgetPage() {
                     <div className="border border-black dark:border-neutral-700 bg-white dark:bg-neutral-900">
                         <div className="p-4 border-b border-black dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 flex items-center gap-3">
                             <TrendingUp className="h-5 w-5" />
-                            <h2 className="font-bold uppercase text-sm tracking-wider">Budget History</h2>
+                            <h2 className="font-bold uppercase text-sm tracking-wider">Historial de presupuestos</h2>
                         </div>
 
                         <div className="divide-y divide-neutral-200 dark:divide-neutral-700">
@@ -540,7 +540,7 @@ export default function BudgetPage() {
                                     const percentage = budget.totalBudget > 0 ? (spent / budget.totalBudget) * 100 : 0
                                     const isOver = spent > budget.totalBudget
                                     const monthDate = new Date(budget.month + '-01')
-                                    const monthName = monthDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
+                                    const monthName = monthDate.toLocaleDateString('es-MX', { month: 'long', year: 'numeric' })
 
                                     return (
                                         <div key={budget.month} className="p-4">
@@ -550,17 +550,17 @@ export default function BudgetPage() {
                                                     "text-sm font-mono",
                                                     isOver ? "text-red-500" : "text-green-600 dark:text-green-400"
                                                 )}>
-                                                    {isOver ? 'Over by ' : 'Under by '}
+                                                    {isOver ? 'Excedido: ' : 'Restante: '}
                                                     {formatAmount(Math.abs(budget.totalBudget - spent))}
                                                 </span>
                                             </div>
                                             <div className="flex gap-4 text-sm text-neutral-500 dark:text-neutral-400">
-                                                <span>Budget: {formatAmount(budget.totalBudget)}</span>
-                                                <span>Spent: {formatAmount(spent)}</span>
+                                                <span>Presupuesto: {formatAmount(budget.totalBudget)}</span>
+                                                <span>Gastado: {formatAmount(spent)}</span>
                                                 <span className={cn(
                                                     isOver ? "text-red-500" : percentage >= 80 ? "text-yellow-600" : "text-green-600"
                                                 )}>
-                                                    {percentage.toFixed(0)}% used
+                                                    {percentage.toFixed(0)}% usado
                                                 </span>
                                             </div>
                                             <div className="h-2 bg-neutral-200 dark:bg-neutral-700 mt-2 overflow-hidden">
@@ -579,7 +579,7 @@ export default function BudgetPage() {
 
                         {budgets.length <= 1 && (
                             <div className="p-8 text-center text-neutral-500 dark:text-neutral-400">
-                                <p>No budget history yet. Your previous months&apos; budgets will appear here.</p>
+                                <p>Aún no hay historial. Los presupuestos de meses anteriores aparecerán aquí.</p>
                             </div>
                         )}
                     </div>
@@ -587,7 +587,7 @@ export default function BudgetPage() {
 
                 {/* Info */}
                 <div className="p-4 border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 text-sm text-neutral-500 dark:text-neutral-400">
-                    <p>💡 <strong>Tip:</strong> Set a total monthly budget first, then allocate amounts to specific categories to track your spending more precisely.</p>
+                    <p><strong>Consejo:</strong> Primero establece un presupuesto mensual total, luego asigna montos por categoría para llevar un mejor control.</p>
                 </div>
             </div>
         </DashboardShell>

@@ -105,20 +105,20 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
         if (percentage >= 100) {
             alert = {
                 type: 'danger',
-                title: category ? `${category} Over Budget!` : 'Budget Exceeded!',
+                title: category ? `¡${category}: presupuesto excedido!` : '¡Presupuesto excedido!',
                 message: category 
-                    ? `You've exceeded your ${category} budget by ${(percentage - 100).toFixed(0)}%`
-                    : `You've exceeded your monthly budget by ${(percentage - 100).toFixed(0)}%`,
+                    ? `Has excedido tu presupuesto de ${category} en ${(percentage - 100).toFixed(0)}%`
+                    : `Has excedido tu presupuesto mensual en ${(percentage - 100).toFixed(0)}%`,
                 category,
                 percentage,
             }
         } else if (percentage >= 80) {
             alert = {
                 type: 'warning',
-                title: category ? `${category} Budget Alert` : 'Budget Warning',
+                title: category ? `Alerta de presupuesto: ${category}` : 'Aviso de presupuesto',
                 message: category
-                    ? `You've used ${percentage.toFixed(0)}% of your ${category} budget`
-                    : `You've used ${percentage.toFixed(0)}% of your monthly budget`,
+                    ? `Has usado ${percentage.toFixed(0)}% de tu presupuesto de ${category}`
+                    : `Has usado ${percentage.toFixed(0)}% de tu presupuesto mensual`,
                 category,
                 percentage,
             }

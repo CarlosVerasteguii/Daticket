@@ -39,17 +39,17 @@ export default function QuickStatsCards({ receipts, className }: QuickStatsCards
     const stats = useMemo((): StatCard[] => {
         if (receipts.length === 0) {
             return [
-                { label: 'Top Category', value: '—', subtext: 'No data yet', icon: Crown, color: 'blue' },
-                { label: 'Biggest Purchase', value: '$0', subtext: 'No purchases', icon: Zap, color: 'orange' },
-                { label: 'Favorite Store', value: '—', subtext: 'No visits', icon: ShoppingBag, color: 'green' },
-                { label: 'Busiest Day', value: '—', subtext: 'No data', icon: Calendar, color: 'red' }
+                { label: 'Categoría principal', value: '—', subtext: 'Aún no hay datos', icon: Crown, color: 'blue' },
+                { label: 'Compra más grande', value: '$0', subtext: 'Sin compras', icon: Zap, color: 'orange' },
+                { label: 'Tienda favorita', value: '—', subtext: 'Sin visitas', icon: ShoppingBag, color: 'green' },
+                { label: 'Día con más compras', value: '—', subtext: 'Sin datos', icon: Calendar, color: 'red' }
             ]
         }
 
         // Top Category by spending
         const categorySpend = new Map<string, number>()
         receipts.forEach(r => {
-            const cat = r.category_name || 'Uncategorized'
+            const cat = r.category_name || 'Sin categoría'
             const amount = Number(r.total_amount) || 0
             categorySpend.set(cat, (categorySpend.get(cat) || 0) + amount)
         })
@@ -65,7 +65,7 @@ export default function QuickStatsCards({ receipts, className }: QuickStatsCards
         // Most visited store
         const storeVisits = new Map<string, number>()
         receipts.forEach(r => {
-            const store = r.store_name || 'Unknown'
+            const store = r.store_name || 'Desconocida'
             storeVisits.set(store, (storeVisits.get(store) || 0) + 1)
         })
         const favoriteStore = Array.from(storeVisits.entries())
@@ -81,34 +81,34 @@ export default function QuickStatsCards({ receipts, className }: QuickStatsCards
         })
         const busiestDay = Array.from(dayCount.entries())
             .sort((a, b) => b[1] - a[1])[0]
-        const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
+        const dayNames = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado']
 
         return [
             { 
-                label: 'Top Category', 
+                label: 'Categoría principal', 
                 value: topCategory ? topCategory[0] : '—',
-                subtext: topCategory ? `$${topCategory[1].toFixed(0)} spent` : 'No data',
+                subtext: topCategory ? `$${topCategory[1].toFixed(0)} gastados` : 'Sin datos',
                 icon: Crown,
                 color: 'blue'
             },
             { 
-                label: 'Biggest Purchase', 
+                label: 'Compra más grande', 
                 value: biggestPurchase?.total_amount ? `$${Number(biggestPurchase.total_amount).toFixed(2)}` : '$0',
-                subtext: biggestPurchase?.store_name || 'Unknown store',
+                subtext: biggestPurchase?.store_name || 'Tienda desconocida',
                 icon: Zap,
                 color: 'orange'
             },
             { 
-                label: 'Favorite Store', 
+                label: 'Tienda favorita', 
                 value: favoriteStore ? favoriteStore[0] : '—',
-                subtext: favoriteStore ? `${favoriteStore[1]} visit${favoriteStore[1] !== 1 ? 's' : ''}` : 'No visits',
+                subtext: favoriteStore ? `${favoriteStore[1]} visita${favoriteStore[1] !== 1 ? 's' : ''}` : 'Sin visitas',
                 icon: ShoppingBag,
                 color: 'green'
             },
             { 
-                label: 'Busiest Day', 
+                label: 'Día con más compras', 
                 value: busiestDay ? dayNames[busiestDay[0]] : '—',
-                subtext: busiestDay ? `${busiestDay[1]} receipt${busiestDay[1] !== 1 ? 's' : ''}` : 'No data',
+                subtext: busiestDay ? `${busiestDay[1]} recibo${busiestDay[1] !== 1 ? 's' : ''}` : 'Sin datos',
                 icon: Calendar,
                 color: 'red'
             }

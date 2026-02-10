@@ -48,8 +48,8 @@ function parseUserAgent(userAgent: string): SessionInfo['device'] {
     else if (device.type === 'tablet') deviceType = 'tablet'
 
     return {
-        browser: browser.name || 'Unknown Browser',
-        os: os.name ? `${os.name} ${os.version || ''}`.trim() : 'Unknown OS',
+        browser: browser.name || 'Navegador desconocido',
+        os: os.name ? `${os.name} ${os.version || ''}`.trim() : 'SO desconocido',
         type: deviceType
     }
 }
@@ -92,13 +92,13 @@ export async function GET(request: NextRequest) {
         const auth = await getAuthenticatedUser()
 
         if (!auth) {
-            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+            return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
         }
 
         const { user } = auth
 
         // For demo/MVP purposes, we create a session list based on current request
-        const currentUserAgent = request.headers.get('user-agent') || 'Unknown'
+        const currentUserAgent = request.headers.get('user-agent') || 'Desconocido'
         const currentIp = request.headers.get('x-forwarded-for')?.split(',')[0] ||
             request.headers.get('x-real-ip') ||
             '127.0.0.1'
@@ -132,7 +132,7 @@ export async function GET(request: NextRequest) {
                         if (session.id !== 'current') {
                             sessions.push({
                                 ...session,
-                                device: parseUserAgent(session.userAgent || 'Unknown'),
+                                device: parseUserAgent(session.userAgent || 'Desconocido'),
                                 isCurrent: false
                             })
                         }
@@ -147,7 +147,7 @@ export async function GET(request: NextRequest) {
         return NextResponse.json({ sessions })
     } catch (error) {
         console.error('Sessions GET error:', error)
-        return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+        return NextResponse.json({ error: 'Error interno del servidor' }, { status: 500 })
     }
 }
 
@@ -157,7 +157,7 @@ export async function DELETE(request: NextRequest) {
         const auth = await getAuthenticatedUser()
 
         if (!auth) {
-            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+            return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
         }
 
         const { user } = auth
@@ -192,12 +192,12 @@ export async function DELETE(request: NextRequest) {
 
             if (signOutError) {
                 console.error('Error signing out all sessions:', signOutError)
-                return NextResponse.json({ error: 'Failed to sign out all devices' }, { status: 500 })
+                return NextResponse.json({ error: 'No se pudo cerrar sesión en todos los dispositivos' }, { status: 500 })
             }
 
             return NextResponse.json({
                 success: true,
-                message: 'Signed out from all devices. Please sign in again.'
+                message: 'Se cerró la sesión en todos los dispositivos. Inicia sesión de nuevo.'
             })
         }
 
@@ -210,7 +210,7 @@ export async function DELETE(request: NextRequest) {
                 // Admin API not available, can't revoke specific sessions
                 return NextResponse.json({
                     success: true,
-                    message: 'Session tracking not enabled. Please sign out from all devices instead.'
+                    message: 'El seguimiento de sesiones no está habilitado. Cierra sesión en todos los dispositivos.'
                 })
             }
 
@@ -230,14 +230,14 @@ export async function DELETE(request: NextRequest) {
 
             return NextResponse.json({
                 success: true,
-                message: 'Session revoked successfully'
+                message: 'Sesión revocada'
             })
         }
 
-        return NextResponse.json({ error: 'Invalid session ID' }, { status: 400 })
+        return NextResponse.json({ error: 'ID de sesión inválido' }, { status: 400 })
     } catch (error) {
         console.error('Sessions DELETE error:', error)
-        return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+        return NextResponse.json({ error: 'Error interno del servidor' }, { status: 500 })
     }
 }
 
@@ -247,11 +247,11 @@ export async function POST(request: NextRequest) {
         const auth = await getAuthenticatedUser()
 
         if (!auth) {
-            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+            return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
         }
 
         const { user } = auth
-        const userAgent = request.headers.get('user-agent') || 'Unknown'
+        const userAgent = request.headers.get('user-agent') || 'Desconocido'
         const ip = request.headers.get('x-forwarded-for')?.split(',')[0] ||
             request.headers.get('x-real-ip') ||
             '127.0.0.1'
@@ -295,6 +295,6 @@ export async function POST(request: NextRequest) {
         })
     } catch (error) {
         console.error('Sessions POST error:', error)
-        return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+        return NextResponse.json({ error: 'Error interno del servidor' }, { status: 500 })
     }
 }

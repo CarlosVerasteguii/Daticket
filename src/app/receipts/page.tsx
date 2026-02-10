@@ -212,14 +212,14 @@ export default function ReceiptsPage() {
     const exportToCSV = useCallback((receiptsToExport: Receipt[]) => {
         if (receiptsToExport.length === 0) return
         
-        const headers = ['Store', 'Date', 'Amount', 'Category', 'Notes', 'Created At']
+        const headers = ['Tienda', 'Fecha', 'Importe', 'Categoría', 'Notas', 'Creado el']
         const csvContent = [
             headers.join(','),
             ...receiptsToExport.map(r => [
-                `"${(r.store_name || 'Unknown').replace(/"/g, '""')}"`,
+                `"${(r.store_name || 'Desconocida').replace(/"/g, '""')}"`,
                 r.purchase_date || '',
                 r.total_amount?.toFixed(2) || '0.00',
-                `"${(r.category_name || 'Uncategorized').replace(/"/g, '""')}"`,
+                `"${(r.category_name || 'Sin categoría').replace(/"/g, '""')}"`,
                 `"${(r.notes || '').replace(/"/g, '""')}"`,
                 r.created_at.split('T')[0]
             ].join(','))
@@ -230,7 +230,7 @@ export default function ReceiptsPage() {
         const link = document.createElement('a')
         link.setAttribute('href', url)
         const dateStr = new Date().toISOString().split('T')[0]
-        link.setAttribute('download', `receipts-export-${dateStr}.csv`)
+        link.setAttribute('download', `exportacion-recibos-${dateStr}.csv`)
         document.body.appendChild(link)
         link.click()
         document.body.removeChild(link)
@@ -352,7 +352,7 @@ export default function ReceiptsPage() {
     const formatDate = (dateStr: string | null) => {
         if (!dateStr) return 'N/A'
         const date = new Date(dateStr)
-        return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+        return date.toLocaleDateString('es-MX', { month: 'short', day: 'numeric', year: 'numeric' })
     }
 
     const categories = [...new Set(receipts.map(r => r.category_name).filter(Boolean))]
@@ -471,10 +471,10 @@ export default function ReceiptsPage() {
                     variants={itemVariants}
                 >
                     <div>
-                        <h1 className="text-3xl font-bold tracking-tighter text-foreground">All Receipts</h1>
+                        <h1 className="text-3xl font-bold tracking-tighter text-foreground">Recibos</h1>
                         <p className="text-sm text-foreground/60 font-mono mt-1">
-                            {filteredReceipts.length} of {receipts.length} records
-                            {selectedCategories.length > 0 && ` in ${selectedCategories.join(', ')}`}
+                            {filteredReceipts.length} de {receipts.length} registros
+                            {selectedCategories.length > 0 && ` en ${selectedCategories.join(', ')}`}
                         </p>
                     </div>
                     <div className="flex items-center gap-3">
@@ -488,7 +488,7 @@ export default function ReceiptsPage() {
                                 )}
                             >
                                 <FileText className="w-5 h-5 mr-2" />
-                                Report
+                                Reporte
                             </Link>
                         </motion.div>
                         {/* CSV Export Button */}
@@ -514,7 +514,7 @@ export default function ReceiptsPage() {
                                 className="inline-flex items-center px-6 py-3 bg-foreground text-background font-bold hover:bg-foreground/90 transition-all border-2 border-foreground shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] dark:shadow-[3px_3px_0px_0px_rgba(255,255,255,0.3)] hover:shadow-[5px_5px_0px_0px_rgba(0,0,0,1)] dark:hover:shadow-[5px_5px_0px_0px_rgba(255,255,255,0.3)] hover:-translate-x-0.5 hover:-translate-y-0.5"
                             >
                                 <Plus className="w-5 h-5 mr-2" />
-                                New Receipt
+                                Nuevo recibo
                             </Link>
                         </motion.div>
                     </div>
@@ -530,15 +530,15 @@ export default function ReceiptsPage() {
                         <p className="text-2xl font-bold tracking-tighter text-foreground">${totalAmount.toFixed(2)}</p>
                     </div>
                     <div className="p-4 border-r border-foreground/10">
-                        <p className="text-xs font-bold uppercase tracking-wider text-foreground/60">Receipts</p>
+                        <p className="text-xs font-bold uppercase tracking-wider text-foreground/60">Recibos</p>
                         <p className="text-2xl font-bold tracking-tighter text-foreground">{filteredReceipts.length}</p>
                     </div>
                     <div className="p-4 border-r border-foreground/10 hidden md:block">
-                        <p className="text-xs font-bold uppercase tracking-wider text-foreground/60">Categories</p>
+                        <p className="text-xs font-bold uppercase tracking-wider text-foreground/60">Categorías</p>
                         <p className="text-2xl font-bold tracking-tighter text-foreground">{categories.length}</p>
                     </div>
                     <div className="p-4 hidden md:block">
-                        <p className="text-xs font-bold uppercase tracking-wider text-foreground/60">Avg</p>
+                        <p className="text-xs font-bold uppercase tracking-wider text-foreground/60">Prom.</p>
                         <p className="text-2xl font-bold tracking-tighter text-foreground">
                             ${filteredReceipts.length > 0 ? (totalAmount / filteredReceipts.length).toFixed(2) : '0.00'}
                         </p>
@@ -555,7 +555,7 @@ export default function ReceiptsPage() {
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-foreground/40" />
                         <input
                             type="text"
-                            placeholder="Search stores, categories, notes, amounts..."
+                            placeholder="Busca tiendas, categorías, notas, importes..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                             className="w-full pl-10 pr-4 py-2 border border-foreground bg-background text-foreground font-medium focus:outline-none focus:ring-2 focus:ring-swiss-blue text-sm"
@@ -584,13 +584,13 @@ export default function ReceiptsPage() {
                             whileTap={{ scale: 0.98 }}
                         >
                             <Calendar className="h-4 w-4" />
-                            {dateRange.preset === 'all' && 'All Time'}
-                            {dateRange.preset === 'today' && 'Today'}
-                            {dateRange.preset === 'week' && 'Last 7 Days'}
-                            {dateRange.preset === 'month' && 'Last 30 Days'}
-                            {dateRange.preset === 'quarter' && 'Last 3 Months'}
-                            {dateRange.preset === 'year' && 'Last Year'}
-                            {dateRange.preset === 'custom' && 'Custom Range'}
+                            {dateRange.preset === 'all' && 'Todo el tiempo'}
+                            {dateRange.preset === 'today' && 'Hoy'}
+                            {dateRange.preset === 'week' && 'Últimos 7 días'}
+                            {dateRange.preset === 'month' && 'Últimos 30 días'}
+                            {dateRange.preset === 'quarter' && 'Últimos 3 meses'}
+                            {dateRange.preset === 'year' && 'Último año'}
+                            {dateRange.preset === 'custom' && 'Rango personalizado'}
                         </motion.button>
                         
                         <AnimatePresence>
@@ -602,14 +602,14 @@ export default function ReceiptsPage() {
                                     className="absolute top-full left-0 mt-2 z-50 bg-background border-2 border-foreground shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.3)] p-4 min-w-[280px]"
                                 >
                                     <div className="space-y-2">
-                                        <p className="text-xs font-bold uppercase tracking-wider text-foreground/60 mb-3">Date Presets</p>
+                                        <p className="text-xs font-bold uppercase tracking-wider text-foreground/60 mb-3">Preajustes de fecha</p>
                                         {[
-                                            { key: 'all', label: 'All Time' },
-                                            { key: 'today', label: 'Today' },
-                                            { key: 'week', label: 'Last 7 Days' },
-                                            { key: 'month', label: 'Last 30 Days' },
-                                            { key: 'quarter', label: 'Last 3 Months' },
-                                            { key: 'year', label: 'Last Year' },
+                                            { key: 'all', label: 'Todo el tiempo' },
+                                            { key: 'today', label: 'Hoy' },
+                                            { key: 'week', label: 'Últimos 7 días' },
+                                            { key: 'month', label: 'Últimos 30 días' },
+                                            { key: 'quarter', label: 'Últimos 3 meses' },
+                                            { key: 'year', label: 'Último año' },
                                         ].map(({ key, label }) => (
                                             <button
                                                 key={key}
@@ -626,10 +626,10 @@ export default function ReceiptsPage() {
                                         ))}
                                         
                                         <div className="border-t border-foreground/20 pt-3 mt-3">
-                                            <p className="text-xs font-bold uppercase tracking-wider text-foreground/60 mb-2">Custom Range</p>
+                                            <p className="text-xs font-bold uppercase tracking-wider text-foreground/60 mb-2">Rango personalizado</p>
                                             <div className="grid grid-cols-2 gap-2">
                                                 <div>
-                                                    <label className="text-xs text-foreground/60">From</label>
+                                                    <label className="text-xs text-foreground/60">Desde</label>
                                                     <input
                                                         type="date"
                                                         value={dateRange.start ? dateRange.start.toISOString().split('T')[0] : ''}
@@ -641,7 +641,7 @@ export default function ReceiptsPage() {
                                                     />
                                                 </div>
                                                 <div>
-                                                    <label className="text-xs text-foreground/60">To</label>
+                                                    <label className="text-xs text-foreground/60">Hasta</label>
                                                     <input
                                                         type="date"
                                                         value={dateRange.end ? dateRange.end.toISOString().split('T')[0] : ''}
@@ -658,7 +658,7 @@ export default function ReceiptsPage() {
                                                 onClick={() => setShowDatePicker(false)}
                                                 className="w-full mt-2 px-3 py-2 bg-foreground text-background text-sm font-bold"
                                             >
-                                                Apply
+                                                Aplicar
                                             </button>
                                         </div>
                                     </div>
@@ -681,9 +681,9 @@ export default function ReceiptsPage() {
                             whileTap={{ scale: 0.98 }}
                         >
                             <DollarSign className="h-4 w-4" />
-                            {amountRange.min === null && amountRange.max === null && 'Any Amount'}
+                            {amountRange.min === null && amountRange.max === null && 'Cualquier importe'}
                             {amountRange.min !== null && amountRange.max === null && `$${amountRange.min}+`}
-                            {amountRange.min === null && amountRange.max !== null && `Up to $${amountRange.max}`}
+                            {amountRange.min === null && amountRange.max !== null && `Hasta $${amountRange.max}`}
                             {amountRange.min !== null && amountRange.max !== null && `$${amountRange.min} - $${amountRange.max}`}
                         </motion.button>
                         
@@ -695,13 +695,13 @@ export default function ReceiptsPage() {
                                     exit={{ opacity: 0, y: -10 }}
                                     className="absolute top-full left-0 mt-2 z-50 bg-background border-2 border-foreground shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.3)] p-4 min-w-[240px]"
                                 >
-                                    <p className="text-xs font-bold uppercase tracking-wider text-foreground/60 mb-3">Amount Range</p>
+                                    <p className="text-xs font-bold uppercase tracking-wider text-foreground/60 mb-3">Rango de importe</p>
                                     
                                     {/* Quick Presets */}
                                     <div className="space-y-1 mb-4">
                                         {[
-                                            { min: null, max: null, label: 'Any Amount' },
-                                            { min: null, max: 25, label: 'Under $25' },
+                                            { min: null, max: null, label: 'Cualquier importe' },
+                                            { min: null, max: 25, label: 'Menos de $25' },
                                             { min: 25, max: 50, label: '$25 - $50' },
                                             { min: 50, max: 100, label: '$50 - $100' },
                                             { min: 100, max: null, label: '$100+' },
@@ -725,7 +725,7 @@ export default function ReceiptsPage() {
                                     </div>
                                     
                                     <div className="border-t border-foreground/20 pt-3">
-                                        <p className="text-xs font-bold uppercase tracking-wider text-foreground/60 mb-2">Custom Range</p>
+                                        <p className="text-xs font-bold uppercase tracking-wider text-foreground/60 mb-2">Rango personalizado</p>
                                         <div className="grid grid-cols-2 gap-2">
                                             <div>
                                                 <label className="text-xs text-foreground/60">Min ($)</label>
@@ -758,12 +758,12 @@ export default function ReceiptsPage() {
                                                 />
                                             </div>
                                         </div>
-                                        <button
-                                            onClick={() => setShowAmountPicker(false)}
-                                            className="w-full mt-2 px-3 py-2 bg-foreground text-background text-sm font-bold"
-                                        >
-                                            Apply
-                                        </button>
+                                    <button
+                                        onClick={() => setShowAmountPicker(false)}
+                                        className="w-full mt-2 px-3 py-2 bg-foreground text-background text-sm font-bold"
+                                    >
+                                        Aplicar
+                                    </button>
                                     </div>
                                 </motion.div>
                             )}
@@ -784,7 +784,7 @@ export default function ReceiptsPage() {
                             whileTap={{ scale: 0.98 }}
                         >
                             <Bookmark className="h-4 w-4" />
-                            Saved ({savedFilters.length})
+                            Guardados ({savedFilters.length})
                         </motion.button>
 
                         <motion.button
@@ -792,7 +792,7 @@ export default function ReceiptsPage() {
                             className="flex items-center gap-2 px-3 py-2 text-sm font-bold border border-foreground bg-background text-foreground hover:bg-foreground/10 transition-all"
                             whileHover={{ scale: 1.02 }}
                             whileTap={{ scale: 0.98 }}
-                            title="Save current filter"
+                            title="Guardar filtro actual"
                         >
                             <Save className="h-4 w-4" />
                         </motion.button>
@@ -805,7 +805,7 @@ export default function ReceiptsPage() {
                                     exit={{ opacity: 0, y: -10 }}
                                     className="absolute top-full left-0 mt-2 z-50 bg-background border-2 border-foreground shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.3)] p-3 min-w-[200px]"
                                 >
-                                    <p className="text-xs font-bold uppercase tracking-wider text-foreground/60 mb-2">Saved Filters</p>
+                                    <p className="text-xs font-bold uppercase tracking-wider text-foreground/60 mb-2">Filtros guardados</p>
                                     <div className="space-y-1">
                                         {savedFilters.map((f) => (
                                             <div key={f.id} className="flex items-center justify-between gap-2">
@@ -836,10 +836,10 @@ export default function ReceiptsPage() {
                                     exit={{ opacity: 0, y: -10 }}
                                     className="absolute top-full right-0 mt-2 z-50 bg-background border-2 border-foreground shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.3)] p-4 min-w-[250px]"
                                 >
-                                    <p className="text-xs font-bold uppercase tracking-wider text-foreground/60 mb-2">Save Current Filter</p>
+                                    <p className="text-xs font-bold uppercase tracking-wider text-foreground/60 mb-2">Guardar filtro actual</p>
                                     <input
                                         type="text"
-                                        placeholder="Filter name..."
+                                        placeholder="Nombre del filtro..."
                                         value={newFilterName}
                                         onChange={(e) => setNewFilterName(e.target.value)}
                                         onKeyDown={(e) => e.key === 'Enter' && saveCurrentFilter()}
@@ -851,14 +851,14 @@ export default function ReceiptsPage() {
                                             onClick={() => setShowSaveDialog(false)}
                                             className="flex-1 px-3 py-2 text-sm font-bold border border-foreground text-foreground hover:bg-foreground/10"
                                         >
-                                            Cancel
+                                            Cancelar
                                         </button>
                                         <button
                                             onClick={saveCurrentFilter}
                                             disabled={!newFilterName.trim()}
                                             className="flex-1 px-3 py-2 text-sm font-bold bg-foreground text-background disabled:bg-foreground/30 disabled:text-foreground/50"
                                         >
-                                            Save
+                                            Guardar
                                         </button>
                                     </div>
                                 </motion.div>
@@ -880,7 +880,7 @@ export default function ReceiptsPage() {
                             whileHover={{ scale: 1.02 }}
                             whileTap={{ scale: 0.98 }}
                         >
-                            All
+                            Todas
                         </motion.button>
                         {categories.map((cat) => {
                             const isSelected = selectedCategories.includes(cat!)
@@ -943,7 +943,7 @@ export default function ReceiptsPage() {
                                             isRefreshing && "animate-spin"
                                         )} />
                                         <span className="text-sm font-bold">
-                                            {isRefreshing ? 'Refreshing...' : pullDistance >= PULL_THRESHOLD ? 'Release to refresh' : 'Pull to refresh'}
+                                            {isRefreshing ? 'Actualizando...' : pullDistance >= PULL_THRESHOLD ? 'Suelta para actualizar' : 'Desliza para actualizar'}
                                         </span>
                                     </div>
                                 </motion.div>
@@ -962,10 +962,10 @@ export default function ReceiptsPage() {
                                     <Receipt className="h-8 w-8 text-foreground/40" />
                                 </div>
                                 <p className="text-lg font-medium text-foreground/70 mb-2">
-                                    {searchQuery ? "No receipts match your search" : "No receipts found"}
+                                    {searchQuery ? "No hay recibos que coincidan con tu búsqueda" : "No se encontraron recibos"}
                                 </p>
                                 <p className="text-sm text-foreground/40 mb-4">
-                                    {searchQuery ? "Try a different search term" : "Upload your first receipt to get started"}
+                                    {searchQuery ? "Intenta con otro término de búsqueda" : "Sube tu primer recibo para comenzar"}
                                 </p>
                                 {!searchQuery && (
                                     <Link 
@@ -973,7 +973,7 @@ export default function ReceiptsPage() {
                                         className="inline-flex items-center gap-2 px-4 py-2 bg-foreground text-background text-sm font-bold hover:bg-foreground/90 transition-colors"
                                     >
                                         <Plus className="h-4 w-4" />
-                                        Upload Receipt
+                                        Subir recibo
                                     </Link>
                                 )}
                             </motion.div>
@@ -1020,7 +1020,7 @@ export default function ReceiptsPage() {
                                             {/* Info */}
                                             <div className="p-4 border-t border-foreground">
                                                 <p className="font-bold text-sm truncate text-foreground group-hover:text-swiss-blue transition-colors">
-                                                    {receipt.store_name || 'Unknown Store'}
+                                                    {receipt.store_name || 'Tienda desconocida'}
                                                 </p>
                                                 <div className="flex justify-between items-center mt-2 text-xs text-foreground/60 font-mono">
                                                     <span className="flex items-center gap-1">
@@ -1044,7 +1044,7 @@ export default function ReceiptsPage() {
                                     >
                                         <div className="flex items-center gap-2 text-foreground/40 text-sm">
                                             <RefreshCw className="w-4 h-4 animate-spin" />
-                                            Loading more...
+                                            Cargando más...
                                         </div>
                                     </div>
                                 )}
@@ -1066,7 +1066,7 @@ export default function ReceiptsPage() {
                                     <div className="flex items-center justify-between p-4 border-b border-foreground/20 bg-background">
                                         <div className="flex items-center gap-2 text-foreground">
                                             <Receipt className="h-4 w-4" />
-                                            <h4 className="font-bold text-sm uppercase tracking-wider">Receipt Details</h4>
+                                            <h4 className="font-bold text-sm uppercase tracking-wider">Detalles del recibo</h4>
                                         </div>
                                         <motion.button 
                                             onClick={() => setSelectedReceipt(null)} 
@@ -1094,8 +1094,8 @@ export default function ReceiptsPage() {
                                                 <Tag className="h-4 w-4 text-foreground/60" />
                                             </div>
                                             <div>
-                                                <p className="text-xs text-foreground/60 uppercase font-bold">Store</p>
-                                                <p className="font-medium text-foreground">{selectedReceipt.store_name || 'Unknown'}</p>
+                                                <p className="text-xs text-foreground/60 uppercase font-bold">Tienda</p>
+                                                <p className="font-medium text-foreground">{selectedReceipt.store_name || 'Desconocida'}</p>
                                             </div>
                                         </div>
                                         <div className="flex items-center gap-3">
@@ -1103,7 +1103,7 @@ export default function ReceiptsPage() {
                                                 <Calendar className="h-4 w-4 text-foreground/60" />
                                             </div>
                                             <div>
-                                                <p className="text-xs text-foreground/60 uppercase font-bold">Date</p>
+                                                <p className="text-xs text-foreground/60 uppercase font-bold">Fecha</p>
                                                 <p className="font-mono text-foreground">{formatDate(selectedReceipt.purchase_date)}</p>
                                             </div>
                                         </div>
@@ -1112,7 +1112,7 @@ export default function ReceiptsPage() {
                                                 <DollarSign className="h-4 w-4 text-foreground/60" />
                                             </div>
                                             <div>
-                                                <p className="text-xs text-foreground/60 uppercase font-bold">Amount</p>
+                                                <p className="text-xs text-foreground/60 uppercase font-bold">Importe</p>
                                                 <p className="font-bold text-2xl text-foreground">{selectedReceipt.total_amount ? `$${Number(selectedReceipt.total_amount).toFixed(2)}` : '-'}</p>
                                             </div>
                                         </div>
@@ -1122,7 +1122,7 @@ export default function ReceiptsPage() {
                                                     <span className="h-2 w-2 bg-swiss-green rounded-full" />
                                                 </div>
                                                 <div>
-                                                    <p className="text-xs text-foreground/60 uppercase font-bold">Category</p>
+                                                    <p className="text-xs text-foreground/60 uppercase font-bold">Categoría</p>
                                                     <p className="font-medium text-swiss-green">{selectedReceipt.category_name}</p>
                                                 </div>
                                             </div>
@@ -1135,7 +1135,7 @@ export default function ReceiptsPage() {
                                             href={`/receipts/${selectedReceipt.id}`} 
                                             className="flex-1 py-3 bg-swiss-blue text-white font-bold text-center hover:bg-blue-700 border border-foreground transition-all shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] dark:shadow-[3px_3px_0px_0px_rgba(255,255,255,0.3)] hover:shadow-[5px_5px_0px_0px_rgba(0,0,0,1)] dark:hover:shadow-[5px_5px_0px_0px_rgba(255,255,255,0.3)] hover:-translate-x-0.5 hover:-translate-y-0.5"
                                         >
-                                            Edit
+                                            Editar
                                         </Link>
                                         <motion.button 
                                             className="px-4 py-3 bg-background text-swiss-orange font-bold hover:bg-orange-50 dark:hover:bg-orange-900/20 border border-foreground transition-colors"
@@ -1160,8 +1160,8 @@ export default function ReceiptsPage() {
                                     >
                                         <ImageIcon className="h-10 w-10 text-foreground/30" />
                                     </motion.div>
-                                    <p className="text-foreground/70 font-medium mb-1">Select a receipt</p>
-                                    <p className="text-sm text-foreground/40">Click on any receipt to view details</p>
+                                    <p className="text-foreground/70 font-medium mb-1">Selecciona un recibo</p>
+                                    <p className="text-sm text-foreground/40">Haz clic en cualquier recibo para ver los detalles</p>
                                 </motion.div>
                             )}
                         </AnimatePresence>
@@ -1220,7 +1220,7 @@ function SignedReceiptImage({
         return (
             <motion.img
                 src={src}
-                alt="Receipt"
+                alt="Recibo"
                 loading="lazy"
                 className={className}
                 onError={(e) => {
@@ -1235,7 +1235,7 @@ function SignedReceiptImage({
     return (
         <motion.img
             src={src}
-            alt="Receipt"
+            alt="Recibo"
             loading="lazy"
             className={className}
             onError={(e) => {

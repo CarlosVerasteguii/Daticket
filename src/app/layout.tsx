@@ -14,9 +14,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Daticket - Smart Receipt Tracking",
-  description: "Track every receipt with AI-powered scanning. The Swiss-style expense tracker that turns your paper receipts into organized digital records.",
-  keywords: ["receipts", "expense tracking", "AI scanning", "finance", "organization"],
+  title: "Daticket - Control inteligente de recibos",
+  description: "Registra cada recibo con escaneo impulsado por IA. El rastreador de gastos estilo suizo que convierte tus recibos en papel en registros digitales organizados.",
+  keywords: ["recibos", "control de gastos", "escaneo con IA", "finanzas", "organización"],
 };
 
 export default function RootLayout({
@@ -25,7 +25,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="es" suppressHydrationWarning>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >

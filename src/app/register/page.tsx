@@ -10,12 +10,12 @@ import Link from 'next/link'
 import { Loader2 } from 'lucide-react'
 
 const registerSchema = z.object({
-    email: z.string().email('Invalid email address'),
+    email: z.string().email('Correo electrónico inválido'),
     password: z
         .string()
-        .min(8, 'Password must be at least 8 characters')
-        .regex(/[A-Z]/, 'Password must contain at least one uppercase letter')
-        .regex(/[0-9]/, 'Password must contain at least one number'),
+        .min(8, 'La contraseña debe tener al menos 8 caracteres')
+        .regex(/[A-Z]/, 'La contraseña debe incluir al menos una letra mayúscula')
+        .regex(/[0-9]/, 'La contraseña debe incluir al menos un número'),
 })
 
 type RegisterFormData = z.infer<typeof registerSchema>
@@ -50,8 +50,8 @@ export default function RegisterPage() {
 
             router.push('/login?registered=true')
         } catch (err: unknown) {
-            const message = err instanceof Error ? err.message : 'An error occurred during registration'
-            setError(message || 'An error occurred during registration')
+            const message = err instanceof Error ? err.message : 'Ocurrió un error durante el registro'
+            setError(message || 'Ocurrió un error durante el registro')
         } finally {
             setIsLoading(false)
         }
@@ -65,7 +65,7 @@ export default function RegisterPage() {
                         Daticket
                     </h1>
                     <p className="mt-2 text-sm font-bold uppercase tracking-widest text-black">
-                        Create your account
+                        Crea tu cuenta
                     </p>
                 </div>
 
@@ -79,7 +79,7 @@ export default function RegisterPage() {
                     <div className="space-y-4">
                         <div>
                             <label htmlFor="email" className="block text-xs font-bold uppercase tracking-wider text-black mb-2">
-                                Email address
+                                Correo electrónico
                             </label>
                             <input
                                 id="email"
@@ -95,7 +95,7 @@ export default function RegisterPage() {
 
                         <div>
                             <label htmlFor="password" className="block text-xs font-bold uppercase tracking-wider text-black mb-2">
-                                Password
+                                Contraseña
                             </label>
                             <input
                                 id="password"
@@ -105,7 +105,7 @@ export default function RegisterPage() {
                                 {...register('password')}
                             />
                             <p className="mt-2 text-xs text-neutral-600 font-mono">
-                                Min 8 chars, 1 uppercase, 1 number
+                                Mín. 8 caracteres, 1 mayúscula, 1 número
                             </p>
                             {errors.password && (
                                 <p className="mt-1 text-sm text-swiss-orange font-medium">{errors.password.message}</p>
@@ -122,17 +122,17 @@ export default function RegisterPage() {
                             {isLoading ? (
                                 <>
                                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                    Creating account...
+                                    Creando cuenta...
                                 </>
                             ) : (
-                                'Sign up'
+                                'Registrarse'
                             )}
                         </button>
                     </div>
 
                     <div className="text-center text-sm">
                         <Link href="/login" className="font-bold text-black underline decoration-2 underline-offset-4 hover:text-swiss-blue">
-                            Already have an account? Sign in
+                            ¿Ya tienes una cuenta? Inicia sesión
                         </Link>
                     </div>
                 </form>

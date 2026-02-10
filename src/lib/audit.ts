@@ -36,21 +36,21 @@ export function createAuditEvent(
 export function getAuditEventLabel(type: AuditEventType): string {
     switch (type) {
         case 'login':
-            return 'Login'
+            return 'Inicio de sesión'
         case 'password_change':
-            return 'Password Changed'
+            return 'Contraseña cambiada'
         case 'session_revoked':
-            return 'Session Revoked'
+            return 'Sesión revocada'
         case 'session_revoked_all':
-            return 'All Sessions Revoked'
+            return 'Sesiones revocadas (todas)'
         case 'data_export':
-            return 'Data Exported'
+            return 'Datos exportados'
         case 'data_delete':
-            return 'Account Deleted'
+            return 'Cuenta eliminada'
         case 'password_reset':
-            return 'Password Reset'
+            return 'Contraseña restablecida'
         default:
-            return 'Unknown Event'
+            return 'Evento desconocido'
     }
 }
 
